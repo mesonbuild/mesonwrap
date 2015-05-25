@@ -17,8 +17,7 @@
 import sys, os, shutil
 import tempfile, subprocess
 from glob import glob
-import zipfile
-
+import zipfile, hashlib
 
 class UpstreamDefinition:
     def __init__(self, fname):
@@ -45,11 +44,12 @@ class UpstreamDefinition:
         return self.values[attr]
     
 class WrapCreator:
-    def __init__(self, name, repo_url, branch):
+    def __init__(self, name, repo_url, branch, out_dir='.', out_url_base='http://mesonbuild.com/wraps/'):
         self.name = name
         self.repo_url = repo_url
         self.branch = branch
-        self.out_dir = '.'
+        self.out_dir = out_dir
+        self.out_url_base = out_url_base
 
     def create(self):
         with tempfile.TemporaryDirectory() as workdir:
@@ -68,14 +68,24 @@ class WrapCreator:
                 os.unlink(os.path.join(workdir, '.gitignore'))
             except FileNotFoundError:
                 pass
-            zip_name = self.name + '-' + self.branch + '-' + str(revision_id) + '.zip'
-            zip = zipfile.ZipFile(os.path.join(self.out_dir, zip_name), 'w')
+            base_name = self.name + '-' + self.branch + '-' + str(revision_id)
+            zip_name = base_name + '.zip'
+            wrap_name = base_name + '.wrap'
+            zip_full = os.path.join(self.out_dir, zip_name)
+            zip = zipfile.ZipFile(zip_full, 'w')
             for root, dirs, files in os.walk(workdir):
                 for f in files:
                     abspath = os.path.join(root, f)
                     relpath = abspath[len(workdir)+1:]
                     zip.write(abspath, os.path.join(self.definition.directory, relpath))
             zip.close()
+            source_hash = hashlib.sha1(open(zip_full, 'rb').read()).hexdigest()
+            wrapfile = open(os.path.join(self.out_dir, wrap_name), 'w')
+            wrapfile.write(upstream_content)
+            wrapfile.write('\n')
+            wrapfile.write('source_url = %s%s\n' % (self.out_url_base, zip_name))
+            wrapfile.write('source_filename = %s\n' % zip_name)
+            wrapfile.write('source_hash = %s\n' % source_hash)
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
