@@ -44,7 +44,7 @@ class UpstreamDefinition:
         return self.values[attr]
     
 class WrapCreator:
-    def __init__(self, name, repo_url, branch, out_dir='.', out_url_base='http://mesonbuild.com/wraps/'):
+    def __init__(self, name, repo_url, branch, out_dir='.', out_url_base='http://mesonbuild.com/get_zip.py?'):
         self.name = name
         self.repo_url = repo_url
         self.branch = branch
@@ -68,12 +68,12 @@ class WrapCreator:
                 os.unlink(os.path.join(workdir, '.gitignore'))
             except FileNotFoundError:
                 pass
-            base_name = self.name + '-' + self.branch + '-' + str(revision_id)
+            base_name = self.name + '-' + self.branch + '-' + str(revision_id) + '-wrap'
             zip_name = base_name + '.zip'
             wrap_name = base_name + '.wrap'
             zip_full = os.path.join(self.out_dir, zip_name)
             wrap_full = os.path.join(self.out_dir, wrap_name)
-            with zipfile.ZipFile(zip_full, 'w') as zip:
+            with zipfile.ZipFile(zip_full, 'w', compression=zipfile.ZIP_LZMA) as zip:
                 for root, dirs, files in os.walk(workdir):
                     for f in files:
                         abspath = os.path.join(root, f)
@@ -82,11 +82,13 @@ class WrapCreator:
 
             source_hash = hashlib.sha256(open(zip_full, 'rb').read()).hexdigest()
             with open(wrap_full, 'w') as wrapfile:
+                url = self.out_url_base + '&'.join(['package=' + self.name, 'branch=' + self.branch,
+                                                    'revision=' + str(revision_id)])
                 wrapfile.write(upstream_content)
                 wrapfile.write('\n')
-                wrapfile.write('source_url = %s%s\n' % (self.out_url_base, zip_name))
-                wrapfile.write('source_filename = %s\n' % zip_name)
-                wrapfile.write('source_hash = %s\n' % source_hash)
+                wrapfile.write('patch_url = %s\n' % url)
+                wrapfile.write('patch_filename = %s\n' % zip_name)
+                wrapfile.write('patch_hash = %s\n' % source_hash)
             return (wrap_full, zip_full, revision_id)
 
 if __name__ == '__main__':
