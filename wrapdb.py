@@ -16,24 +16,59 @@
 
 import sqlite3
 import os, sys
+from builtins import int
 
 class WrapDatabase:
     def __init__(self, dirname):
         self.fname = os.path.join(dirname, 'wrapdb.sqlite')
-        try:
-            os.unlink(self.fname)
-        except FileNotFoundError:
-            pass
         if not os.path.exists(self.fname):
             self.create_db()
         else:
             self.conn = sqlite3.connect(self.fname)
 
+    def insert(self, project, branch, revision, wrap, zip):
+        assert(isinstance(wrap, str))
+        assert(isinstance(zip, bytes))
+        assert(isinstance(revision, int))
+        c = self.conn.cursor()
+        project = project.lower()
+        branch = branch.lower()
+        c.execute('''INSERT INTO wraps VALUES (?, ?, ?, ?, ?);''', (project, branch, revision, wrap, zip))
+        self.conn.commit()
+
+    def name_search(self, text):
+        c = self.conn.cursor()
+        c.execute('''SELECT DISTINCT project FROM wraps WHERE project LIKE ?;''', (text+'%',))
+        return c.fetchall()
+
+    def get_versions(self, project):
+        c = self.conn.cursor()
+        c.execute('''SELECT branch, revision FROM wraps WHERE project == ?;''', (project,))
+        return c.fetchall()
+
+    def get_wrap(self, project, branch, revision):
+        c = self.conn.cursor()
+        try:
+            c.execute('''SELECT wrap FROM wraps WHERE project == ? AND branch == ? AND revision == ?;''',
+                      (project, branch, revision))
+            return c.fetchone()[0]
+        except Exception:
+            return None
+
+    def get_zip(self, project, branch, revision):
+        c = self.conn.cursor()
+        try:
+            c.execute('''SELECT zip FROM wraps WHERE project == ? AND branch == ? AND revision == ?;''',
+                      (project, branch, revision))
+            return c.fetchone()[0]
+        except Exception:
+            return None
+
     def create_db(self):
         self.conn = sqlite3.connect(self.fname)
         c = self.conn.cursor()
         c.execute('''CREATE TABLE wraps
-        (project TEXT NOT NULL, branch TEXT NOT NULL, revision INTEGER, content TEXT NOT NULL
+        (project TEXT NOT NULL, branch TEXT NOT NULL, revision INTEGER, wrap TEXT NOT NULL, zip BLOB NOT NULL
         CHECK (revision > 0));''')
         c.execute('''CREATE UNIQUE INDEX wrapindex ON wraps(project, branch, revision);''')
         c.execute('''CREATE INDEX namesearch ON wraps(project);''')
@@ -41,3 +76,4 @@ class WrapDatabase:
 
 if __name__ == '__main__':
     db = WrapDatabase('.')
+    db.insert('zlib', '1.2.8', 1, 'foobar', b'barfoo')
