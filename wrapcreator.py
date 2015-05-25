@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2015 The Meson development team
 
@@ -52,44 +52,47 @@ class WrapCreator:
         self.out_url_base = out_url_base
 
     def create(self):
-        with tempfile.TemporaryDirectory() as workdir:
-            subprocess.check_call(['git', 'clone', self.repo_url, workdir])
-            subprocess.check_call(['git', 'checkout', self.branch], cwd=workdir)
-            upstream_file = os.path.join(workdir, 'upstream.wrap')
-            upstream_content = open(upstream_file).read()
-            revision_str = subprocess.check_output(['git', 'describe'], cwd=workdir).decode('utf-8')
-            revision_id = int(revision_str.split('-')[1])
-            self.upstream_file = os.path.join(workdir, 'upstream.wrap')
-            self.definition = UpstreamDefinition(self.upstream_file)
-            shutil.rmtree(os.path.join(workdir, '.git'))
-            os.unlink(os.path.join(workdir, 'readme.txt'))
-            os.unlink(upstream_file)
-            try:
-                os.unlink(os.path.join(workdir, '.gitignore'))
-            except FileNotFoundError:
-                pass
-            base_name = self.name + '-' + self.branch + '-' + str(revision_id) + '-wrap'
-            zip_name = base_name + '.zip'
-            wrap_name = base_name + '.wrap'
-            zip_full = os.path.join(self.out_dir, zip_name)
-            wrap_full = os.path.join(self.out_dir, wrap_name)
-            with zipfile.ZipFile(zip_full, 'w', compression=zipfile.ZIP_LZMA) as zip:
-                for root, dirs, files in os.walk(workdir):
-                    for f in files:
-                        abspath = os.path.join(root, f)
-                        relpath = abspath[len(workdir)+1:]
-                        zip.write(abspath, os.path.join(self.definition.directory, relpath))
+        workdir = tempfile.mkdtemp()
+        subprocess.check_call(['git', 'clone', self.repo_url, workdir])
+        subprocess.check_call(['git', 'checkout', self.branch], cwd=workdir)
+        upstream_file = os.path.join(workdir, 'upstream.wrap')
+        upstream_content = open(upstream_file).read()
+        revision_str = subprocess.check_output(['git', 'describe'], cwd=workdir).decode('utf-8')
+        revision_id = int(revision_str.split('-')[1])
+        self.upstream_file = os.path.join(workdir, 'upstream.wrap')
+        self.definition = UpstreamDefinition(self.upstream_file)
+        shutil.rmtree(os.path.join(workdir, '.git'))
+        os.unlink(os.path.join(workdir, 'readme.txt'))
+        os.unlink(upstream_file)
+        try:
+            os.unlink(os.path.join(workdir, '.gitignore'))
+        except Exception:
+            pass
+        base_name = self.name + '-' + self.branch + '-' + str(revision_id) + '-wrap'
+        zip_name = base_name + '.zip'
+        wrap_name = base_name + '.wrap'
+        zip_full = os.path.join(self.out_dir, zip_name)
+        wrap_full = os.path.join(self.out_dir, wrap_name)
+        with zipfile.ZipFile(zip_full, 'w', compression=zipfile.ZIP_DEFLATED) as zip:
+            for root, dirs, files in os.walk(workdir):
+                for f in files:
+                    abspath = os.path.join(root, f)
+                    relpath = abspath[len(workdir)+1:]
+                    zip.write(abspath, os.path.join(self.definition.directory, relpath))
 
-            source_hash = hashlib.sha256(open(zip_full, 'rb').read()).hexdigest()
-            with open(wrap_full, 'w') as wrapfile:
-                url = self.out_url_base + '&'.join(['package=' + self.name, 'branch=' + self.branch,
-                                                    'revision=' + str(revision_id)])
-                wrapfile.write(upstream_content)
-                wrapfile.write('\n')
-                wrapfile.write('patch_url = %s\n' % url)
-                wrapfile.write('patch_filename = %s\n' % zip_name)
-                wrapfile.write('patch_hash = %s\n' % source_hash)
-            return (wrap_full, zip_full, revision_id)
+        source_hash = hashlib.sha256(open(zip_full, 'rb').read()).hexdigest()
+        with open(wrap_full, 'w') as wrapfile:
+            url = self.out_url_base + '&'.join(['package=' + self.name, 'branch=' + self.branch,
+                                                'revision=' + str(revision_id)])
+            wrapfile.write(upstream_content)
+            wrapfile.write('\n')
+            wrapfile.write('patch_url = %s\n' % url)
+            wrapfile.write('patch_filename = %s\n' % zip_name)
+            wrapfile.write('patch_hash = %s\n' % source_hash)
+        wrap_contents = open(wrap_full, 'r').read()
+        zip_contents = open(zip_full, 'rb').read()
+        shutil.rmtree(workdir)
+        return (wrap_contents, zip_contents, revision_id)
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:

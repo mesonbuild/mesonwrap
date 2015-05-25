@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2015 The Meson development team
 
@@ -16,7 +16,6 @@
 
 import sqlite3
 import os, sys
-from builtins import int
 
 class WrapDatabase:
     def __init__(self, dirname):
@@ -33,7 +32,8 @@ class WrapDatabase:
         c = self.conn.cursor()
         project = project.lower()
         branch = branch.lower()
-        c.execute('''INSERT OR REPLACE INTO wraps VALUES (?, ?, ?, ?, ?);''', (project, branch, revision, wrap, zip))
+        c.execute('''INSERT OR REPLACE INTO wraps VALUES (?, ?, ?, ?, ?);''', (project, branch, revision, wrap,
+                                                                               sqlite3.Binary(zip)))
         self.conn.commit()
 
     def name_search(self, text):
@@ -52,7 +52,7 @@ class WrapDatabase:
             c.execute('''SELECT wrap FROM wraps WHERE project == ? AND branch == ? AND revision == ?;''',
                       (project, branch, revision))
             return c.fetchone()[0]
-        except Exception:
+        except Exception as e:
             return None
 
     def get_zip(self, project, branch, revision):
@@ -61,7 +61,7 @@ class WrapDatabase:
             c.execute('''SELECT zip FROM wraps WHERE project == ? AND branch == ? AND revision == ?;''',
                       (project, branch, revision))
             return c.fetchone()[0]
-        except Exception:
+        except Exception as e:
             return None
 
     def create_db(self):

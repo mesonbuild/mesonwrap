@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2015 The Meson development team
 
@@ -16,7 +16,7 @@
 
 import wrapdb, wrapcreator
 import sys, os
-import tempfile
+import tempfile, shutil
 
 class WrapManager: # Don't you just love Java-inspired names?
     
@@ -25,12 +25,11 @@ class WrapManager: # Don't you just love Java-inspired names?
         self.db = wrapdb.WrapDatabase(self.dbdir)
 
     def update_db(self, project_name, repo_url, branch):
-        with tempfile.TemporaryDirectory() as workdir:
-            creator = wrapcreator.WrapCreator(project_name, repo_url, branch, workdir)
-            (wrap_fname, zip_fname, revision_id) = creator.create()
-            wrap_contents = open(wrap_fname, 'r').read()
-            zip_contents = open(zip_fname, 'rb').read()
-            self.db.insert(project_name, branch, revision_id, wrap_contents, zip_contents)
+        workdir = tempfile.mkdtemp()
+        creator = wrapcreator.WrapCreator(project_name, repo_url, branch, workdir)
+        (wrap_contents, zip_contents, revision_id) = creator.create()
+        self.db.insert(project_name, branch, revision_id, wrap_contents, zip_contents)
+        shutil.rmtree(workdir)
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
