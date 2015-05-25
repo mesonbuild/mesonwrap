@@ -17,11 +17,26 @@
 import wrapdb
 import sys, os
 
+# This is a simple tool to do queries and inserts from the command line.
+
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print(sys.argv[0], 'queryterm')
+    if len(sys.argv) == 1:
+        print(sys.argv[0], 'queryterm or --arg queryterm')
         sys.exit(1)
-    qterm = sys.argv[1]
+
+    first = sys.argv[1]
+    rest = sys.argv[2:]
     db = wrapdb.WrapDatabase('.')
-    for i in db.name_search(qterm):
-        print(i)
+    if first == '--wrap':
+        print(db.get_wrap(*rest))
+    elif first == '--versions':
+        print(db.get_versions(*rest))
+    elif first == '--zip':
+        print(db.get_zip(*rest))
+    elif first == '--insert':
+        rest[2] = int(rest[2])
+        rest[4] = rest[4].encode()
+        db.insert(*rest)
+    else:
+        for i in db.name_search(first):
+            print(i[0])

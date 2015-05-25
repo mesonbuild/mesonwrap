@@ -80,14 +80,14 @@ class WrapCreator:
                         relpath = abspath[len(workdir)+1:]
                         zip.write(abspath, os.path.join(self.definition.directory, relpath))
 
-            source_hash = hashlib.sha1(open(zip_full, 'rb').read()).hexdigest()
+            source_hash = hashlib.sha256(open(zip_full, 'rb').read()).hexdigest()
             with open(wrap_full, 'w') as wrapfile:
                 wrapfile.write(upstream_content)
                 wrapfile.write('\n')
                 wrapfile.write('source_url = %s%s\n' % (self.out_url_base, zip_name))
                 wrapfile.write('source_filename = %s\n' % zip_name)
                 wrapfile.write('source_hash = %s\n' % source_hash)
-            return (wrap_full, zip_full)
+            return (wrap_full, zip_full, revision_id)
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:

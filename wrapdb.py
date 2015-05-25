@@ -33,7 +33,7 @@ class WrapDatabase:
         c = self.conn.cursor()
         project = project.lower()
         branch = branch.lower()
-        c.execute('''INSERT INTO wraps VALUES (?, ?, ?, ?, ?);''', (project, branch, revision, wrap, zip))
+        c.execute('''INSERT OR REPLACE INTO wraps VALUES (?, ?, ?, ?, ?);''', (project, branch, revision, wrap, zip))
         self.conn.commit()
 
     def name_search(self, text):
