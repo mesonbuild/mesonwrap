@@ -44,7 +44,7 @@ class UpstreamDefinition:
         return self.values[attr]
     
 class WrapCreator:
-    def __init__(self, name, repo_url, branch, out_dir='.', out_url_base='http://mesonbuild.com/get_zip.py?'):
+    def __init__(self, name, repo_url, branch, out_dir='.', out_url_base='http://mesonbuild.com/wrapdb/get_zip.py?'):
         self.name = name
         self.repo_url = repo_url
         self.branch = branch
