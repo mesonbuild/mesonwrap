@@ -72,20 +72,22 @@ class WrapCreator:
             zip_name = base_name + '.zip'
             wrap_name = base_name + '.wrap'
             zip_full = os.path.join(self.out_dir, zip_name)
-            zip = zipfile.ZipFile(zip_full, 'w')
-            for root, dirs, files in os.walk(workdir):
-                for f in files:
-                    abspath = os.path.join(root, f)
-                    relpath = abspath[len(workdir)+1:]
-                    zip.write(abspath, os.path.join(self.definition.directory, relpath))
-            zip.close()
+            wrap_full = os.path.join(self.out_dir, wrap_name)
+            with zipfile.ZipFile(zip_full, 'w') as zip:
+                for root, dirs, files in os.walk(workdir):
+                    for f in files:
+                        abspath = os.path.join(root, f)
+                        relpath = abspath[len(workdir)+1:]
+                        zip.write(abspath, os.path.join(self.definition.directory, relpath))
+
             source_hash = hashlib.sha1(open(zip_full, 'rb').read()).hexdigest()
-            wrapfile = open(os.path.join(self.out_dir, wrap_name), 'w')
-            wrapfile.write(upstream_content)
-            wrapfile.write('\n')
-            wrapfile.write('source_url = %s%s\n' % (self.out_url_base, zip_name))
-            wrapfile.write('source_filename = %s\n' % zip_name)
-            wrapfile.write('source_hash = %s\n' % source_hash)
+            with open(wrap_full, 'w') as wrapfile:
+                wrapfile.write(upstream_content)
+                wrapfile.write('\n')
+                wrapfile.write('source_url = %s%s\n' % (self.out_url_base, zip_name))
+                wrapfile.write('source_filename = %s\n' % zip_name)
+                wrapfile.write('source_hash = %s\n' % source_hash)
+            return (wrap_full, zip_full)
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
