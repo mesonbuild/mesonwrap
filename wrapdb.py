@@ -25,6 +25,9 @@ class WrapDatabase:
         else:
             self.conn = sqlite3.connect(self.fname)
 
+    def close(self):
+        self.conn.close()
+
     def insert(self, project, branch, revision, wrap, zip):
         assert(isinstance(wrap, str))
         assert(isinstance(zip, bytes))

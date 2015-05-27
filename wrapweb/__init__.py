@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, g
 import re
 import wrapdb
 import wrapdb, wrapmanager
@@ -20,14 +20,29 @@ import wrapdb, wrapmanager
 app = Flask(__name__)
 
 db_directory = '/tmp'
-querydb = wrapdb.WrapDatabase(db_directory)
+
+def get_query_db():
+    db = getattr(g, '_query_database', None)
+    if db is None:
+        db = g._query_database = wrapdb.WrapDatabase(db_directory)
+    return db
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_query_database', None)
+    if db is not None:
+        db.close()
+
 db_updater = wrapmanager.WrapManager(db_directory)
 
 @app.route("/projects/<project>")
 def get_project(project):
+    querydb = get_query_db()
+    print(querydb.get_versions(project))
     out = {"output": "ok", "versions": []}
-    for prj in querydb.get_versions(project):
-        out["versions"].append(prj.to_dict())
+    for i in querydb.get_versions(project):
+        e = {'branch': i[0], 'revision' : i[1]}
+        out['versions'].append(e)
     httpcode = 200
 
     jsonout = jsonify(out)
@@ -37,6 +52,7 @@ def get_project(project):
 @app.route("/projects/<project>/get_wrap", methods=['GET'])
 @app.route("/projects/<project>/get_zip", methods=['GET'])
 def get_wrap(project):
+    querydb = get_query_db()
     branch=request.args["branch"]
     revision=int(request.args["revision"])
     if request.path.endswith("/get_wrap"):
