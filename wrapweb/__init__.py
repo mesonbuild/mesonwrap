@@ -54,14 +54,20 @@ def get_project_info(project):
     if project is None:
         return get_projectlist()
     querydb = get_query_db()
+    matches = querydb.get_versions(project)
+
+    if len(matches) == 0:
+        out = {"output": "notok", "error": 'No such project'}
+        jsonout = jsonify(out)
+        jsonout.status_code = 500
+        return jsonout
+
     out = {"output": "ok", "versions": []}
-    for i in querydb.get_versions(project):
+    for i in matches:
         e = {'branch': i[0], 'revision' : i[1]}
         out['versions'].append(e)
-    httpcode = 200
-
     jsonout = jsonify(out)
-    jsonout.status_code = httpcode
+    jsonout.status_code = 200
     return jsonout
 
 @app.route("/projects/<project>/get_wrap", methods=['GET'])
