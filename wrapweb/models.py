@@ -35,7 +35,7 @@ class Project(db.Model):
 
 class Wrap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    branch = db.Column(db.String(20))
+    branch = db.Column(db.String(20), nullable=False)
     revision = db.Column(db.Integer)
     wrapfile = db.Column(db.Text)
     tarball = db.Column(db.LargeBinary)
