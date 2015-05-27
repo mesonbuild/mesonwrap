@@ -48,13 +48,12 @@ def get_project(project=None):
 def get_wrap(project):
     prj = Project.query.filter_by(name=project).first()
     if prj:
-        if "branch" in request.args:
+        if "branch" and "revision" in request.args:
             wrap = Wrap.query.filter_by(
                 branch=request.args["branch"],
-                project_id=prj.id)
-            if "revision" in request.args:
-                wrap = wrap.filter_by(revision=request.args["revision"])
-            wrap = wrap.first()
+                revision=request.args["revision"],
+                project_id=prj.id
+            ).first()
             if wrap is not None:
                 if request.path.endswith("/get_wrap"):
                     return Response(wrap.wrapfile, mimetype="text/plain")
@@ -63,7 +62,7 @@ def get_wrap(project):
             else:
                 out = {"output": "notok", "error": "No such branch or revision"}
         else:
-            out = {"output": "notok", "error": "branch cannot be blank"}
+            out = {"output": "notok", "error": "branch and revision cannot be blank"}
     else:
         out = {"output": "notok", "error": "No such project"}
 

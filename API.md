@@ -36,8 +36,8 @@ To make an API call, make a request to URL corresponding to given call (URLs are
 
 `/projects/<project>/get_wrap?branch="<branch>"&revision="<revision>"`
 
-Will return `.wrap` file. `revision` is optional, `branch` is mandatory.
+Will return `.wrap` file. `revision` and `branch` are mandatory.
 
 `/projects/<project>/get_zip?branch="<branch>"&revision="<revision>"`
 
-Will return zip file with all needed content for meson. `revision` is optional, `branch` is mandatory.
+Will return zip file with all needed content for meson. `revision` and `branch` are mandatory.
