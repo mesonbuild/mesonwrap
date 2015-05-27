@@ -24,6 +24,9 @@ class WrapManager: # Don't you just love Java-inspired names?
         self.dbdir = dbdir
         self.db = wrapdb.WrapDatabase(self.dbdir)
 
+    def close(self):
+        self.db.close()
+
     def update_db(self, project_name, repo_url, branch):
         workdir = tempfile.mkdtemp()
         creator = wrapcreator.WrapCreator(project_name, repo_url, branch, workdir)

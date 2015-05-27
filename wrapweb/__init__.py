@@ -27,9 +27,19 @@ def get_query_db():
         db = g._query_database = wrapdb.WrapDatabase(db_directory)
     return db
 
+def get_update_db():
+    db = getattr(g, '_update_database', None)
+    if db is None:
+        db = g._update_database = wrapmanager.WrapManager(db_directory)
+    return db
+
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_query_database', None)
+    if db is not None:
+        db.close()
+    db = getattr(g, '_update_database', None)
     if db is not None:
         db.close()
 
@@ -72,12 +82,13 @@ def get_wrap(project):
 # Change to match whatever github expects to get. Also verify password/IP/whatever.
 @app.route('/update/<project>/<branch>')
 def update_project(project, branch):
-    if not re.fullmatch('[a-z0-9._]', project):
+    print(project)
+    if not re.fullmatch('[a-z0-9._]+', project):
         out = {"output": "notok", "error": "Invalid project name"}
         jsonout = jsonify(out)
         jsonout.status_code = 500
         return jsonout
-    if not re.fullmatch('[a-z0-9._]', branch):
+    if not re.fullmatch('[a-z0-9._]+', branch):
         out = {"output": "notok", "error": "Invalid branch name"}
         jsonout = jsonify(out)
         jsonout.status_code = 500
@@ -87,11 +98,12 @@ def update_project(project, branch):
         jsonout = jsonify(out)
         jsonout.status_code = 500
         return jsonout
+    db_updater = get_update_db()
     repo_url = 'https://github.com/mesonbuild/%s.git' % project
     # FIXME, should launch in the background instead. This will now block
     # until branching is finished.
     try:
-        db_updater.update(project_name, repo_url, branch)
+        db_updater.update_db(project, repo_url, branch)
     except Exception:
         out = {"output": "notok", "error": "Wrap generation failed."}
         jsonout = jsonify(out)
