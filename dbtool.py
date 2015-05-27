@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2015 The Meson development team
 
@@ -21,12 +21,13 @@ import sys, os
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print(sys.argv[0], 'queryterm or --arg queryterm')
+        print(sys.argv[0], 'dbdir queryterm or --arg queryterm')
         sys.exit(1)
 
-    first = sys.argv[1]
-    rest = sys.argv[2:]
-    db = wrapdb.WrapDatabase('.')
+    dbdir = sys.argv[1]
+    first = sys.argv[2]
+    rest = sys.argv[3:]
+    db = wrapdb.WrapDatabase(dbdir)
     if first == '--wrap':
         print(db.get_wrap(*rest))
     elif first == '--versions':

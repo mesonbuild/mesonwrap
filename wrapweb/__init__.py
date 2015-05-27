@@ -15,6 +15,7 @@
 from flask import Flask, jsonify, request, Response
 import re
 import wrapdb
+import wrapdb, wrapmanager
 
 app = Flask(__name__)
 
@@ -25,7 +26,7 @@ db_updater = wrapmanager.WrapManager(db_directory)
 @app.route("/projects/<project>")
 def get_project(project):
     out = {"output": "ok", "versions": []}
-    for prj in db.get_versions(project):
+    for prj in querydb.get_versions(project):
         out["versions"].append(prj.to_dict())
     httpcode = 200
 
@@ -39,10 +40,10 @@ def get_wrap(project):
     branch=request.args["branch"]
     revision=int(request.args["revision"])
     if request.path.endswith("/get_wrap"):
-        result = db.get_wrap(project, branch, revision)
+        result = querydb.get_wrap(project, branch, revision)
         mtype = 'text/plain'
     else:
-        result = db.get_zip(project, branch, revision)
+        result = querydb.get_zip(project, branch, revision)
         mtype = 'application/zip'
     if result is None:
         out = {"output": "notok", "error": "No such entry"}
