@@ -15,7 +15,7 @@
 from flask import Flask, jsonify, request, Response, g
 import re
 import wrapdb
-import wrapdb, wrapmanager
+import wrapdb, wrapupdater
 
 app = Flask(__name__)
 
@@ -30,7 +30,7 @@ def get_query_db():
 def get_update_db():
     db = getattr(g, '_update_database', None)
     if db is None:
-        db = g._update_database = wrapmanager.WrapManager(db_directory)
+        db = g._update_database = wrapupdater.WrapUpdater(db_directory)
     return db
 
 
@@ -42,8 +42,6 @@ def close_connection(exception):
     db = getattr(g, '_update_database', None)
     if db is not None:
         db.close()
-
-db_updater = wrapmanager.WrapManager(db_directory)
 
 @app.route("/projects/<project>")
 def get_project(project):

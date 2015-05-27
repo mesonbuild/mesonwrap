@@ -18,8 +18,7 @@ import wrapdb, wrapcreator
 import sys, os
 import tempfile, shutil
 
-class WrapManager: # Don't you just love Java-inspired names?
-    
+class WrapUpdater:
     def __init__(self, dbdir='.'):
         self.dbdir = dbdir
         self.db = wrapdb.WrapDatabase(self.dbdir)
