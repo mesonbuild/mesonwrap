@@ -34,7 +34,7 @@ def get_project(project=None):
             out = {"output": "notok", "error": "No such project"}
             httpcode = 500
     else:
-        out = {"projects": []}
+        out = {"output": "ok", "projects": []}
         for prj in Project.query.all():
             out["projects"].append(prj.to_dict())
         httpcode = 200
