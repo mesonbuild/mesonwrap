@@ -65,6 +65,11 @@ def update_project(project, branch):
         jsonout = jsonify(out)
         jsonout.status_code = 500
         return jsonout
+    if branch == 'master':
+        out = {"output": "notok", "error": "No bananas for you"}
+        jsonout = jsonify(out)
+        jsonout.status_code = 500
+        return jsonout
     repo_url = 'https://github.com/mesonbuild/%s.git' % project
     # FIXME, should launch in the background instead. This will now block
     # until branching is finished.
