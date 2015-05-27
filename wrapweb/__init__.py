@@ -13,59 +13,48 @@
 # limitations under the License.
 
 from flask import Flask, jsonify, request, Response
-from flask.ext.sqlalchemy import SQLAlchemy
+import wrapdb
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
-db = SQLAlchemy(app)
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+db = wrapdb.WrapDatabase('/tmp')
 
 from wrapweb.models import *
 
 @app.route("/projects", defaults={"project": None})
 @app.route("/projects/<project>")
-def get_project(project=None):
-    if project is not None:
-        prj = Project.query.filter_by(name=project).first()
-        if prj:
-            out = {"output": "ok"}
-            out.update(prj.to_dict())
-            httpcode = 200
-        else:
-            out = {"output": "notok", "error": "No such project"}
-            httpcode = 500
-    else:
-        out = {"output": "ok", "projects": []}
-        for prj in Project.query.all():
-            out["projects"].append(prj.to_dict())
-        httpcode = 200
+def get_project(project=''):
+    out = {"output": "ok", "projects": []}
+    for prj in db.name_search(project):
+        out["projects"].append(prj.to_dict())
+    httpcode = 200
 
     jsonout = jsonify(out)
     jsonout.status_code = httpcode
     return jsonout
 
 @app.route("/projects/<project>/get_wrap", methods=['GET'])
+def get_wrap(project):
+    branch=request.args["branch"]
+    revision=int(request.args["revision"])
+    result = db.get_wrap(project, branch, revision)
+    if result is None:
+        out = {"output": "notok", "error": "No such entry"}
+        jsonout = jsonify(out)
+        jsonout.status_code = 500
+        return jsonout
+    else:
+        return Response(result, mimetype="text/plain")
+
 @app.route("/projects/<project>/get_zip", methods=['GET'])
 def get_wrap(project):
-    prj = Project.query.filter_by(name=project).first()
-    if prj:
-        if "branch" and "revision" in request.args:
-            wrap = Wrap.query.filter_by(
-                branch=request.args["branch"],
-                revision=request.args["revision"],
-                project_id=prj.id
-            ).first()
-            if wrap is not None:
-                if request.path.endswith("/get_wrap"):
-                    return Response(wrap.wrapfile, mimetype="text/plain")
-                elif request.path.endswith("/get_zip"):
-                    return Response(wrap.tarball, mimetype="application/zip")
-            else:
-                out = {"output": "notok", "error": "No such branch or revision"}
-        else:
-            out = {"output": "notok", "error": "branch and revision cannot be blank"}
+    branch=request.args["branch"]
+    revision=int(request.args["revision"])
+    result = db.get_zip(project, branch, revision)
+    if result is None:
+        out = {"output": "notok", "error": "No such entry"}
+        jsonout = jsonify(out)
+        jsonout.status_code = 500
+        return jsonout
     else:
-        out = {"output": "notok", "error": "No such project"}
-
-    jsonout = jsonify(out)
-    jsonout.status_code = 500
-    return jsonout
+        return Response(result, mimetype="application/zip")
