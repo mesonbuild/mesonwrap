@@ -42,7 +42,7 @@ class UpstreamDefinition:
 
     def __getattr__(self, attr):
         return self.values[attr]
-    
+
 class WrapCreator:
     def __init__(self, name, repo_url, branch, out_dir='.', out_url_base='http://mesonbuild.com/wrapdb/get_zip.py?'):
         self.name = name
@@ -52,7 +52,10 @@ class WrapCreator:
         self.out_url_base = out_url_base
 
     def create(self):
-        workdir = tempfile.mkdtemp()
+        with tempfile.TemporaryDirectory() as workdir:
+            return self.create_internal(workdir)
+
+    def create_internal(self, workdir):
         subprocess.check_call(['git', 'clone', '-b', self.branch, self.repo_url, workdir])
         upstream_file = os.path.join(workdir, 'upstream.wrap')
         upstream_content = open(upstream_file).read()
@@ -90,7 +93,6 @@ class WrapCreator:
             wrapfile.write('patch_hash = %s\n' % source_hash)
         wrap_contents = open(wrap_full, 'r').read()
         zip_contents = open(zip_full, 'rb').read()
-        shutil.rmtree(workdir)
         return (wrap_contents, zip_contents, revision_id)
 
 if __name__ == '__main__':

@@ -27,11 +27,10 @@ class WrapUpdater:
         self.db.close()
 
     def update_db(self, project_name, repo_url, branch):
-        workdir = tempfile.mkdtemp()
-        creator = wrapcreator.WrapCreator(project_name, repo_url, branch, workdir)
-        (wrap_contents, zip_contents, revision_id) = creator.create()
-        self.db.insert(project_name, branch, revision_id, wrap_contents, zip_contents)
-        shutil.rmtree(workdir)
+        with tempfile.TemporaryDirectory() as workdir:
+            creator = wrapcreator.WrapCreator(project_name, repo_url, branch, workdir)
+            (wrap_contents, zip_contents, revision_id) = creator.create()
+            self.db.insert(project_name, branch, revision_id, wrap_contents, zip_contents)
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
