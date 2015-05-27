@@ -41,8 +41,8 @@ class WrapDatabase:
 
     def name_search(self, text):
         c = self.conn.cursor()
-        c.execute('''SELECT DISTINCT project FROM wraps WHERE project LIKE ?;''', (text+'%',))
-        return c.fetchall()
+        c.execute('''SELECT DISTINCT project FROM wraps WHERE project LIKE ? ORDER BY project;''', (text+'%',))
+        return [x[0] for x in c.fetchall()]
 
     def get_versions(self, project):
         c = self.conn.cursor()

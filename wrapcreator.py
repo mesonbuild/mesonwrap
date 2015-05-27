@@ -53,8 +53,7 @@ class WrapCreator:
 
     def create(self):
         workdir = tempfile.mkdtemp()
-        subprocess.check_call(['git', 'clone', self.repo_url, workdir])
-        subprocess.check_call(['git', 'checkout', self.branch], cwd=workdir)
+        subprocess.check_call(['git', 'clone', '-b', self.branch, self.repo_url, workdir])
         upstream_file = os.path.join(workdir, 'upstream.wrap')
         upstream_content = open(upstream_file).read()
         revision_str = subprocess.check_output(['git', 'describe'], cwd=workdir).decode('utf-8')

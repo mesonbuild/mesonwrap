@@ -43,10 +43,17 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-@app.route("/projects/<project>")
-def get_project(project):
+def get_projectlist():
     querydb = get_query_db()
-    print(querydb.get_versions(project))
+    res = {'output' : 'ok', 'projects' : querydb.name_search('')}
+    return jsonify(res)
+
+@app.route("/projects", defaults={"project": None})
+@app.route("/projects/<project>")
+def get_project_info(project):
+    if project is None:
+        return get_projectlist()
+    querydb = get_query_db()
     out = {"output": "ok", "versions": []}
     for i in querydb.get_versions(project):
         e = {'branch': i[0], 'revision' : i[1]}
