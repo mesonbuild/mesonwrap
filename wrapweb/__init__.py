@@ -120,14 +120,14 @@ def github_pr():
         else:
             out = {"output": "ok"}
             httpcode = 200
-        db_updater = get_update_db()
-        # FIXME, should launch in the background instead. This will now block
-        # until branching is finished.
-        try:
-            db_updater.update_db(project, repo_url, branch)
-        except Exception:
-            out = {"output": "notok", "error": "Wrap generation failed."}
-            httpcode = 500
+            db_updater = get_update_db()
+            # FIXME, should launch in the background instead. This will now block
+            # until branching is finished.
+            try:
+                db_updater.update_db(project, repo_url, branch)
+            except Exception:
+                out = {"output": "notok", "error": "Wrap generation failed."}
+                httpcode = 500
     else:
         app.logger.warning(request.data)
         out = {"output": "notok", "error": "We got hook which is not merged pull request"}
