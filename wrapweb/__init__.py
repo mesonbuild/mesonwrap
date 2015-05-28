@@ -88,7 +88,7 @@ def get_wrap(project, branch, revision):
     else:
         return Response(result, mimetype=mtype)
 
-@app.route("/github-pr")
+@app.route("/github-pr", methods=["POST"])
 def github_pr():
     d = request.data
     if d["action"] == "closed" and d["merged"] == True:
