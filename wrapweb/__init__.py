@@ -111,6 +111,10 @@ def github_pr():
         jsonout.status_code = 403
         return jsonout
     base = d["pull_request"]["base"]
+    if not base["repo"]["full_name"].startswith("mesonbuild/"):
+        jsonout = jsonify({"output": "notok", "error": "Not a mesonbuild project"})
+        jsonout.status_code = 500
+        return jsonout
     if d["action"] == "closed" and d["pull_request"]["merged"] == True:
         project = base["repo"]["name"]
         branch = base["ref"]
