@@ -114,7 +114,7 @@ def github_pr():
     if d["action"] == "closed" and d["pull_request"]["merged"] == True:
         project = base["repo"]["name"]
         branch = base["ref"]
-        repo_url = base["clone_url"]
+        repo_url = base["repo"]["clone_url"]
         if branch == "master":
             out = {"output": "notok", "error": "No bananas for you"}
             httpcode = 500
