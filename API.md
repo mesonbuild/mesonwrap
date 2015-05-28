@@ -3,13 +3,15 @@ To make an API call, make a request to URL corresponding to given call (URLs are
 
 # URL
 
+## List all projects
 `/projects`
 ```JSON
 {
+  "output": "ok",
   "projects": [
     {
       "name": "zlib",
-      "wraps": [
+      "versions": [
         {
           "branch": "1.2.8",
           "revision": 1
@@ -20,12 +22,13 @@ To make an API call, make a request to URL corresponding to given call (URLs are
 }
 ```
 
+## Getting info about project
 `/projects/<project>`
 ```JSON
 {
   "name": "zlib",
   "output": "ok",
-  "wraps": [
+  "versions": [
     {
       "branch": "1.2.8",
       "revision": 1
@@ -34,10 +37,12 @@ To make an API call, make a request to URL corresponding to given call (URLs are
 }
 ```
 
+## Getting wrap file
 `/projects/<project>/get_wrap?branch="<branch>"&revision="<revision>"`
 
 Will return `.wrap` file. `revision` and `branch` are mandatory.
 
+## Getting zip
 `/projects/<project>/get_zip?branch="<branch>"&revision="<revision>"`
 
 Will return zip file with all needed content for meson. `revision` and `branch` are mandatory.
