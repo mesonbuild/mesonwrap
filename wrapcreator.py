@@ -44,7 +44,8 @@ class UpstreamDefinition:
         return self.values[attr]
 
 class WrapCreator:
-    def __init__(self, name, repo_url, branch, out_dir='.', out_url_base='http://mesonbuild.com/wrapdb/get_zip.py?'):
+    def __init__(self, name, repo_url, branch, out_dir='.',
+                out_url_base='http://wrap.mesonbuild.com/v1/projects/%s/%s/%d/get_zip'):
         self.name = name
         self.repo_url = repo_url
         self.branch = branch
@@ -84,8 +85,7 @@ class WrapCreator:
 
         source_hash = hashlib.sha256(open(zip_full, 'rb').read()).hexdigest()
         with open(wrap_full, 'w') as wrapfile:
-            url = self.out_url_base + '&'.join(['package=' + self.name, 'branch=' + self.branch,
-                                                'revision=' + str(revision_id)])
+            url = self.out_url_base % (self.name, self.branch, revision_id)
             wrapfile.write(upstream_content)
             wrapfile.write('\n')
             wrapfile.write('patch_url = %s\n' % url)

@@ -47,8 +47,8 @@ def get_projectlist():
     res = {'output' : 'ok', 'projects' : querydb.name_search('')}
     return jsonify(res)
 
-@app.route("/projects", defaults={"project": None})
-@app.route("/projects/<project>")
+@app.route("/v1/projects", defaults={"project": None})
+@app.route("/v1/projects/<project>")
 def get_project_info(project):
     if project is None:
         return get_projectlist()
@@ -69,12 +69,11 @@ def get_project_info(project):
     jsonout.status_code = 200
     return jsonout
 
-@app.route("/projects/<project>/get_wrap", methods=['GET'])
-@app.route("/projects/<project>/get_zip", methods=['GET'])
-def get_wrap(project):
+@app.route("/v1/projects/<project>/<branch>/<revision>/get_wrap")
+@app.route("/v1/projects/<project>/<branch>/<revision>/get_zip")
+def get_wrap(project, branch, revision):
     querydb = get_query_db()
-    branch=request.args["branch"]
-    revision=int(request.args["revision"])
+    revision=int(revision)
     if request.path.endswith("/get_wrap"):
         result = querydb.get_wrap(project, branch, revision)
         mtype = 'text/plain'
@@ -90,7 +89,7 @@ def get_wrap(project):
         return Response(result, mimetype=mtype)
 
 # Change to match whatever github expects to get. Also verify password/IP/whatever.
-@app.route('/update/<project>/<branch>')
+@app.route('/v1/update/<project>/<branch>')
 def update_project(project, branch):
     # pwdfile = os.path.join(db_directory, 'password.txt')
     # password = open(pwdfile).read().strip()
@@ -112,7 +111,8 @@ def update_project(project, branch):
     db_updater = get_update_db()
     repo_url = 'https://github.com/mesonbuild/%s.git' % project
     # FIXME, should launch in the background instead. This will now block
-    # until branching is finished.
+    # until branching is finished. It only blocks Github bot, though,
+    # so we might not need to do anything.
     try:
         db_updater.update_db(project, repo_url, branch)
     except Exception:
