@@ -14,9 +14,14 @@
 
 from flask import Flask, jsonify, request, Response, g
 import re, os
+# GitHub secret key support
+import hashlib
+import hmac
+
 import wrapdb, wrapupdater
 
 app = Flask(__name__)
+app.config.from_object("wrapweb.default_config")
 
 db_directory = os.path.normpath(os.path.join(os.path.split(__file__)[0], '..'))
 
@@ -99,6 +104,11 @@ def github_pr():
         jsonout.status_code = 500
         return jsonout
     d = request.data
+    signature = "sha1=%s" % hmac.new(app["SECRET_KEY"], d, hashlib.sha1).hexdigest()
+    if request.headers.get("X-Hub-Signature") != signature:
+        jsonout = jsonify({"output": "notok", "error": "Not a valid secret key"})
+        jsonout.status_code = 403
+        return jsonout
     if d["action"] == "closed" and d["merged"] == True:
         project = d["repository"]["name"]
         branch = d["head"]["ref"]
