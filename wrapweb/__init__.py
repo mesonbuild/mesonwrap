@@ -88,7 +88,7 @@ def get_wrap(project, branch, revision):
     else:
         return Response(result, mimetype=mtype)
 
-@app.route("/v1/github-pr")
+@app.route("/github-pr")
 def github_pr():
     d = request.data
     if d["action"] == "closed" and d["merged"] == True:
