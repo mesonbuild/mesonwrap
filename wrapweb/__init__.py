@@ -94,6 +94,10 @@ def github_pr():
         jsonout = jsonify({"output": "notok", "error": "Not a GitHub hook"})
         jsonout.status_code = 500
         return jsonout
+    if request.headers.get("X-Github-Event") != "pull_request":
+        jsonout = jsonify({"output": "notok", "error": "Not a Pull Request hook"})
+        jsonout.status_code = 500
+        return jsonout
     d = request.data
     if d["action"] == "closed" and d["merged"] == True:
         project = d["repository"]["name"]
