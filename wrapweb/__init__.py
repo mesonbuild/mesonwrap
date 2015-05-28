@@ -111,7 +111,7 @@ def github_pr():
         jsonout.status_code = 403
         return jsonout
     base = d["pull_request"]["base"]
-    if d["action"] == "closed" and base["merged"] == True:
+    if d["action"] == "closed" and d["pull_request"]["merged"] == True:
         project = base["repo"]["name"]
         branch = base["ref"]
         repo_url = base["clone_url"]
