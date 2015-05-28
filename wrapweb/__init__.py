@@ -13,13 +13,13 @@
 # limitations under the License.
 
 from flask import Flask, jsonify, request, Response, g
-import re
+import re, os
 import wrapdb
 import wrapdb, wrapupdater
 
 app = Flask(__name__)
 
-db_directory = '/tmp'
+db_directory = os.path.normpath(os.path.join(os.path.split(__file__)[0], '..'))
 
 def get_query_db():
     db = getattr(g, '_query_database', None)
@@ -93,7 +93,8 @@ def get_wrap(project):
 # Change to match whatever github expects to get. Also verify password/IP/whatever.
 @app.route('/update/<project>/<branch>')
 def update_project(project, branch):
-    print(project)
+    # pwdfile = os.path.join(db_directory, 'password.txt')
+    # password = open(pwdfile).read().strip()
     if not re.fullmatch('[a-z0-9._]+', project):
         out = {"output": "notok", "error": "Invalid project name"}
         jsonout = jsonify(out)
