@@ -88,41 +88,32 @@ def get_wrap(project, branch, revision):
     else:
         return Response(result, mimetype=mtype)
 
-# Change to match whatever github expects to get. Also verify password/IP/whatever.
-@app.route('/v1/update/<project>/<branch>')
-def update_project(project, branch):
-    # pwdfile = os.path.join(db_directory, 'password.txt')
-    # password = open(pwdfile).read().strip()
-    if not re.fullmatch('[a-z0-9._]+', project):
-        out = {"output": "notok", "error": "Invalid project name."}
-        jsonout = jsonify(out)
-        jsonout.status_code = 500
-        return jsonout
-    if project == 'meson' or project == 'wrapweb':
-        out = {"output": "notok", "error": "Nice try."}
-        jsonout = jsonify(out)
-        jsonout.status_code = 500
-        return jsonout
-    if not re.fullmatch('[a-z0-9._]+', branch):
-        out = {"output": "notok", "error": "Invalid branch name."}
-        jsonout = jsonify(out)
-        jsonout.status_code = 500
-        return jsonout
-    if branch == 'master':
-        out = {"output": "notok", "error": "No bananas for you."}
-        jsonout = jsonify(out)
-        jsonout.status_code = 500
-        return jsonout
-    db_updater = get_update_db()
-    repo_url = 'https://github.com/mesonbuild/%s.git' % project
-    # FIXME, should launch in the background instead. This will now block
-    # until branching is finished. It only blocks Github bot, though,
-    # so we might not need to do anything.
-    try:
-        db_updater.update_db(project, repo_url, branch)
-    except Exception:
-        out = {"output": "notok", "error": "Wrap generation failed."}
-        jsonout = jsonify(out)
-        jsonout.status_code = 500
-        return jsonout
-    return jsonify({'output': 'ok'})
+@app.route("/v1/github-pr")
+def github_pr():
+    d = request.data
+    if d["action"] == "closed" and d["merged"] == True:
+        project = d["repository"]["name"]
+        branch = d["head"]["ref"]
+        repo_url = d["head"]["clone_url"]
+        if branch == "master":
+            out = {"output": "notok", "error": "No bananas for you"}
+            httpcode = 500
+        else:
+            out = {"output": "ok"}
+            httpcode = 200
+        db_updater = get_update_db()
+        # FIXME, should launch in the background instead. This will now block
+        # until branching is finished.
+        try:
+            db_updater.update_db(project, repo_url, branch)
+        except Exception:
+            out = {"output": "notok", "error": "Wrap generation failed."}
+            httpcode = 500
+    else:
+        app.logger.warning(request.data)
+        out = {"output": "notok", "error": "We got hook which is not merged pull request"}
+        httpcode = 500
+
+    jsonout = jsonify(out)
+    jsonout.status_code = httpcode
+    return jsonout
