@@ -94,17 +94,22 @@ def update_project(project, branch):
     # pwdfile = os.path.join(db_directory, 'password.txt')
     # password = open(pwdfile).read().strip()
     if not re.fullmatch('[a-z0-9._]+', project):
-        out = {"output": "notok", "error": "Invalid project name"}
+        out = {"output": "notok", "error": "Invalid project name."}
+        jsonout = jsonify(out)
+        jsonout.status_code = 500
+        return jsonout
+    if project == 'meson' or project == 'wrapweb':
+        out = {"output": "notok", "error": "Nice try."}
         jsonout = jsonify(out)
         jsonout.status_code = 500
         return jsonout
     if not re.fullmatch('[a-z0-9._]+', branch):
-        out = {"output": "notok", "error": "Invalid branch name"}
+        out = {"output": "notok", "error": "Invalid branch name."}
         jsonout = jsonify(out)
         jsonout.status_code = 500
         return jsonout
     if branch == 'master':
-        out = {"output": "notok", "error": "No bananas for you"}
+        out = {"output": "notok", "error": "No bananas for you."}
         jsonout = jsonify(out)
         jsonout.status_code = 500
         return jsonout
