@@ -90,6 +90,10 @@ def get_wrap(project, branch, revision):
 
 @app.route("/github-pr", methods=["POST"])
 def github_pr():
+    if not requests.headers.get("User-Agent").startswith("GitHub-Hookshot/"):
+        jsonout = jsonify({"output": "notok", "error": "Not a GitHub hook"})
+        jsonout.status_code = 500
+        return jsonout
     d = request.data
     if d["action"] == "closed" and d["merged"] == True:
         project = d["repository"]["name"]
