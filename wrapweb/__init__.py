@@ -14,7 +14,6 @@
 
 from flask import Flask, jsonify, request, Response, g
 import re, os
-import wrapdb
 import wrapdb, wrapupdater
 
 app = Flask(__name__)

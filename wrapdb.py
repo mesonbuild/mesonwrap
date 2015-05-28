@@ -18,12 +18,14 @@ import sqlite3
 import os, sys
 
 class WrapDatabase:
-    def __init__(self, dirname):
+    def __init__(self, dirname, readwrite=False):
         self.fname = os.path.join(dirname, 'wrapdb.sqlite')
+        self.uri = 'file:' + self.fname
+        if not readwrite:
+            self.uri = self.uri + '?mode=ro'
         if not os.path.exists(self.fname):
             self.create_db()
-        else:
-            self.conn = sqlite3.connect(self.fname)
+        self.conn = sqlite3.connect(self.uri, uri=True)
 
     def close(self):
         self.conn.close()
@@ -76,6 +78,7 @@ class WrapDatabase:
         c.execute('''CREATE UNIQUE INDEX wrapindex ON wraps(project, branch, revision);''')
         c.execute('''CREATE INDEX namesearch ON wraps(project);''')
         self.conn.commit()
+        self.close()
 
 if __name__ == '__main__':
     db = WrapDatabase('.')

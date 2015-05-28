@@ -21,7 +21,7 @@ import tempfile, shutil
 class WrapUpdater:
     def __init__(self, dbdir='.'):
         self.dbdir = dbdir
-        self.db = wrapdb.WrapDatabase(self.dbdir)
+        self.db = wrapdb.WrapDatabase(self.dbdir, True)
 
     def close(self):
         self.db.close()
