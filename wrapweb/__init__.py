@@ -110,7 +110,7 @@ def github_pr():
         jsonout = jsonify({"output": "notok", "error": "Not a valid secret key"})
         jsonout.status_code = 403
         return jsonout
-    if d["action"] == "closed" and d["merged"] == True:
+    if d["action"] == "closed" and d["base"]["merged"] == True:
         project = d["repository"]["name"]
         branch = d["head"]["ref"]
         repo_url = d["head"]["clone_url"]
