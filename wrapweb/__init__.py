@@ -104,8 +104,8 @@ def github_pr():
         jsonout = jsonify({"output": "notok", "error": "Not a Pull Request hook"})
         jsonout.status_code = 500
         return jsonout
-    d = request.data
-    signature = "sha1=%s" % hmac.new(app.config["SECRET_KEY"].encode("utf-8"), d, hashlib.sha1).hexdigest()
+    signature = "sha1=%s" % hmac.new(app.config["SECRET_KEY"].encode("utf-8"), request.data, hashlib.sha1).hexdigest()
+    d = request.get_json()
     if request.headers.get("X-Hub-Signature") != signature:
         jsonout = jsonify({"output": "notok", "error": "Not a valid secret key"})
         jsonout.status_code = 403
