@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from flask import Flask, jsonify, request, Response, g
-import re, os
+import os
+import re
 # GitHub secret key support
 import hashlib
 import hmac
@@ -23,16 +24,16 @@ import wrapdb, wrapupdater
 app = Flask(__name__)
 app.config.from_object("wrapweb.default_config")
 
-db_directory = os.path.normpath(os.path.join(os.path.split(__file__)[0], '..'))
+db_directory = os.path.normpath(os.path.join(os.path.split(__file__)[0], ".."))
 
 def get_query_db():
-    db = getattr(g, '_query_database', None)
+    db = getattr(g, "_query_database", None)
     if db is None:
         db = g._query_database = wrapdb.WrapDatabase(db_directory)
     return db
 
 def get_update_db():
-    db = getattr(g, '_update_database', None)
+    db = getattr(g, "_update_database", None)
     if db is None:
         db = g._update_database = wrapupdater.WrapUpdater(db_directory)
     return db
@@ -40,16 +41,16 @@ def get_update_db():
 
 @app.teardown_appcontext
 def close_connection(exception):
-    db = getattr(g, '_query_database', None)
+    db = getattr(g, "_query_database", None)
     if db is not None:
         db.close()
-    db = getattr(g, '_update_database', None)
+    db = getattr(g, "_update_database", None)
     if db is not None:
         db.close()
 
 def get_projectlist():
     querydb = get_query_db()
-    res = {'output' : 'ok', 'projects' : querydb.name_search('')}
+    res = {"output" : "ok", "projects" : querydb.name_search("")}
     return jsonify(res)
 
 @app.route("/v1/projects", defaults={"project": None})
@@ -61,15 +62,15 @@ def get_project_info(project):
     matches = querydb.get_versions(project)
 
     if len(matches) == 0:
-        out = {"output": "notok", "error": 'No such project'}
+        out = {"output": "notok", "error": "No such project"}
         jsonout = jsonify(out)
         jsonout.status_code = 500
         return jsonout
 
     out = {"output": "ok", "versions": []}
     for i in matches:
-        e = {'branch': i[0], 'revision' : i[1]}
-        out['versions'].append(e)
+        e = {"branch": i[0], "revision" : i[1]}
+        out["versions"].append(e)
     jsonout = jsonify(out)
     jsonout.status_code = 200
     return jsonout
@@ -78,13 +79,13 @@ def get_project_info(project):
 @app.route("/v1/projects/<project>/<branch>/<revision>/get_zip")
 def get_wrap(project, branch, revision):
     querydb = get_query_db()
-    revision=int(revision)
+    revision = int(revision)
     if request.path.endswith("/get_wrap"):
         result = querydb.get_wrap(project, branch, revision)
-        mtype = 'text/plain'
+        mtype = "text/plain"
     else:
         result = querydb.get_zip(project, branch, revision)
-        mtype = 'application/zip'
+        mtype = "application/zip"
     if result is None:
         out = {"output": "notok", "error": "No such entry"}
         jsonout = jsonify(out)
