@@ -94,7 +94,7 @@ def get_wrap(project, branch, revision):
     else:
         return Response(result, mimetype=mtype)
 
-@app.route("/github-pr", methods=["POST"])
+@app.route("/github-hook", methods=["POST"])
 def github_pr():
     if not request.headers.get("User-Agent").startswith("GitHub-Hookshot/"):
         jsonout = jsonify({"output": "notok", "error": "Not a GitHub hook"})
