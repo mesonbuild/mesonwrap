@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Flask, jsonify, request, Response, g, render_template
+from flask import Flask, jsonify, request, make_response, g, render_template
 import json
 import os
 import re
@@ -84,16 +84,22 @@ def get_wrap(project, branch, revision):
     if request.path.endswith("/get_wrap"):
         result = querydb.get_wrap(project, branch, revision)
         mtype = "text/plain"
+        fname = ""
     else:
         result = querydb.get_zip(project, branch, revision)
         mtype = "application/zip"
+        fname = "%s-%s-%d-wrap.zip" % (project, branch, revision)
     if result is None:
         out = {"output": "notok", "error": "No such entry"}
         jsonout = jsonify(out)
         jsonout.status_code = 500
         return jsonout
     else:
-        return Response(result, mimetype=mtype)
+        resp = make_response(result)
+        resp.mimetype = mtype
+        if fname:
+            resp.headers["Content-Disposition"] = "attachment; filename=%s" % fname
+        return resp
 
 @app.route("/github-hook", methods=["POST"])
 def github_pr():
