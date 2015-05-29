@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+  <head>
+    {% if title %}
+    <title>{{ title }}</title>
+    {% else %}
+    <title>The Meson Build System - Wrap DB</title>
+    {% endif %}
+  </head>
+  <body>
+    {% block body %}{% endblock %}
+  </body>
+</html>

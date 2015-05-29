@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block body %}
+  <h2>Projects:</h2>
+  <br>
+  <ul>
+    {% for p in projects %}
+    <li><a href={{ url_for("project", project=p) }}>{{ p }}</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}

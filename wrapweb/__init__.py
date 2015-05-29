@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Flask, jsonify, request, Response, g
+from flask import Flask, jsonify, request, Response, g, render_template
+import json
 import os
 import re
 # GitHub secret key support
@@ -141,3 +142,22 @@ def github_pr():
     jsonout = jsonify(out)
     jsonout.status_code = httpcode
     return jsonout
+
+@app.route("/", methods=["GET"])
+def index():
+    j = response_to_json(get_projectlist())
+    return render_template(
+        "projects.html",
+        projects=j["projects"])
+
+@app.route("/projects/<project>", methods=["GET"])
+def project(project):
+    j = response_to_json(get_project_info(project))
+    return render_template(
+        "project.html",
+        title="%s - Wrap DB" % project,
+        project=project,
+        versions=j["versions"])
+
+def response_to_json(resp):
+    return json.loads(resp.get_data().decode("utf-8"))
