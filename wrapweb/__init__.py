@@ -76,11 +76,11 @@ def get_project_info(project):
     jsonout.status_code = 200
     return jsonout
 
-@app.route("/v1/projects/<project>/<branch>/<revision>/get_wrap")
-@app.route("/v1/projects/<project>/<branch>/<revision>/get_zip")
+@app.route("/v1/projects/<project>/<branch>/<int:revision>/get_wrap")
+@app.route("/v1/projects/<project>/<branch>/<int:revision>/get_zip")
 def get_wrap(project, branch, revision):
     querydb = get_query_db()
-    revision = int(revision)
+    revision = revision
     if request.path.endswith("/get_wrap"):
         result = querydb.get_wrap(project, branch, revision)
         mtype = "text/plain"
