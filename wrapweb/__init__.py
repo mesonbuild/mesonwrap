@@ -156,7 +156,7 @@ def index():
         "projects.html",
         projects=j["projects"])
 
-@app.route("/projects/<project>", methods=["GET"])
+@app.route("/<project>", methods=["GET"])
 def project(project):
     j = response_to_json(get_project_info(project))
     return render_template(
