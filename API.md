@@ -4,26 +4,18 @@ To make an API call, make a request to URL corresponding to given call (URLs are
 # URL
 
 ## List all projects
-`/projects`
+`/v1/projects`
 ```JSON
 {
   "output": "ok",
   "projects": [
-    {
-      "name": "zlib",
-      "versions": [
-        {
-          "branch": "1.2.8",
-          "revision": 1
-        }
-      ]
-    }
+    "sqlite"
   ]
 }
 ```
 
 ## Getting info about project
-`/projects/<project>`
+`/v1/projects/<project>`
 ```JSON
 {
   "name": "zlib",
@@ -38,11 +30,11 @@ To make an API call, make a request to URL corresponding to given call (URLs are
 ```
 
 ## Getting wrap file
-`/projects/<project>/get_wrap?branch="<branch>"&revision="<revision>"`
+`/v1/projects/<project>/<branch>/<revision>/get_wrap`
 
-Will return `.wrap` file. `revision` and `branch` are mandatory.
+Will return `.wrap` file.
 
 ## Getting zip
-`/projects/<project>/get_zip?branch="<branch>"&revision="<revision>"`
+`/v1/projects/<project>/<branch>/<revision>/get_zip`
 
-Will return zip file with all needed content for meson. `revision` and `branch` are mandatory.
+Will return zip file with all needed content for meson.
