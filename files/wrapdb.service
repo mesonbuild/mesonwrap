@@ -1,0 +1,12 @@
+[Unit]
+Description=uWSGI instance to serve Wrap DB
+After=network.target
+
+[Service]
+User=nginx
+Group=nginx
+WorkingDirectory=/var/www/wrapweb
+ExecStart=/usr/sbin/uwsgi --ini files/wrapdb.ini
+
+[Install]
+WantedBy=multi-user.target
