@@ -113,7 +113,7 @@ def github_hook():
     else:
         APP.logger.warning(flask.request.data)
         out = {"output": "notok", "error": "We got hook which is not merged pull request"}
-        httpcode = 500
+        httpcode = 417
 
     jsonout = flask.jsonify(out)
     jsonout.status_code = httpcode
