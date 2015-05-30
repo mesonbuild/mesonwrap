@@ -90,7 +90,7 @@ def github_hook():
     base = d["pull_request"]["base"]
     if not base["repo"]["full_name"].startswith("mesonbuild/"):
         jsonout = flask.jsonify({"output": "notok", "error": "Not a mesonbuild project"})
-        jsonout.status_code = 500
+        jsonout.status_code = 406
         return jsonout
     if d["action"] == "closed" and d["pull_request"]["merged"] == True:
         project = base["repo"]["name"]
