@@ -98,7 +98,7 @@ def github_hook():
         repo_url = base["repo"]["clone_url"]
         if branch == "master":
             out = {"output": "notok", "error": "No bananas for you"}
-            httpcode = 500
+            httpcode = 406
         else:
             out = {"output": "ok"}
             httpcode = 200
