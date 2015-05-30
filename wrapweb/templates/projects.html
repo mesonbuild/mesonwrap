@@ -1,10 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
-  <h2>Projects</h2>
-  <br>
-  <ul>
-    {% for p in projects %}
-    <li><a href={{ url_for("project", project=p) }}>{{ p }}</a></li>
-    {% endfor %}
-  </ul>
+<h1>Projects</h1>
+<div class="list-group">
+  {% for p in projects %}
+  <a href="{{ url_for('project', project=p) }}" class="list-group-item">{{ p }}</a>
+  {% endfor %}
+</div>
 {% endblock %}

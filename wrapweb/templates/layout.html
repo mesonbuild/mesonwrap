@@ -4,6 +4,20 @@
     <meta charset="utf-8">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    body {
+      padding-top: 60px;
+    }
+    @media (max-width: 979px) {
+      body {
+        padding-top: 0px;
+      }
+    }
+    </style>
+
     {% if title %}
     <title>{{ title }}</title>
     {% else %}
@@ -11,6 +25,28 @@
     {% endif %}
   </head>
   <body>
-    {% block body %}{% endblock %}
+    <div class="container">
+      {% block navbar %}
+      <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/">Wrap DB</a>
+          </div>
+          <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="#">Projects</a></li>
+              <li><a href="http://mesonbuild.com">The Meson Build System</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      {% endblock %}
+      <div class="container">
+        {% block body %}{% endblock %}
+      </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
   </body>
 </html>
