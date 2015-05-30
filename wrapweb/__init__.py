@@ -102,7 +102,7 @@ def get_wrap(project, branch, revision):
         return resp
 
 @app.route("/github-hook", methods=["POST"])
-def github_pr():
+def github_hook():
     if not request.headers.get("User-Agent").startswith("GitHub-Hookshot/"):
         jsonout = jsonify({"output": "notok", "error": "Not a GitHub hook"})
         jsonout.status_code = 500
