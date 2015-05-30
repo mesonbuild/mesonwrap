@@ -79,7 +79,7 @@ def github_hook():
         return jsonout
     if flask.request.headers.get("X-Github-Event") != "pull_request":
         jsonout = flask.jsonify({"output": "notok", "error": "Not a Pull Request hook"})
-        jsonout.status_code = 500
+        jsonout.status_code = 405
         return jsonout
     signature = "sha1=%s" % hmac.new(APP.config["SECRET_KEY"].encode("utf-8"), flask.request.data, hashlib.sha1).hexdigest()
     d = flask.request.get_json()
