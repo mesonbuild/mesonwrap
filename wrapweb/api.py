@@ -75,7 +75,7 @@ def get_wrap(project, branch, revision):
 def github_hook():
     if not flask.request.headers.get("User-Agent").startswith("GitHub-Hookshot/"):
         jsonout = flask.jsonify({"output": "notok", "error": "Not a GitHub hook"})
-        jsonout.status_code = 500
+        jsonout.status_code = 401
         return jsonout
     if flask.request.headers.get("X-Github-Event") != "pull_request":
         jsonout = flask.jsonify({"output": "notok", "error": "Not a Pull Request hook"})
