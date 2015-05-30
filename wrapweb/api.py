@@ -85,7 +85,7 @@ def github_hook():
     d = flask.request.get_json()
     if flask.request.headers.get("X-Hub-Signature") != signature:
         jsonout = flask.jsonify({"output": "notok", "error": "Not a valid secret key"})
-        jsonout.status_code = 403
+        jsonout.status_code = 401
         return jsonout
     base = d["pull_request"]["base"]
     if not base["repo"]["full_name"].startswith("mesonbuild/"):
