@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-#
 # Copyright 2015 The Meson development team
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from flask import render_template
 
+import wrapweb.api as api
+from wrapweb import response_to_json
 from wrapweb.app import APP
 
-if __name__ == "__main__":
-    APP.debug = True
-    APP.run()
+@APP.route("/", methods=["GET"])
+def index():
+    j = response_to_json(api.get_projectlist())
+    return render_template(
+        "projects.html",
+        projects=j["projects"])
+
+@APP.route("/<project>", methods=["GET"])
+def project(project):
+    j = response_to_json(api.get_project_info(project))
+    return render_template(
+        "project.html",
+        title="%s - Wrap DB" % project,
+        project=project,
+        versions=j["versions"])
