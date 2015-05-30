@@ -7,16 +7,7 @@
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-    body {
-      padding-top: 60px;
-    }
-    @media (max-width: 979px) {
-      body {
-        padding-top: 0px;
-      }
-    }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     {% if title %}
     <title>{{ title }}</title>
@@ -45,6 +36,12 @@
         {% block body %}{% endblock %}
       </div>
     </div>
+
+    <footer class="footer">
+      <div class="panel-footer text-center">
+        Wrap DB: <a href="https://github.com/mesonbuild/wrapweb">sources</a> -- <a href="https://github.com/mesonbuild/wrapweb/issues">issue tracker</a>. © 2015 The Meson development team, <a href="https://blogs.gnome.org/ignatenko">ignatenkobrain<a/>.
+      </div>
+    </footer>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
