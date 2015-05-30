@@ -14,7 +14,5 @@
 
 import json
 
-__api_version__ = "1.0"
-
 def response_to_json(resp):
     return json.loads(resp.get_data().decode("utf-8"))
