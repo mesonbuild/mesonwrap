@@ -31,4 +31,4 @@ def project(project):
         "project.html",
         title="%s - Wrap DB" % project,
         project=project,
-        versions=j["versions"])
+        resp=j)

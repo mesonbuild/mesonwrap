@@ -1,19 +1,25 @@
 {% extends "layout.html" %}
 {% block body %}
-<h1>Available versions of {{ project }}</h1>
+{% if resp["output"] == "ok" %}
+  <h1>Available versions of {{ project }}</h1>
 
-<table class="table table-hover table-bordered table-condensed">
-  <tr>
-    <th>Branch</th>
-    <th>Revision</th>
-    <th>Download wrap</th>
-  </tr>
-  {% for p in versions %}
-  <tr>
-    <td>{{ p["branch"] }}</td>
-    <td>{{ p["revision"] }}</td>
-    <td><a href={{ url_for("get_wrap", project=project, branch=p["branch"], revision=p["revision"]).replace("get_zip", "get_wrap") }}>Download</a></td>
-  </tr>
-  {% endfor %}
-</table>
+  <table class="table table-hover table-bordered table-condensed">
+    <tr>
+      <th>Branch</th>
+      <th>Revision</th>
+      <th>Download wrap</th>
+    </tr>
+    {% for p in resp["versions"] %}
+    <tr>
+      <td>{{ p["branch"] }}</td>
+      <td>{{ p["revision"] }}</td>
+      <td><a href={{ url_for("get_wrap", project=project, branch=p["branch"], revision=p["revision"]).replace("get_zip", "get_wrap") }}>Download</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <h1>Something went wrong</h1>
+
+  {{ resp["error"] }}
+{% endif %}
 {% endblock %}
