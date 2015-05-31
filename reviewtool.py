@@ -15,8 +15,9 @@
 # limitations under the License.
 
 import sys, os
-import urllib.request, json
+import urllib.request, json, hashlib
 import tempfile, subprocess
+import configparser
 
 class Reviewer:
     def __init__(self, project):
@@ -39,14 +40,23 @@ class Reviewer:
         base_git = self.values['base']['repo']['clone_url']
         head_git = 'https://github.com/%s/%s.git' % (self.values['head']['user']['login'],
                                                      self.values['base']['repo']['name'])
-        subprocess.check_call(['git', 'clone', '-b', branch, base_git, base_dir])
-        subprocess.check_call(['git', 'clone', '-b', branch, head_git, head_dir])
+        subprocess.check_call(['git', 'clone', '-b', branch, base_git, base_dir],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.check_call(['git', 'clone', '-b', branch, head_git, head_dir],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def review_int(self, base_dir, head_dir):
         #print(json.dumps(self.values, sort_keys=True, indent=4))
         project = self.values['base']['repo']['name']
         branch = self.values['base']['ref']
         self.clone_repos(base_dir, head_dir)
+        rval = self.check_basics(base_dir, head_dir, project, branch)
+        if rval != 0:
+            return rval
+        rval = self.check_download(os.path.join(head_dir, 'upstream.wrap'))
+        return rval
+
+    def check_basics(self, base_dir, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
         if branch != 'master':
             print('Target branch is not master: YES')
@@ -64,10 +74,35 @@ class Reviewer:
         else:
             print('Has readme.txt: NO')
             return 1
-        if os.path.isfile(os.path.join(head_dir, 'upstream.wrap')):
+        upwrap = os.path.join(head_dir, 'upstream.wrap')
+        if os.path.isfile(upwrap):
             print('Has upstream.wrap: YES')
         else:
             print('Has upstream.wrap: NO')
+            return 1
+        return 0
+
+    def check_download(self, upwrap):
+        config = configparser.ConfigParser()
+        config.read(upwrap)
+        dl_url = config['wrap-file']['source_url']
+        expected_hash = config['wrap-file']['source_hash']
+        try:
+            with urllib.request.urlopen(dl_url) as u:
+                bytes = u.read()
+        except Exception as e:
+            print('Download url works: NO\n  ' + str(e))
+            return 1
+        print('Download url works: YES')
+        h = hashlib.sha256()
+        h.update(bytes)
+        calculated_hash = h.hexdigest()
+        if calculated_hash == expected_hash:
+            print('Hash matches: YES')
+        else:
+            print('Hash matches: NO')
+            print(' expected:', expected_hash)
+            print('      got:', calculated_hash)
             return 1
         return 0
 
