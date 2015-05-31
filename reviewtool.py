@@ -54,7 +54,26 @@ class Reviewer:
         if rval != 0:
             return rval
         rval = self.check_download(os.path.join(head_dir, 'upstream.wrap'))
+        rval = self.check_files(head_dir)
         return rval
+
+    def check_files(self, head_dir):
+        found = False
+        permitted_files = ['upstream.wrap', 'meson.build', 'readme.txt',
+                           'meson_options.txt', '.gitignore']
+        for root, dirs, files in os.walk(head_dir):
+            if '.git' in dirs:
+                dirs.remove('.git')
+            for fname in files:
+                if fname not in permitted_files:
+                    if not found:
+                        print('Non-buildsystem files found:')
+                    found = True
+                    abs_name = os.path.join(root, fname)
+                    rel_name = abs_name[len(head_dir)+1:]
+                    print(' ', rel_name)
+        if not found:
+            print('Repo contains only buildsystem files: YES')
 
     def check_basics(self, base_dir, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
