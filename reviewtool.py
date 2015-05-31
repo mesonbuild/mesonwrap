@@ -99,6 +99,11 @@ class Reviewer:
         else:
             print('Has upstream.wrap: NO')
             return 1
+        if os.path.isfile(os.path.join(head_dir, 'meson.build')):
+            print('Has toplevel meson.build: YES')
+        else:
+            print('Has toplevel meson.build: NO')
+            return 1
         return 0
 
     def check_download(self, upwrap):
