@@ -48,7 +48,7 @@ class WrapDatabase:
 
     def get_versions(self, project):
         c = self.conn.cursor()
-        c.execute('''SELECT branch, revision FROM wraps WHERE project == ?;''', (project,))
+        c.execute('''SELECT branch, revision FROM wraps WHERE project == ? ORDER BY branch, revision;''', (project,))
         return c.fetchall()
 
     def get_wrap(self, project, branch, revision):
