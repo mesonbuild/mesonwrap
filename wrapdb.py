@@ -20,14 +20,13 @@ import os, sys
 class WrapDatabase:
     def __init__(self, dirname, readwrite=False):
         self.fname = os.path.join(dirname, 'wrapdb.sqlite')
-        self.uri = 'file:' + self.fname
-        if readwrite:
-            self.uri = self.uri + '?mode=rw'
-        else:
-            self.uri = self.uri + '?mode=ro'
         if not os.path.exists(self.fname):
             self.create_db()
-        self.conn = sqlite3.connect(self.uri, uri=True)
+        if readwrite:
+            self.conn = sqlite3.connect(self.fname)
+        else:
+            dburi = 'file:' + self.fname + '?mode=ro'
+            self.conn = sqlite3.connect(dburi, uri=True)
 
     def close(self):
         self.conn.close()
