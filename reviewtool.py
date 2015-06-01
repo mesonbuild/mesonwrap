@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys, os
+import sys, os, re
 import urllib.request, json, hashlib
 import tempfile, subprocess
 import configparser
@@ -77,6 +77,17 @@ class Reviewer:
 
     def check_basics(self, base_dir, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
+
+        if re.fullmatch('[a-z0-9._]+', project):
+            print('Repo name valid: YES')
+        else:
+            print('Repo name valid: NO')
+            return 1
+        if re.fullmatch('[a-z0-9._]+', branch):
+            print('Branch name valid: YES')
+        else:
+            print('Branch name valid: NO')
+            return 1
         if branch != 'master':
             print('Target branch is not master: YES')
         else:
