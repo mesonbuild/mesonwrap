@@ -107,8 +107,8 @@ def github_hook():
             # until branching is finished.
             try:
                 db_updater.update_db(project, repo_url, branch)
-            except Exception:
-                out = {"output": "notok", "error": "Wrap generation failed."}
+            except Exception as e:
+                out = {"output": "notok", "error": "Wrap generation failed. %s" % e}
                 httpcode = 500
     else:
         APP.logger.warning(flask.request.data)
