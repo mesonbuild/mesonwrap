@@ -1,23 +1,26 @@
 #!/usr/bin/env python3
-
+#
 # Copyright 2015 The Meson development team
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys, os
-import urllib.request, json, hashlib
-import tempfile, subprocess
 import configparser
+import hashlib
+import os
+import request
+import subprocess
+import sys
+import tempfile
 
 class Reviewer:
     def __init__(self, project):
@@ -26,9 +29,7 @@ class Reviewer:
 
     def parse_url(self, project, pull_id):
         data_url = 'https://api.github.com/repos/mesonbuild/%s/pulls/%d' % (project, pull_id)
-        with urllib.request.urlopen(data_url) as u:
-            text = u.read().decode()
-            self.values = json.loads(text)
+        self.values = requests.get(data_url).json()
 
     def review(self):
         with tempfile.TemporaryDirectory() as base_dir:
@@ -46,7 +47,6 @@ class Reviewer:
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def review_int(self, base_dir, head_dir):
-        #print(json.dumps(self.values, sort_keys=True, indent=4))
         project = self.values['base']['repo']['name']
         branch = self.values['base']['ref']
         self.clone_repos(base_dir, head_dir)
@@ -111,15 +111,13 @@ class Reviewer:
         config.read(upwrap)
         dl_url = config['wrap-file']['source_url']
         expected_hash = config['wrap-file']['source_hash']
-        try:
-            with urllib.request.urlopen(dl_url) as u:
-                bytes = u.read()
-        except Exception as e:
-            print('Download url works: NO\n  ' + str(e))
+        cnt = requests.get(dl_url)
+        if cnt.status_code != requests.codes.ok:
+            print('Download url works: NO\n  %s' % cnt.text)
             return 1
         print('Download url works: YES')
         h = hashlib.sha256()
-        h.update(bytes)
+        h.update(cnt.content)
         calculated_hash = h.hexdigest()
         if calculated_hash == expected_hash:
             print('Hash matches: YES')
