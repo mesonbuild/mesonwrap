@@ -21,7 +21,9 @@ class WrapDatabase:
     def __init__(self, dirname, readwrite=False):
         self.fname = os.path.join(dirname, 'wrapdb.sqlite')
         self.uri = 'file:' + self.fname
-        if not readwrite:
+        if readwrite:
+            self.uri = self.uri + '?mode=rw'
+        else:
             self.uri = self.uri + '?mode=ro'
         if not os.path.exists(self.fname):
             self.create_db()
