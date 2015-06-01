@@ -20,8 +20,7 @@ import tempfile, subprocess
 import configparser
 
 class Reviewer:
-    def __init__(self, project):
-        pull_id = 2
+    def __init__(self, project, pull_id):
         self.parse_url(project, pull_id)
 
     def parse_url(self, project, pull_id):
@@ -53,9 +52,37 @@ class Reviewer:
         rval = self.check_basics(base_dir, head_dir, project, branch)
         if rval != 0:
             return rval
+        rval = self.check_wrapformat(os.path.join(head_dir, 'upstream.wrap'))
         rval = self.check_download(os.path.join(head_dir, 'upstream.wrap'))
+        if rval != 0:
+            return rval
         rval = self.check_files(head_dir)
         return rval
+
+    def check_wrapformat(self, upwrap):
+        config = configparser.ConfigParser()
+        config.read(upwrap)
+        if 'wrap-file' not in config:
+            print('Has wrap-file section: NO')
+            return 1
+        print('Has wrap-file section: YES')
+        sec = config['wrap-file']
+        if 'directory' not in sec:
+            print('Section has subdirectory: NO')
+            return 1
+        print('Section has subdirectory: YES')
+        if 'source_url' not in sec:
+            print('Section has source_url: NO')
+            return 1
+        print('Section has source_url: YES')
+        if 'source_filename' not in sec:
+            print('Section has source_filename: NO')
+            return 1
+        print('Section has source_filename: YES')
+        if 'source_hash' not in sec:
+            print('Section has source_hash: NO')
+            return 1
+        print('Section has source_hash: YES')
 
     def check_files(self, head_dir):
         found = False
@@ -145,5 +172,6 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         print(sys.argv[0], '<project name>')
         sys.exit(1)
-    r = Reviewer(sys.argv[1])
+    pull_id = 2
+    r = Reviewer(sys.argv[1], pull_id)
     sys.exit(r.review())
