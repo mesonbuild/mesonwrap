@@ -53,6 +53,8 @@ class Reviewer:
         if rval != 0:
             return rval
         rval = self.check_wrapformat(os.path.join(head_dir, 'upstream.wrap'))
+        if rval != 0:
+            return rval
         rval = self.check_download(os.path.join(head_dir, 'upstream.wrap'))
         if rval != 0:
             return rval
@@ -68,7 +70,7 @@ class Reviewer:
         print('Has wrap-file section: YES')
         sec = config['wrap-file']
         if 'directory' not in sec:
-            print('Section has subdirectory: NO')
+            print('Section has directory: NO')
             return 1
         print('Section has subdirectory: YES')
         if 'source_url' not in sec:
