@@ -25,7 +25,6 @@ import subprocess
 import sys
 import urllib.request
 
-
 upstream_templ = '''[wrap-file]
 directory = %s
 

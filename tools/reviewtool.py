@@ -52,13 +52,13 @@ class Reviewer:
         rval = self.check_basics(base_dir, head_dir, project, branch)
         if rval != 0:
             return rval
+        rval = self.check_files(head_dir)
+        if rval != 0:
+            return rval
         rval = self.check_wrapformat(os.path.join(head_dir, 'upstream.wrap'))
         if rval != 0:
             return rval
         rval = self.check_download(os.path.join(head_dir, 'upstream.wrap'))
-        if rval != 0:
-            return rval
-        rval = self.check_files(head_dir)
         return rval
 
     def check_wrapformat(self, upwrap):
@@ -85,6 +85,7 @@ class Reviewer:
             print('Section has source_hash: NO')
             return 1
         print('Section has source_hash: YES')
+        return 0
 
     def check_files(self, head_dir):
         found = False
@@ -103,6 +104,7 @@ class Reviewer:
                     print(' ', rel_name)
         if not found:
             print('Repo contains only buildsystem files: YES')
+        return 0
 
     def check_basics(self, base_dir, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
@@ -171,9 +173,9 @@ class Reviewer:
         return 0
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print(sys.argv[0], '<project name>')
+    if len(sys.argv) != 3:
+        print(sys.argv[0], '<project name> <mr number>')
         sys.exit(1)
-    pull_id = 2
+    pull_id = int(sys.argv[2])
     r = Reviewer(sys.argv[1], pull_id)
     sys.exit(r.review())
