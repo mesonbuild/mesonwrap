@@ -1,3 +1,5 @@
+%global __python %{__python3}
+
 Name:          meson-wrapweb
 Version:       0.0.1
 Release:       1%{?dist}
@@ -8,6 +10,7 @@ URL:           https://github.com/mesonbuild/wrapweb
 Source0:       https://github.com/mesonbuild/wrapweb/archive/%{version}/%{name}-%{version}.tar.gz
 
 BuildArch:     noarch
+BuildRequires: python3-devel
 Requires:      python3-flask
 Requires:      nginx
 Requires:      uwsgi uwsgi-plugin-python3
