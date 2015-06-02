@@ -18,7 +18,12 @@
 used as a basis for a Wrap db entry. Also calculates a basic
 upstream.wrap."""
 
-import os, sys, hashlib, urllib.request, subprocess, shutil
+import hashlib
+import os
+import shutil
+import subprocess
+import sys
+import urllib.request
 
 
 upstream_templ = '''[wrap-file]
