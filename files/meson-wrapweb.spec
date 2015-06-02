@@ -40,5 +40,5 @@ install -Dpm 0644 files/wrapdb.ini %{buildroot}%{_sysconfdir}/uwsgi.d/wrapdb.ini
 %config %attr(-,uwsgi,uwsgi)%{_sysconfdir}/uwsgi.d/wrapdb.ini
 
 %changelog
-* Sat May 30 2015  0.0.1-1
+* Sat May 30 2015 Igor Gnatenko <i.gnatenko.brain@gmail.com> 0.0.1-1
 - Initial package
