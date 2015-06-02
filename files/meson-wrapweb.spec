@@ -37,10 +37,10 @@ install -Dpm 0644 files/wrapdb.ini %{buildroot}%{_sysconfdir}/uwsgi.d/wrapdb.ini
 %files
 %license COPYING
 %doc README.md
-%config %{_sysconfdir}/wrapdb.cfg
-%config %{_sysconfdir}/nginx/conf.d/wrapdb.conf
+%config(noreplace) %{_sysconfdir}/wrapdb.cfg
+%config(noreplace) %{_sysconfdir}/nginx/conf.d/wrapdb.conf
 %attr(-,uwsgi,uwsgi)%{_localstatedir}/www/wrapweb/
-%config %attr(-,uwsgi,uwsgi)%{_sysconfdir}/uwsgi.d/wrapdb.ini
+%config(noreplace) %attr(-,uwsgi,uwsgi)%{_sysconfdir}/uwsgi.d/wrapdb.ini
 
 %changelog
 * Sat May 30 2015 Igor Gnatenko <i.gnatenko.brain@gmail.com> 0.0.1-1
