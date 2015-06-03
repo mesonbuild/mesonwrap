@@ -19,6 +19,8 @@ import hmac
 import wrapweb.db as db
 from wrapweb.app import APP
 
+RESTRICTED_PROJECTS = ["mesonbuild/meson", "mesonbuild/wrapweb"]
+
 def get_projectlist():
     querydb = db.get_query_db()
     res = {"output" : "ok", "projects" : querydb.name_search("")}
@@ -90,6 +92,11 @@ def github_hook():
     base = d["pull_request"]["base"]
     if not base["repo"]["full_name"].startswith("mesonbuild/"):
         jsonout = flask.jsonify({"output": "notok", "error": "Not a mesonbuild project"})
+        jsonout.status_code = 406
+        return jsonout
+    if base["repo"]["full_name"] in RESTRICTED_PROJECTS:
+        jsonout = flask.jsonify({"output": "notok",
+                                 "error": "We don't run hook for restricted project names"})
         jsonout.status_code = 406
         return jsonout
     if d["action"] == "closed" and d["pull_request"]["merged"] == True:
