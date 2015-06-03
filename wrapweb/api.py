@@ -77,16 +77,16 @@ def github_hook():
         jsonout = flask.jsonify({"output": "notok", "error": "Not a GitHub hook"})
         jsonout.status_code = 401
         return jsonout
-    if flask.request.headers.get("X-Github-Event") != "pull_request":
-        jsonout = flask.jsonify({"output": "notok", "error": "Not a Pull Request hook"})
-        jsonout.status_code = 405
-        return jsonout
     signature = "sha1=%s" % hmac.new(APP.config["SECRET_KEY"].encode("utf-8"), flask.request.data, hashlib.sha1).hexdigest()
-    d = flask.request.get_json()
     if flask.request.headers.get("X-Hub-Signature") != signature:
         jsonout = flask.jsonify({"output": "notok", "error": "Not a valid secret key"})
         jsonout.status_code = 401
         return jsonout
+    if flask.request.headers.get("X-Github-Event") != "pull_request":
+        jsonout = flask.jsonify({"output": "notok", "error": "Not a Pull Request hook"})
+        jsonout.status_code = 405
+        return jsonout
+    d = flask.request.get_json()
     base = d["pull_request"]["base"]
     if not base["repo"]["full_name"].startswith("mesonbuild/"):
         jsonout = flask.jsonify({"output": "notok", "error": "Not a mesonbuild project"})
