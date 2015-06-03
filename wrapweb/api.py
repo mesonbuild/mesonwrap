@@ -79,7 +79,8 @@ def github_hook():
         jsonout = flask.jsonify({"output": "notok", "error": "Not a GitHub hook"})
         jsonout.status_code = 401
         return jsonout
-    signature = "sha1=%s" % hmac.new(APP.config["SECRET_KEY"].encode("utf-8"), flask.request.data, hashlib.sha1).hexdigest()
+    signature = "sha1=%s" % hmac.new(APP.config["SECRET_KEY"].encode("utf-8"),
+                                     flask.request.data, hashlib.sha1).hexdigest()
     if flask.request.headers.get("X-Hub-Signature") != signature:
         jsonout = flask.jsonify({"output": "notok", "error": "Not a valid secret key"})
         jsonout.status_code = 401
