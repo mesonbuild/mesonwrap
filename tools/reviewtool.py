@@ -65,26 +65,26 @@ class Reviewer:
         config = configparser.ConfigParser()
         config.read(upwrap)
         if 'wrap-file' not in config:
-            print('Has wrap-file section: NO')
+            print('Has wrap-file section: \u2612')
             return 1
-        print('Has wrap-file section: YES')
+        print('Has wrap-file section: \u2611')
         sec = config['wrap-file']
         if 'directory' not in sec:
-            print('Section has directory: NO')
+            print('Section has directory: \u2612')
             return 1
-        print('Section has subdirectory: YES')
+        print('Section has subdirectory: \u2611')
         if 'source_url' not in sec:
-            print('Section has source_url: NO')
+            print('Section has source_url: \u2612')
             return 1
-        print('Section has source_url: YES')
+        print('Section has source_url: \u2611')
         if 'source_filename' not in sec:
-            print('Section has source_filename: NO')
+            print('Section has source_filename: \u2612')
             return 1
-        print('Section has source_filename: YES')
+        print('Section has source_filename: \u2611')
         if 'source_hash' not in sec:
-            print('Section has source_hash: NO')
+            print('Section has source_hash: \u2612')
             return 1
-        print('Section has source_hash: YES')
+        print('Section has source_hash: \u2611')
         return 0
 
     def check_files(self, head_dir):
@@ -103,48 +103,48 @@ class Reviewer:
                     rel_name = abs_name[len(head_dir)+1:]
                     print(' ', rel_name)
         if not found:
-            print('Repo contains only buildsystem files: YES')
+            print('Repo contains only buildsystem files: \u2611')
         return 0
 
     def check_basics(self, base_dir, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
 
         if re.fullmatch('[a-z0-9._]+', project):
-            print('Repo name valid: YES')
+            print('Repo name valid: \u2611')
         else:
-            print('Repo name valid: NO')
+            print('Repo name valid: \u2612')
             return 1
         if re.fullmatch('[a-z0-9._]+', branch):
-            print('Branch name valid: YES')
+            print('Branch name valid: \u2611')
         else:
-            print('Branch name valid: NO')
+            print('Branch name valid: \u2612')
             return 1
         if branch != 'master':
-            print('Target branch is not master: YES')
+            print('Target branch is not master: \u2611')
         else:
-            print('Target branch is not master: NO')
+            print('Target branch is not master: \u2612')
             return 1
         output = subprocess.check_output(['git', 'tag'], cwd=base_dir).decode()
         if 'commit_zero' in output:
-            print('Has commit_zero: YES')
+            print('Has commit_zero: \u2611')
         else:
-            print('Has commit_zero: NO')
+            print('Has commit_zero: \u2612')
             return 1
         if os.path.isfile(os.path.join(head_dir, 'readme.txt')):
-            print('Has readme.txt: YES')
+            print('Has readme.txt: \u2611')
         else:
-            print('Has readme.txt: NO')
+            print('Has readme.txt: \u2612')
             return 1
         upwrap = os.path.join(head_dir, 'upstream.wrap')
         if os.path.isfile(upwrap):
-            print('Has upstream.wrap: YES')
+            print('Has upstream.wrap: \u2611')
         else:
-            print('Has upstream.wrap: NO')
+            print('Has upstream.wrap: \u2612')
             return 1
         if os.path.isfile(os.path.join(head_dir, 'meson.build')):
-            print('Has toplevel meson.build: YES')
+            print('Has toplevel meson.build: \u2611')
         else:
-            print('Has toplevel meson.build: NO')
+            print('Has toplevel meson.build: \u2612')
             return 1
         return 0
 
@@ -157,16 +157,16 @@ class Reviewer:
             with urllib.request.urlopen(dl_url) as u:
                 bytes = u.read()
         except Exception as e:
-            print('Download url works: NO\n  ' + str(e))
+            print('Download url works: \u2612\n  ' + str(e))
             return 1
-        print('Download url works: YES')
+        print('Download url works: \u2611')
         h = hashlib.sha256()
         h.update(bytes)
         calculated_hash = h.hexdigest()
         if calculated_hash == expected_hash:
-            print('Hash matches: YES')
+            print('Hash matches: \u2611')
         else:
-            print('Hash matches: NO')
+            print('Hash matches: \u2612')
             print(' expected:', expected_hash)
             print('      got:', calculated_hash)
             return 1
@@ -179,3 +179,4 @@ if __name__ == '__main__':
     pull_id = int(sys.argv[2])
     r = Reviewer(sys.argv[1], pull_id)
     sys.exit(r.review())
+
