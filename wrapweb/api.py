@@ -19,7 +19,7 @@ import hmac
 import wrapweb.db as db
 from wrapweb.app import APP
 
-RESTRICTED_PROJECTS = ["mesonbuild/meson", "mesonbuild/wrapweb"]
+RESTRICTED_PROJECTS = ["mesonbuild/meson", "mesonbuild/wrapweb", "mesonbuild/meson-ci"]
 
 def get_projectlist():
     querydb = db.get_query_db()
