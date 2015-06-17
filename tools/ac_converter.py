@@ -23,6 +23,8 @@ with #mesondefine and run this.
 
 import sys
 
+print('check_headers = [')
+
 for line in open(sys.argv[1]):
     line = line.strip()
     if line.startswith('#mesondefine') and \
@@ -31,4 +33,43 @@ for line in open(sys.argv[1]):
         tarr = token.split('_')[1:-1]
         tarr = [x.lower() for x in tarr]
         hname = '/'.join(tarr) + '.h'
-        print("  ['%s', '%s']," % (hname, token))
+        print("  ['%s', '%s']," % (token, hname))
+print(']\n')
+
+print('''foreach h : check_headers
+  if cc.has_header(h.get(1))
+    cdata.set(h.get(0), 1)
+  endif
+endforeach
+''')
+
+# Add stuff here as it is encountered.
+function_data = \
+    {'HAVE_FEENABLEEXCEPT' : ('feenableexcept', 'fenv.h'),
+     'HAVE_MMAP' : ('mmap', 'sys/mman.h'),
+     'HAVE_GETPAGESIZE' : ('getpagesize', 'unistd.h'),
+     'HAVE_GETISAX' : ('getisax', 'sys/auxv.h'),
+     'HAVE_GETTIMEOFDAY' : ('gettimeofday', 'sys/time.h'),
+     'HAVE_MPROTECT' : ('mprotect', 'sys/mman.h'),
+     'HAVE_POSIX_MEMALIGN' : ('posix_memalign', 'stdlib.h'),
+     'HAVE_SIGACTION' : ('sigaction', 'signal.h'),
+     
+     }
+
+print('check_functions = [')
+
+for line in open(sys.argv[1]):
+    try:
+        token = line.split()[1]
+        fdata = function_data[token]
+        print("  ['%s', '%s', '#include<%s>']," % (token, fdata[0], fdata[1]))
+    except Exception:
+        pass
+print(']\n')
+
+print('''foreach f : check_functions
+  if cc.has_function(f.get(1), prefix : f.get(2))
+    cdata.set(f.get(0), 1)
+  endif
+endforeach
+''')
