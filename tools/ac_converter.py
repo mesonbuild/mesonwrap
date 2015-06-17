@@ -46,6 +46,8 @@ endforeach
 # Add stuff here as it is encountered.
 function_data = \
     {'HAVE_FEENABLEEXCEPT' : ('feenableexcept', 'fenv.h'),
+     'HAVE_FECLEAREXCEPT' : ('feclearexcept', 'fenv.h'),
+     'HAVE_FEDISABLEEXCEPT' : ('fedisableexcept', 'fenv.h'),
      'HAVE_MMAP' : ('mmap', 'sys/mman.h'),
      'HAVE_GETPAGESIZE' : ('getpagesize', 'unistd.h'),
      'HAVE_GETISAX' : ('getisax', 'sys/auxv.h'),
@@ -53,6 +55,19 @@ function_data = \
      'HAVE_MPROTECT' : ('mprotect', 'sys/mman.h'),
      'HAVE_POSIX_MEMALIGN' : ('posix_memalign', 'stdlib.h'),
      'HAVE_SIGACTION' : ('sigaction', 'signal.h'),
+     'HAVE_ALARM' : ('alarm', 'unistd.h'),
+     'HAVE_CLOCK_GETTIME' : ('clock_gettime', 'time.h'),
+     'HAVE_CTIME_R' : ('ctime_r', 'time.h'),
+     'HAVE_DRAND48' : ('drand48', 'stdlib.h'),
+     'HAVE_FLOCKFILE' : ('flockfile', 'stdio.h'),
+     'HAVE_FORK' : ('fork', 'unistd.h'),
+     'HAVE_FUNLOCKFILE' : ('funlockfile', 'stdio.h'),
+     'HAVE_GETLINE' : ('getline', 'stdio.h'),
+     'HAVE_LINK' : ('link', 'unistd.h'),
+     'HAVE_RAISE' : ('raise', 'signal.h'),
+     'HAVE_STRNDUP' : ('strndup', 'string.h'),
+     'HAVE_SCHED_GETAFFINITY' : ('sched_getaffinity', 'sched.h'),
+     'HAVE_WAITPID' : ('waitpid', 'sys/wait.h'),
      
      }
 
