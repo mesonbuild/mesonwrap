@@ -32,5 +32,6 @@ def close_connection(exception):
         db.close()
 
 # Finalize the import of other controllers
+# pylint: disable=unused-import
 import wrapweb.api
 import wrapweb.ui
