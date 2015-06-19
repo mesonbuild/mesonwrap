@@ -47,10 +47,14 @@ class WrapDatabase:
         c.execute('''SELECT DISTINCT project FROM wraps WHERE project LIKE ? ORDER BY project;''', (text+'%',))
         return [x[0] for x in c.fetchall()]
 
-    def get_versions(self, project):
+    def get_versions(self, project, latest=False):
         c = self.conn.cursor()
-        c.execute('''SELECT branch, revision FROM wraps WHERE project == ? ORDER BY branch, revision;''', (project,))
-        return c.fetchall()
+        if latest:
+            c.execute('''SELECT max(branch), max(revision) FROM wraps WHERE project == ? ORDER BY branch, revision;''', (project,))
+            return c.fetchone()
+        else:
+            c.execute('''SELECT branch, revision FROM wraps WHERE project == ? ORDER BY branch, revision;''', (project,))
+            return c.fetchall()
 
     def get_wrap(self, project, branch, revision):
         c = self.conn.cursor()

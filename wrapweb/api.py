@@ -27,6 +27,22 @@ def get_projectlist():
     res = {"output" : "ok", "projects" : querydb.name_search("")}
     return flask.jsonify(res)
 
+@APP.route("/v1/query/get_latest/<project>", methods=["GET"])
+def get_latest(project):
+    querydb = db.get_query_db()
+    matches = querydb.get_versions(project, latest=True)
+
+    if len(matches) == 0:
+        out = {"output": "notok", "error": "No such project"}
+        jsonout = flask.jsonify(out)
+        jsonout.status_code = 500
+        return jsonout
+
+    out = {"output": "ok", "branch": matches[0], "revision" : matches[1]}
+    jsonout = flask.jsonify(out)
+    jsonout.status_code = 200
+    return jsonout
+
 @APP.route("/v1/projects", defaults={"project": None})
 @APP.route("/v1/projects/<project>")
 def get_project_info(project):
