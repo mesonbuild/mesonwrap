@@ -25,7 +25,7 @@ def index():
         projects=j["projects"])
 
 @APP.route("/<project>", methods=["GET"])
-def project(project):
+def project_info(project):
     j = response_to_json(api.get_project_info(project))
     return render_template(
         "project.html",
