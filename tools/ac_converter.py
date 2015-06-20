@@ -68,6 +68,10 @@ function_data = \
      'HAVE_STRNDUP' : ('strndup', 'string.h'),
      'HAVE_SCHED_GETAFFINITY' : ('sched_getaffinity', 'sched.h'),
      'HAVE_WAITPID' : ('waitpid', 'sys/wait.h'),
+     'HAVE_XRENDERCREATECONICALGRADIENT' : ('XRenderCreateConicalGradient', 'xcb/render.h'),
+     'HAVE_XRENDERCREATELINEARGRADIENT' : ('XRenderCreateLinearGradient', 'xcb/render.h'),
+     'HAVE_XRENDERCREATERADIALGRADIENT' : ('XRenderCreateRadialGradient', 'xcb/render.h'),
+     'HAVE_XRENDERCREATESOLIDFILL' : ('XRenderCreateSolidFill', 'xcb/render.h'),
      
      }
 
@@ -76,8 +80,11 @@ print('check_functions = [')
 for line in open(sys.argv[1]):
     try:
         token = line.split()[1]
-        fdata = function_data[token]
-        print("  ['%s', '%s', '#include<%s>']," % (token, fdata[0], fdata[1]))
+        if token in function_data:
+            fdata = function_data[token]
+            print("  ['%s', '%s', '#include<%s>']," % (token, fdata[0], fdata[1]))
+        elif token.startswith('HAVE_') and not token.endswith('_H'):
+            print('# check token', token)
     except Exception:
         pass
 print(']\n')
@@ -88,3 +95,14 @@ print('''foreach f : check_functions
   endif
 endforeach
 ''')
+
+# Convert sizeof checks.
+
+for line in open(sys.argv[1]):
+    arr = line.strip().split()
+    if len(arr) != 2:
+        continue
+    elem = arr[1]
+    if elem.startswith('SIZEOF_'):
+        typename = elem.replace('_P', '*').replace('_', ' ').lower().replace('size t', 'size_t')
+        print("cdata.set('%s', cc.sizeof('%s')" % (elem, typename))
