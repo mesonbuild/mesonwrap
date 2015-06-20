@@ -105,4 +105,4 @@ for line in open(sys.argv[1]):
     elem = arr[1]
     if elem.startswith('SIZEOF_'):
         typename = elem.replace('_P', '*').replace('_', ' ').lower().replace('size t', 'size_t')
-        print("cdata.set('%s', cc.sizeof('%s')" % (elem, typename))
+        print("cdata.set('%s', cc.sizeof('%s'))" % (elem, typename))
