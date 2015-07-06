@@ -98,6 +98,7 @@ function_data = \
      'HAVE_LCHMOD': ('lchmod', 'sys/stat.h'),
      'HAVE_LCHOWN': ('lchown', 'unistd.h'),
      'HAVE_LSTAT': ('lstat', 'sys/stat.h'),
+     'HAVE_MEMCPY': ('memcpy', 'string.h'),
      'HAVE_MEMALIGN': ('memalign', 'stdlib.h'),
      'HAVE_MEMMEM': ('memmem', 'string.h'),
      'HAVE_NEWLOCALE': ('newlocale', 'locale.h'),
