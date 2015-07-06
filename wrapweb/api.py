@@ -27,6 +27,12 @@ def get_projectlist():
     res = {"output" : "ok", "projects" : querydb.name_search("")}
     return flask.jsonify(res)
 
+@APP.route("/v1/query/byname/<project>", methods=["GET"])
+def name_query(project):
+    querydb = db.get_query_db()
+    res = {"output" : "ok", "projects" : querydb.name_search(project)}
+    return flask.jsonify(res)
+
 @APP.route("/v1/query/get_latest/<project>", methods=["GET"])
 def get_latest(project):
     querydb = db.get_query_db()

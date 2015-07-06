@@ -49,12 +49,13 @@ class WrapDatabase:
 
     def get_versions(self, project, latest=False):
         c = self.conn.cursor()
+        qtempl = '''SELECT branch, revision FROM wraps WHERE project == ? ORDER BY branch DESC, revision DESC %s;'''
         if latest:
-            c.execute('''SELECT max(branch), max(revision) FROM wraps WHERE project == ? ORDER BY branch, revision;''', (project,))
-            return c.fetchone()
+            query = qtempl % 'LIMIT 1'
         else:
-            c.execute('''SELECT branch, revision FROM wraps WHERE project == ? ORDER BY branch, revision;''', (project,))
-            return c.fetchall()
+            query = qtempl % ''
+        c.execute(query, (project,))
+        return c.fetchall()
 
     def get_wrap(self, project, branch, revision):
         c = self.conn.cursor()
