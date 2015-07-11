@@ -44,7 +44,8 @@ def get_latest(project):
         jsonout.status_code = 500
         return jsonout
 
-    out = {"output": "ok", "branch": matches[0], "revision" : matches[1]}
+    latest = matches[0]
+    out = {"output": "ok", "branch": latest[0], "revision" : latest[1]}
     jsonout = flask.jsonify(out)
     jsonout.status_code = 200
     return jsonout
