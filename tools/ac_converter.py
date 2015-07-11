@@ -135,7 +135,7 @@ function_data = \
      'HAVE_VASPRINTF': ('vasprintf', 'stdio.h'),
      'HAVE_VSNPRINTF': ('vsnprintf', 'stdio.h'),
      'HAVE_BCOPY': ('bcopy', 'strings.h'),
-     'HAVE_STRERROR': ('strerror', 'stdio.h'),
+     'HAVE_STRERROR': ('strerror', 'string.h'),
      'HAVE_MEMMOVE': ('memmove', 'string.h'),
      'HAVE_STRTOIMAX': ('strtoimax', 'inttypes.h'),
      'HAVE_STRTOLL': ('strtoll', 'stdlib.h'),
