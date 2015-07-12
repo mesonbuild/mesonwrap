@@ -1,7 +1,7 @@
 %global __python %{__python3}
 
 Name:          meson-wrapweb
-Version:       0.0.0
+Version:       0.0.1
 Release:       1%{?dist}
 Summary:       A web service providing downloadable Wraps
 
@@ -43,3 +43,5 @@ install -Dpm 0644 files/wrapdb.ini %{buildroot}%{_sysconfdir}/uwsgi.d/%{name}.in
 %config(noreplace) %attr(-,uwsgi,uwsgi)%{_sysconfdir}/uwsgi.d/%{name}.ini
 
 %changelog
+* Sun Jul 12 2015 Igor Gnatenko <i.gnatenko.brain@gmail.com> 0.0.1-1
+- Initial package
