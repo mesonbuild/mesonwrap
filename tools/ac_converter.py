@@ -23,6 +23,9 @@ with #mesondefine and run this.
 
 import sys
 
+print('''cc = meson.get_compiler('c')
+cdata = configuration_data()''')
+
 print('check_headers = [')
 
 for line in open(sys.argv[1]):
@@ -165,7 +168,7 @@ function_data = \
      'HAVE_SETREGID': ('setregid', 'unistd.h'),
      'HAVE_SETRESGID': ('setresgid', 'unistd.h'),
      'HAVE_SETRESUID': ('setresuid', 'unistd.h'),
-     'HAVE_SHM_OPEN': ('sdm_open', 'fcntl.h'),
+     'HAVE_SHM_OPEN': ('shm_open', 'fcntl.h'),
      'HAVE_SLEEP': ('sleep', 'unistd.h'),
      'HAVE_STRERROR_R': ('strerror_r', 'string.h'),
      'HAVE_STRTOF': ('strtof', 'stdlib.h'),
@@ -205,3 +208,8 @@ for line in open(sys.argv[1]):
     if elem.startswith('SIZEOF_'):
         typename = elem.split('_', 1)[1].replace('_P', '*').replace('_', ' ').lower().replace('size t', 'size_t')
         print("cdata.set('%s', cc.sizeof('%s'))" % (elem, typename))
+
+print('''
+configure_file(input : 'config.h.in',
+  output : 'config.h',
+  configuration : cdata)''')
