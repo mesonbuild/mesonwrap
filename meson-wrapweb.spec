@@ -19,7 +19,7 @@ Requires:      uwsgi uwsgi-plugin-python3
 %{summary}.
 
 %prep
-%autosetup
+%setup -q
 
 %build
 # Nothing to build
