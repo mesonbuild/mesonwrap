@@ -32,7 +32,6 @@ mkdir -p %{buildroot}%{_sysconfdir}/nginx/conf.d/
 
 cp -a *.py wrapweb/ %{buildroot}%{_datadir}/%{name}/
 install -Dpm 0644 files/wrapdb.cfg %{buildroot}%{_sysconfdir}/%{name}/wrapdb.cfg
-install -Dpm 0644 files/wrapdb.crt %{buildroot}%{_sysconfdir}/%{name}/wrapdb.crt
 install -Dpm 0644 files/wrapdb.conf %{buildroot}%{_sysconfdir}/nginx/conf.d/%{name}.conf
 install -Dpm 0644 files/wrapdb.ini %{buildroot}%{_sysconfdir}/uwsgi.d/%{name}.ini
 
@@ -41,7 +40,6 @@ install -Dpm 0644 files/wrapdb.ini %{buildroot}%{_sysconfdir}/uwsgi.d/%{name}.in
 %doc README.md
 %dir %{_sysconfdir}/%{name}/
 %config(noreplace) %{_sysconfdir}/%{name}/wrapdb.cfg
-%{_sysconfdir}/%{name}/wrapdb.crt
 %ghost %{_sysconfdir}/%{name}/wrapdb.key
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/%{name}.conf
 %attr(-,uwsgi,uwsgi)%{_datadir}/%{name}/
