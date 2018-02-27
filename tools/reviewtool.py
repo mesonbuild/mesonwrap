@@ -174,7 +174,7 @@ class Reviewer:
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print(sys.argv[0], '<project name> <mr number>')
+        print(sys.argv[0], '<project name> <merge request number>')
         sys.exit(1)
     pull_id = int(sys.argv[2])
     r = Reviewer(sys.argv[1], pull_id)
