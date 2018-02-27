@@ -100,7 +100,8 @@ class Reviewer:
 
     @staticmethod
     def git_tags(git_root):
-        return subprocess.check_output(['git', 'tag'], cwd=git_root).decode()
+        output = subprocess.check_output(['git', 'tag'], cwd=git_root).decode()
+        return list(filter(lambda s: s, output.split('\n')))  # skip empty lines
 
     @staticmethod
     def isfile(head_dir, filename):
