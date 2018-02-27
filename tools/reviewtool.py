@@ -71,17 +71,12 @@ class Reviewer:
     def check_wrapformat(self, upwrap):
         config = configparser.ConfigParser()
         config.read(upwrap)
-        if not print_status('Has wrap-file section', 'wrap-file' in config):
-            return False
+        if not print_status('Has wrap-file section', 'wrap-file' in config): return False
         sec = config['wrap-file']
-        if not print_status('Section has directory', 'directory' in sec):
-            return False
-        if not print_status('Section has source_url', 'source_url' in sec):
-            return False
-        if not print_status('Section has source_filename', 'source_filename' in sec):
-            return False
-        if not print_status('Section has source_hash', 'source_hash' in sec):
-            return False
+        if not print_status('Section has directory', 'directory' in sec): return False
+        if not print_status('Section has source_url', 'source_url' in sec): return False
+        if not print_status('Section has source_filename', 'source_filename' in sec): return False
+        if not print_status('Section has source_hash', 'source_hash' in sec): return False
         return True
 
     def check_files(self, head_dir):
@@ -114,20 +109,13 @@ class Reviewer:
     def check_basics(self, base_dir, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
 
-        if not print_status('Repo name valid', re.fullmatch('[a-z0-9._]+', project)):
-            return False
-        if not print_status('Branch name valid', re.fullmatch('[a-z0-9._]+', branch)):
-            return False
-        if not print_status('Target branch is not master', branch != 'master'):
-            return False
-        if not print_status('Has commit_zero', 'commit_zero' in self.git_tags(base_dir)):
-            return False
-        if not print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt')):
-            return False
-        if not print_status('Has upstream.wrap', self.isfile(head_dir, 'upstream.wrap')):
-            return False
-        if not print_status('Has toplevel meson.build', self.isfile(head_dir, 'meson.build')):
-            return False
+        if not print_status('Repo name valid', re.fullmatch('[a-z0-9._]+', project)): return False
+        if not print_status('Branch name valid', re.fullmatch('[a-z0-9._]+', branch)): return False
+        if not print_status('Target branch is not master', branch != 'master'): return False
+        if not print_status('Has commit_zero', 'commit_zero' in self.git_tags(base_dir)): return False
+        if not print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt')): return False
+        if not print_status('Has upstream.wrap', self.isfile(head_dir, 'upstream.wrap')): return False
+        if not print_status('Has toplevel meson.build', self.isfile(head_dir, 'meson.build')): return False
         return True
 
     @staticmethod
