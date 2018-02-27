@@ -19,6 +19,19 @@ import urllib.request, json, hashlib
 import tempfile, subprocess
 import configparser
 
+
+def print_status(msg, check):
+    '''
+    Prints msg with success indicator based on check parameter.
+    Returns: check
+    '''
+    OK_CHR = '\u2611'
+    FAIL_CHR = '\u2612'
+    status = OK_CHR if check else FAIL_CHR
+    print('{msg}: {status}'.format(msg=msg, status=status))
+    return check
+
+
 class Reviewer:
     def __init__(self, project, pull_id):
         self.parse_url(project, pull_id)
@@ -64,27 +77,17 @@ class Reviewer:
     def check_wrapformat(self, upwrap):
         config = configparser.ConfigParser()
         config.read(upwrap)
-        if 'wrap-file' not in config:
-            print('Has wrap-file section: \u2612')
+        if not print_status('Has wrap-file section', 'wrap-file' in config):
             return 1
-        print('Has wrap-file section: \u2611')
         sec = config['wrap-file']
-        if 'directory' not in sec:
-            print('Section has directory: \u2612')
+        if not print_status('Section has directory', 'directory' in sec):
             return 1
-        print('Section has subdirectory: \u2611')
-        if 'source_url' not in sec:
-            print('Section has source_url: \u2612')
+        if not print_status('Section has source_url', 'source_url' in sec):
             return 1
-        print('Section has source_url: \u2611')
-        if 'source_filename' not in sec:
-            print('Section has source_filename: \u2612')
+        if not print_status('Section has source_filename', 'source_filename' in sec):
             return 1
-        print('Section has source_filename: \u2611')
-        if 'source_hash' not in sec:
-            print('Section has source_hash: \u2612')
+        if not print_status('Section has source_hash', 'source_hash' in sec):
             return 1
-        print('Section has source_hash: \u2611')
         return 0
 
     def check_files(self, head_dir):
@@ -102,71 +105,55 @@ class Reviewer:
                     abs_name = os.path.join(root, fname)
                     rel_name = abs_name[len(head_dir)+1:]
                     print(' ', rel_name)
-        if not found:
-            print('Repo contains only buildsystem files: \u2611')
+        if not print_status('Repo contains only buildsystem files', not found):
+            return 1
         return 0
 
     def check_basics(self, base_dir, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
 
-        if re.fullmatch('[a-z0-9._]+', project):
-            print('Repo name valid: \u2611')
-        else:
-            print('Repo name valid: \u2612')
+        if not print_status('Repo name valid', re.fullmatch('[a-z0-9._]+', project)):
             return 1
-        if re.fullmatch('[a-z0-9._]+', branch):
-            print('Branch name valid: \u2611')
-        else:
-            print('Branch name valid: \u2612')
+        if not print_status('Branch name valid', re.fullmatch('[a-z0-9._]+', branch)):
             return 1
-        if branch != 'master':
-            print('Target branch is not master: \u2611')
-        else:
-            print('Target branch is not master: \u2612')
+        if not print_status('Target branch is not master', branch != 'master'):
             return 1
         output = subprocess.check_output(['git', 'tag'], cwd=base_dir).decode()
-        if 'commit_zero' in output:
-            print('Has commit_zero: \u2611')
-        else:
-            print('Has commit_zero: \u2612')
+        if not print_status('Has commit_zero', 'commit_zero' in output):
             return 1
-        if os.path.isfile(os.path.join(head_dir, 'readme.txt')):
-            print('Has readme.txt: \u2611')
-        else:
-            print('Has readme.txt: \u2612')
+        if not print_status('Has readme.txt', os.path.isfile(os.path.join(head_dir, 'readme.txt'))):
             return 1
         upwrap = os.path.join(head_dir, 'upstream.wrap')
-        if os.path.isfile(upwrap):
-            print('Has upstream.wrap: \u2611')
-        else:
-            print('Has upstream.wrap: \u2612')
+        if not print_status('Has upstream.wrap', os.path.isfile(upwrap)):
             return 1
-        if os.path.isfile(os.path.join(head_dir, 'meson.build')):
-            print('Has toplevel meson.build: \u2611')
-        else:
-            print('Has toplevel meson.build: \u2612')
+        if not print_status('Has toplevel meson.build', os.path.isfile(os.path.join(head_dir, 'meson.build'))):
             return 1
         return 0
+
+    @staticmethod
+    def _fetch(url):
+        data = None
+        exc = None
+        try:
+            with urllib.request.urlopen(url) as u:
+                data = u.read()
+        except Exception as e:
+            exc = e
+        return (data, exc)
 
     def check_download(self, upwrap):
         config = configparser.ConfigParser()
         config.read(upwrap)
         dl_url = config['wrap-file']['source_url']
         expected_hash = config['wrap-file']['source_hash']
-        try:
-            with urllib.request.urlopen(dl_url) as u:
-                bytes = u.read()
-        except Exception as e:
-            print('Download url works: \u2612\n  ' + str(e))
+        source_data, download_exc = self._fetch(dl_url)
+        if not print_status('Download url works', download_exc is None):
+            print(' error:', str(e))
             return 1
-        print('Download url works: \u2611')
         h = hashlib.sha256()
-        h.update(bytes)
+        h.update(source_data)
         calculated_hash = h.hexdigest()
-        if calculated_hash == expected_hash:
-            print('Hash matches: \u2611')
-        else:
-            print('Hash matches: \u2612')
+        if not print_status('Hash matches', calculated_hash == expected_hash):
             print(' expected:', expected_hash)
             print('      got:', calculated_hash)
             return 1
