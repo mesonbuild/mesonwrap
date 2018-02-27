@@ -103,6 +103,14 @@ class Reviewer:
             return False
         return True
 
+    @staticmethod
+    def git_tags(git_root):
+        return subprocess.check_output(['git', 'tag'], cwd=git_root).decode()
+
+    @staticmethod
+    def isfile(head_dir, filename):
+        return os.path.isfile(os.path.join(head_dir, filename))
+
     def check_basics(self, base_dir, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
 
@@ -112,15 +120,13 @@ class Reviewer:
             return False
         if not print_status('Target branch is not master', branch != 'master'):
             return False
-        output = subprocess.check_output(['git', 'tag'], cwd=base_dir).decode()
-        if not print_status('Has commit_zero', 'commit_zero' in output):
+        if not print_status('Has commit_zero', 'commit_zero' in self.git_tags(base_dir)):
             return False
-        if not print_status('Has readme.txt', os.path.isfile(os.path.join(head_dir, 'readme.txt'))):
+        if not print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt')):
             return False
-        upwrap = os.path.join(head_dir, 'upstream.wrap')
-        if not print_status('Has upstream.wrap', os.path.isfile(upwrap)):
+        if not print_status('Has upstream.wrap', self.isfile(head_dir, 'upstream.wrap')):
             return False
-        if not print_status('Has toplevel meson.build', os.path.isfile(os.path.join(head_dir, 'meson.build'))):
+        if not print_status('Has toplevel meson.build', self.isfile(head_dir, 'meson.build')):
             return False
         return True
 
