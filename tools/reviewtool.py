@@ -62,33 +62,27 @@ class Reviewer:
         project = self.values['base']['repo']['name']
         branch = self.values['base']['ref']
         self.clone_repos(base_dir, head_dir)
-        rval = self.check_basics(base_dir, head_dir, project, branch)
-        if rval != 0:
-            return rval
-        rval = self.check_files(head_dir)
-        if rval != 0:
-            return rval
-        rval = self.check_wrapformat(os.path.join(head_dir, 'upstream.wrap'))
-        if rval != 0:
-            return rval
-        rval = self.check_download(os.path.join(head_dir, 'upstream.wrap'))
-        return rval
+        if not self.check_basics(base_dir, head_dir, project, branch): return False
+        if not self.check_files(head_dir): return False
+        if not self.check_wrapformat(os.path.join(head_dir, 'upstream.wrap')): return False
+        if not self.check_download(os.path.join(head_dir, 'upstream.wrap')): return False
+        return True
 
     def check_wrapformat(self, upwrap):
         config = configparser.ConfigParser()
         config.read(upwrap)
         if not print_status('Has wrap-file section', 'wrap-file' in config):
-            return 1
+            return False
         sec = config['wrap-file']
         if not print_status('Section has directory', 'directory' in sec):
-            return 1
+            return False
         if not print_status('Section has source_url', 'source_url' in sec):
-            return 1
+            return False
         if not print_status('Section has source_filename', 'source_filename' in sec):
-            return 1
+            return False
         if not print_status('Section has source_hash', 'source_hash' in sec):
-            return 1
-        return 0
+            return False
+        return True
 
     def check_files(self, head_dir):
         found = False
@@ -106,29 +100,29 @@ class Reviewer:
                     rel_name = abs_name[len(head_dir)+1:]
                     print(' ', rel_name)
         if not print_status('Repo contains only buildsystem files', not found):
-            return 1
-        return 0
+            return False
+        return True
 
     def check_basics(self, base_dir, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
 
         if not print_status('Repo name valid', re.fullmatch('[a-z0-9._]+', project)):
-            return 1
+            return False
         if not print_status('Branch name valid', re.fullmatch('[a-z0-9._]+', branch)):
-            return 1
+            return False
         if not print_status('Target branch is not master', branch != 'master'):
-            return 1
+            return False
         output = subprocess.check_output(['git', 'tag'], cwd=base_dir).decode()
         if not print_status('Has commit_zero', 'commit_zero' in output):
-            return 1
+            return False
         if not print_status('Has readme.txt', os.path.isfile(os.path.join(head_dir, 'readme.txt'))):
-            return 1
+            return False
         upwrap = os.path.join(head_dir, 'upstream.wrap')
         if not print_status('Has upstream.wrap', os.path.isfile(upwrap)):
-            return 1
+            return False
         if not print_status('Has toplevel meson.build', os.path.isfile(os.path.join(head_dir, 'meson.build'))):
-            return 1
-        return 0
+            return False
+        return True
 
     @staticmethod
     def _fetch(url):
@@ -149,15 +143,15 @@ class Reviewer:
         source_data, download_exc = self._fetch(dl_url)
         if not print_status('Download url works', download_exc is None):
             print(' error:', str(e))
-            return 1
+            return False
         h = hashlib.sha256()
         h.update(source_data)
         calculated_hash = h.hexdigest()
         if not print_status('Hash matches', calculated_hash == expected_hash):
             print(' expected:', expected_hash)
             print('      got:', calculated_hash)
-            return 1
-        return 0
+            return False
+        return True
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
