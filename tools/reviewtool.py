@@ -82,7 +82,7 @@ class Reviewer:
     def check_files(self, head_dir):
         found = False
         permitted_files = ['upstream.wrap', 'meson.build', 'readme.txt',
-                           'meson_options.txt', '.gitignore']
+                           'meson_options.txt', '.gitignore', 'LICENSE.build']
         for root, dirs, files in os.walk(head_dir):
             if '.git' in dirs:
                 dirs.remove('.git')
