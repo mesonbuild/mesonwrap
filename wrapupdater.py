@@ -36,5 +36,5 @@ if __name__ == '__main__':
     if len(sys.argv) != 4:
         print(sys.argv[0], 'project repo_url branch')
         sys.exit(1)
-    m = WrapManager()
+    m = WrapUpdater()
     m.update_db(sys.argv[1], sys.argv[2], sys.argv[3])
