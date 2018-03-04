@@ -115,6 +115,7 @@ class Reviewer:
         if not print_status('Target branch is not master', branch != 'master'): return False
         if not print_status('Has commit_zero', 'commit_zero' in self.git_tags(base_dir)): return False
         if not print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt')): return False
+        if not print_status('Has LICENSE.build', self.isfile(head_dir, 'LICENSE.build')): return False
         if not print_status('Has upstream.wrap', self.isfile(head_dir, 'upstream.wrap')): return False
         if not print_status('Has toplevel meson.build', self.isfile(head_dir, 'meson.build')): return False
         return True
