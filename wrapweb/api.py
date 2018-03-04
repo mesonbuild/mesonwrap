@@ -124,7 +124,7 @@ def github_hook():
                                  "error": "We don't run hook for restricted project names"})
         jsonout.status_code = 406
         return jsonout
-    if d["action"] == "closed" and d["pull_request"]["merged"] == True:
+    if d["action"] == "closed" and d["pull_request"]["merged"]:
         project = base["repo"]["name"]
         branch = base["ref"]
         repo_url = base["repo"]["clone_url"]
