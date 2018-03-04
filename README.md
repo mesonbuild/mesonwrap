@@ -1,3 +1,6 @@
+#### Status
+[![Build Status](https://travis-ci.org/mesonbuild/wrapweb.svg?branch=master)](https://travis-ci.org/mesonbuild/wrapweb)
+
 # How to run
 
 ## Default settings
