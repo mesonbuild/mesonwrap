@@ -18,6 +18,7 @@
 used as a basis for a Wrap db entry. Also calculates a basic
 upstream.wrap."""
 
+import datetime
 import hashlib
 import os
 import shutil
@@ -33,17 +34,41 @@ source_filename = %s
 source_hash = %s
 '''
 
-def initialize(reponame):
-    subprocess.check_call(['git', 'init'])
-    ofile = open('readme.txt', 'w')
-    ofile.write('''This repository contains a Meson build definition for project %s.
-
-All files in this repository have the same license as the original project.
+readme = '''This repository contains a Meson build definition for project {reponame}.
 
 For more information please see http://mesonbuild.com.
-''' % reponame)
-    ofile.close()
-    subprocess.check_call(['git', 'add', 'readme.txt'])
+'''
+
+
+mit_license = '''Copyright (c) {year} The Meson development team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'''
+
+
+def initialize(reponame):
+    subprocess.check_call(['git', 'init'])
+    with open('readme.txt', 'w') as ofile:
+        ofile.write(readme.format(reponame=reponame))
+    with open('LICENSE.build', 'w') as ofile:
+        ofile.write(mit_license.format(year=datetime.datetime.now().year))
+    subprocess.check_call(['git', 'add', 'readme.txt', 'LICENSE.build'])
     subprocess.check_call(['git', 'commit', '-a', '-m', 'Created repository for project %s.' % reponame])
     subprocess.check_call(['git', 'tag', 'commit_zero', '-a', '-m', 'A tag that helps get revision ids for releases.'])
     subprocess.check_call(['git', 'remote', 'add', 'origin', 'git@github.com:mesonbuild/%s.git' % reponame])
@@ -59,9 +84,8 @@ def build_upstream_wrap(zipurl, filename, directory):
         h = hashlib.sha256()
         h.update(data)
         dhash = h.hexdigest()
-        ofile = open('upstream.wrap', 'w')
-        ofile.write(upstream_templ % (directory, zipurl, filename, dhash))
-        ofile.close()
+        with open('upstream.wrap', 'w') as ofile:
+            ofile.write(upstream_templ % (directory, zipurl, filename, dhash))
 
 
 if __name__ == '__main__':
