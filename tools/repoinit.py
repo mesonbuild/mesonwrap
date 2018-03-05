@@ -69,9 +69,11 @@ def initialize(reponame):
     with open('LICENSE.build', 'w') as ofile:
         ofile.write(mit_license.format(year=datetime.datetime.now().year))
     repo.index.add(['readme.txt', 'LICENSE.build'])
-    repo.index.commit('Created repository for project %s.' % reponame)
+    commit = repo.index.commit('Created repository for project %s.' % reponame)
+    tag = repo.create_tag('commit_zero', commit)
     origin = repo.create_remote('origin', 'git@github.com:mesonbuild/%s.git' % reponame)
     origin.push(repo.head.ref.name)
+    origin.push(tag)
     shutil.rmtree('.git')
     os.unlink('readme.txt')
 
