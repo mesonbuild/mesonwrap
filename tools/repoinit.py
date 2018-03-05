@@ -62,20 +62,29 @@ SOFTWARE.
 '''
 
 
-def initialize(reponame):
-    repo = git.Repo.init('.')
-    with open('readme.txt', 'w') as ofile:
-        ofile.write(readme.format(reponame=reponame))
-    with open('LICENSE.build', 'w') as ofile:
-        ofile.write(mit_license.format(year=datetime.datetime.now().year))
-    repo.index.add(['readme.txt', 'LICENSE.build'])
-    commit = repo.index.commit('Created repository for project %s.' % reponame)
-    tag = repo.create_tag('commit_zero', commit)
-    origin = repo.create_remote('origin', 'git@github.com:mesonbuild/%s.git' % reponame)
-    origin.push(repo.head.ref.name)
-    origin.push(tag)
-    shutil.rmtree('.git')
-    os.unlink('readme.txt')
+class RepoBuilder:
+
+    def __init__(self, name, path):
+        self.name = name
+        self.repo = git.Repo.init(path)
+        with self._open('readme.txt', 'w') as ofile:
+            ofile.write(readme.format(reponame=reponame))
+        with self._open('LICENSE.build', 'w') as ofile:
+            ofile.write(mit_license.format(year=datetime.datetime.now().year))
+        self.repo.index.add(['readme.txt', 'LICENSE.build'])
+        self.commit = self.repo.index.commit('Created repository for project %s.' % reponame)
+        self.tag = self.repo.create_tag('commit_zero', self.commit)
+
+    def _open(self, path, *args):
+        return open(os.path.join(self.repo.working_dir, path), *args)
+
+    def push(self, remote=None):
+        if remote is None:
+            remote = 'git@github.com:mesonbuild/%s.git' % self.name
+        origin = self.repo.create_remote('origin', remote)
+        origin.push(self.repo.head.ref.name)
+        origin.push(self.tag)
+
 
 def build_upstream_wrap(zipurl, filename, directory):
     with urllib.request.urlopen(zipurl) as r:
@@ -96,7 +105,8 @@ if __name__ == '__main__':
     zipurl = sys.argv[2]
     filename = sys.argv[3]
     directory = sys.argv[4]
-    initialize(reponame)
+    builder = RepoBuilder(reponame, '.')
+    builder.push()
     build_upstream_wrap(zipurl, filename, directory)
     print('Done, now do the branching + stuff.')
 
