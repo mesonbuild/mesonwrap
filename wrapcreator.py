@@ -57,12 +57,16 @@ class WrapCreator:
         with tempfile.TemporaryDirectory() as workdir:
             return self.create_internal(workdir)
 
+    @staticmethod
+    def _get_revision(repo):
+        revision_str = repo.git.describe()
+        return int(revision_str.split('-')[1])
+
     def create_internal(self, workdir):
         repo = git.Repo.clone_from(self.repo_url, workdir, branch=self.branch)
         upstream_file = os.path.join(workdir, 'upstream.wrap')
         upstream_content = open(upstream_file).read()
-        revision_str = repo.git.describe()
-        revision_id = int(revision_str.split('-')[1])
+        revision_id = self._get_revision(repo)
         self.upstream_file = os.path.join(workdir, 'upstream.wrap')
         self.definition = UpstreamDefinition(self.upstream_file)
         shutil.rmtree(os.path.join(workdir, '.git'))
