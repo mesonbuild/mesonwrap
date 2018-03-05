@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
+import git
 import json
 import os.path
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
+from tools.repoinit import RepoBuilder
 import unittest
 import urllib.error
 import urllib.request
@@ -67,6 +71,29 @@ class Server(subprocess.Popen):
         return self.fetch_json('/v1/projects/' + name)
 
 
+class FakeProject:
+
+    def __init__(self, name, tmpdir):
+        self.name = name
+        self.builder = RepoBuilder(name, os.path.join(tmpdir, name))
+
+    def create_version(self, version):
+        self.builder.create_version(
+            version=version,
+            zipurl='http://localhost/file.zip',
+            filename='file.zip',
+            directory='project',
+            ziphash='myhash',
+            base='master')
+        with self.builder.open('meson.build', 'w') as ofile:
+            ofile.write("project('hello world')\n")
+        self.builder.repo.index.commit('Add files')
+
+    @property
+    def url(self):
+        return self.builder.repo.git_dir
+
+
 class ToolsTest(unittest.TestCase):
 
     def setUp(self):
@@ -75,23 +102,41 @@ class ToolsTest(unittest.TestCase):
         except FileNotFoundError:
             pass
         self.server = Server()
+        self.tmpdir = tempfile.mkdtemp()
 
     def tearDown(self):
         self.server.terminate()
         self.server.wait()
+        shutil.rmtree(self.tmpdir)
 
-    def assertUploaded(self, project):
+    def assertLooseUploaded(self, project):
         for v in self.server.project(project.name)['versions']:
             if v['branch'] == project.version and v['revision'] >= project.revision:
                 return
         self.fail('{!r} not found'.format(project))
 
-    def test_wrapupdater(self):
+    def assertUploaded(self, project):
+        for v in self.server.project(project.name)['versions']:
+            if v['branch'] == project.version and v['revision'] == project.revision:
+                return
+        self.fail('{!r} not found'.format(project))
+
+    def test_existing_wrapupdater(self):
         for project in projects:
             url = 'https://github.com/mesonbuild/{name}.git'.format(name=project.name)
             subprocess.check_call(args=WRAPUPDATER + [project.name, url, project.version])
             self.assertIn(project.name, self.server.projects())
-            self.assertUploaded(project)
+            self.assertLooseUploaded(project)
+
+    def test_wrapupdater(self):
+        f = FakeProject('test1', self.tmpdir)
+        f.create_version('1.0.0')
+        f.create_version('1.0.1')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.1'])
+        self.assertIn(f.name, self.server.projects())
+        self.assertUploaded(Project(f.name, '1.0.0', 1))
+        self.assertUploaded(Project(f.name, '1.0.1', 1))
 
 
 if __name__ == '__main__':

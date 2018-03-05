@@ -62,22 +62,40 @@ SOFTWARE.
 '''
 
 
+class GitFile:
+
+    def __init__(self, filename, file, index):
+        self.filename = filename
+        self.file = file
+        self.index = index
+
+    def __enter__(self):
+        return self.file.__enter__()
+
+    def __exit__(self, type, value, traceback):
+        self.file.__exit__(type, value, traceback)
+        self.index.add([self.filename])
+
+
 class RepoBuilder:
 
     def __init__(self, name, path):
         self.name = name
         self.repo = git.Repo.init(path)
-        with self._open('readme.txt', 'w') as ofile:
-            ofile.write(readme.format(reponame=reponame))
-        with self._open('LICENSE.build', 'w') as ofile:
+        with self.open('readme.txt', 'w') as ofile:
+            ofile.write(readme.format(reponame=name))
+        with self.open('LICENSE.build', 'w') as ofile:
             ofile.write(mit_license.format(year=datetime.datetime.now().year))
-        self.repo.index.add(['readme.txt', 'LICENSE.build'])
-        self.commit = self.repo.index.commit('Created repository for project %s.' % reponame)
+        self.commit = self.repo.index.commit('Created repository for project %s.' % name)
         self.tag = self.repo.create_tag('commit_zero', self.commit,
                                         message=' tag that helps get revision ids for releases.')
 
-    def _open(self, path, *args):
-        return open(os.path.join(self.repo.working_dir, path), *args)
+    def open(self, path, mode='r'):
+        abspath = os.path.join(self.repo.working_dir, path)
+        f = open(abspath, mode)
+        if f.writable():
+            return GitFile(path, f, self.repo.index)
+        return f
 
     def push(self, remote=None):
         if remote is None:
@@ -86,28 +104,36 @@ class RepoBuilder:
         origin.push(self.repo.head.ref.name)
         origin.push(self.tag)
 
-
-def build_upstream_wrap(zipurl, filename, directory):
-    with urllib.request.urlopen(zipurl) as r:
-        data = r.read()
-        open(filename, 'wb').write(data)
+    @staticmethod
+    def _get_hash(url):
+        with urllib.request.urlopen(zipurl) as r:
+            data = r.read()
         h = hashlib.sha256()
         h.update(data)
-        dhash = h.hexdigest()
-        with open('upstream.wrap', 'w') as ofile:
-            ofile.write(upstream_templ % (directory, zipurl, filename, dhash))
+        return h.hexdigest()
+
+    def create_version(self, version, zipurl, filename, directory, ziphash=None, base=None):
+        if ziphash is None:
+            ziphash = self._get_hash(zipurl)
+        self.repo.head.reference = self.repo.create_head(version, commit=base)
+        assert not self.repo.head.is_detached
+        self.repo.head.reset(index=True, working_tree=True)
+        with self.open('upstream.wrap', 'w') as ofile:
+            ofile.write(upstream_templ % (directory, zipurl, filename, ziphash))
+        self.repo.index.add(['upstream.wrap'])
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 5:
-        print(sys.argv[0], '<reponame> <zipurl> <filename> <directory>')
+    if len(sys.argv) != 6:
+        print(sys.argv[0], '<reponame> <version> <zipurl> <filename> <directory>')
         sys.exit(1)
     reponame = sys.argv[1]
-    zipurl = sys.argv[2]
-    filename = sys.argv[3]
-    directory = sys.argv[4]
+    version = sys.argv[2]
+    zipurl = sys.argv[3]
+    filename = sys.argv[4]
+    directory = sys.argv[5]
     builder = RepoBuilder(reponame, '.')
     builder.push()
-    build_upstream_wrap(zipurl, filename, directory)
+    builder.create_version(version, zipurl, filename, directory)
     print('Done, now do the branching + stuff.')
 
