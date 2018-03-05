@@ -73,7 +73,8 @@ class RepoBuilder:
             ofile.write(mit_license.format(year=datetime.datetime.now().year))
         self.repo.index.add(['readme.txt', 'LICENSE.build'])
         self.commit = self.repo.index.commit('Created repository for project %s.' % reponame)
-        self.tag = self.repo.create_tag('commit_zero', self.commit)
+        self.tag = self.repo.create_tag('commit_zero', self.commit,
+                                        message=' tag that helps get revision ids for releases.')
 
     def _open(self, path, *args):
         return open(os.path.join(self.repo.working_dir, path), *args)
