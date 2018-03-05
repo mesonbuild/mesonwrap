@@ -46,12 +46,11 @@ class Reviewer:
                 self.review_int(base_dir, head_dir)
 
     def clone_repos(self, base_dir, head_dir):
-        branch = self._pull.base.ref
         base_git = self._pull.base.repo.clone_url
         head_git = self._pull.head.repo.clone_url
-        subprocess.check_call(['git', 'clone', '-b', branch, base_git, base_dir],
+        subprocess.check_call(['git', 'clone', '-b', self._pull.base.ref, base_git, base_dir],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.check_call(['git', 'clone', '-b', branch, head_git, head_dir],
+        subprocess.check_call(['git', 'clone', '-b', self._pull.head.ref, head_git, head_dir],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def review_int(self, base_dir, head_dir):
