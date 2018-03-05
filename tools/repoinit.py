@@ -19,10 +19,10 @@ used as a basis for a Wrap db entry. Also calculates a basic
 upstream.wrap."""
 
 import datetime
+import git
 import hashlib
 import os
 import shutil
-import subprocess
 import sys
 import urllib.request
 
@@ -63,17 +63,15 @@ SOFTWARE.
 
 
 def initialize(reponame):
-    subprocess.check_call(['git', 'init'])
+    repo = git.Repo.init('.')
     with open('readme.txt', 'w') as ofile:
         ofile.write(readme.format(reponame=reponame))
     with open('LICENSE.build', 'w') as ofile:
         ofile.write(mit_license.format(year=datetime.datetime.now().year))
-    subprocess.check_call(['git', 'add', 'readme.txt', 'LICENSE.build'])
-    subprocess.check_call(['git', 'commit', '-a', '-m', 'Created repository for project %s.' % reponame])
-    subprocess.check_call(['git', 'tag', 'commit_zero', '-a', '-m', 'A tag that helps get revision ids for releases.'])
-    subprocess.check_call(['git', 'remote', 'add', 'origin', 'git@github.com:mesonbuild/%s.git' % reponame])
-    subprocess.check_call(['git', 'push', '-u', 'origin', 'master'])
-    subprocess.check_call(['git', 'push', '--tags'])
+    repo.index.add(['readme.txt', 'LICENSE.build'])
+    repo.index.commit('Created repository for project %s.' % reponame)
+    origin = repo.create_remote('origin', 'git@github.com:mesonbuild/%s.git' % reponame)
+    origin.push(repo.head.ref.name)
     shutil.rmtree('.git')
     os.unlink('readme.txt')
 

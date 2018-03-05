@@ -15,9 +15,10 @@
 # limitations under the License.
 
 import sys, os, shutil
-import tempfile, subprocess
+import tempfile
 from glob import glob
 import zipfile, hashlib
+import git
 
 class UpstreamDefinition:
     def __init__(self, fname):
@@ -57,10 +58,10 @@ class WrapCreator:
             return self.create_internal(workdir)
 
     def create_internal(self, workdir):
-        subprocess.check_call(['git', 'clone', '-b', self.branch, self.repo_url, workdir])
+        repo = git.Repo.clone_from(self.repo_url, workdir, branch=self.branch)
         upstream_file = os.path.join(workdir, 'upstream.wrap')
         upstream_content = open(upstream_file).read()
-        revision_str = subprocess.check_output(['git', 'describe'], cwd=workdir).decode('utf-8')
+        revision_str = repo.git.describe()
         revision_id = int(revision_str.split('-')[1])
         self.upstream_file = os.path.join(workdir, 'upstream.wrap')
         self.definition = UpstreamDefinition(self.upstream_file)
