@@ -34,30 +34,27 @@ def print_status(msg, check):
 
 
 class Reviewer:
-    def __init__(self, project, pull_id):
-        self._github = github.Github()
+    def __init__(self, github, project, pull_id):
+        self._github = github
         self._org = self._github.get_organization('mesonbuild')
         self._project = self._org.get_repo(project)
         self._pull = self._project.get_pull(pull_id)
 
     def review(self):
-        with tempfile.TemporaryDirectory() as base_dir:
-            with tempfile.TemporaryDirectory() as head_dir:
-                self.review_int(base_dir, head_dir)
+        with tempfile.TemporaryDirectory() as head_dir:
+            self.review_int(head_dir)
 
-    def clone_repos(self, base_dir, head_dir):
-        base_git = self._pull.base.repo.clone_url
+    def clone_repos(self, head_dir):
+        head_ref = self._pull.head.ref
         head_git = self._pull.head.repo.clone_url
-        subprocess.check_call(['git', 'clone', '-b', self._pull.base.ref, base_git, base_dir],
-                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.check_call(['git', 'clone', '-b', self._pull.head.ref, head_git, head_dir],
+        subprocess.check_call(['git', 'clone', '-b', head_ref, head_git, head_dir],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    def review_int(self, base_dir, head_dir):
+    def review_int(self, head_dir):
         project = self._pull.base.repo.name
         branch = self._pull.base.ref
-        self.clone_repos(base_dir, head_dir)
-        if not self.check_basics(base_dir, head_dir, project, branch): return False
+        self.clone_repos(head_dir)
+        if not self.check_basics(head_dir, project, branch): return False
         if not self.check_files(head_dir): return False
         if not self.check_wrapformat(os.path.join(head_dir, 'upstream.wrap')): return False
         if not self.check_download(os.path.join(head_dir, 'upstream.wrap')): return False
@@ -102,13 +99,12 @@ class Reviewer:
     def isfile(head_dir, filename):
         return os.path.isfile(os.path.join(head_dir, filename))
 
-    def check_basics(self, base_dir, head_dir, project, branch):
+    def check_basics(self, head_dir, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
 
         if not print_status('Repo name valid', re.fullmatch('[a-z0-9._]+', project)): return False
         if not print_status('Branch name valid', re.fullmatch('[a-z0-9._]+', branch)): return False
         if not print_status('Target branch is not master', branch != 'master'): return False
-        if not print_status('Has commit_zero', 'commit_zero' in self.git_tags(base_dir)): return False
         if not print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt')): return False
         if not print_status('Has LICENSE.build', self.isfile(head_dir, 'LICENSE.build')): return False
         if not print_status('Has upstream.wrap', self.isfile(head_dir, 'upstream.wrap')): return False
@@ -149,6 +145,7 @@ if __name__ == '__main__':
         print(sys.argv[0], '<project name> <merge request number>')
         sys.exit(1)
     pull_id = int(sys.argv[2])
-    r = Reviewer(sys.argv[1], pull_id)
+    gh = github.Github()
+    r = Reviewer(gh, sys.argv[1], pull_id)
     sys.exit(r.review())
 
