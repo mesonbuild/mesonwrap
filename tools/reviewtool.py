@@ -16,9 +16,10 @@
 
 import sys, os, re
 import urllib.request, json, hashlib
-import tempfile, subprocess
+import tempfile
 import configparser
 import github
+import git
 
 
 def print_status(msg, check):
@@ -48,16 +49,15 @@ class Reviewer:
     def clone_repos(self, base_dir, head_dir):
         base_git = self._pull.base.repo.clone_url
         head_git = self._pull.head.repo.clone_url
-        subprocess.check_call(['git', 'clone', '-b', self._pull.base.ref, base_git, base_dir],
-                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.check_call(['git', 'clone', '-b', self._pull.head.ref, head_git, head_dir],
-                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        base_repo = git.Repo.clone_from(base_git, base_dir, branch=self._pull.base.ref)
+        head_repo = git.Repo.clone_from(head_git, head_dir, branch=self._pull.head.ref)
+        return (base_repo, head_repo)
 
     def review_int(self, base_dir, head_dir):
         project = self._pull.base.repo.name
         branch = self._pull.base.ref
-        self.clone_repos(base_dir, head_dir)
-        if not self.check_basics(base_dir, head_dir, project, branch): return False
+        base_repo, head_repo = self.clone_repos(base_dir, head_dir)
+        if not self.check_basics(base_repo, head_repo, project, branch): return False
         if not self.check_files(head_dir): return False
         if not self.check_wrapformat(os.path.join(head_dir, 'upstream.wrap')): return False
         if not self.check_download(os.path.join(head_dir, 'upstream.wrap')): return False
@@ -94,21 +94,20 @@ class Reviewer:
         return True
 
     @staticmethod
-    def git_tags(git_root):
-        output = subprocess.check_output(['git', 'tag'], cwd=git_root).decode()
-        return list(filter(lambda s: s, output.split('\n')))  # skip empty lines
+    def git_tags(repo):
+        return list(map(lambda tag: tag.name, repo.tags))
 
     @staticmethod
     def isfile(head_dir, filename):
         return os.path.isfile(os.path.join(head_dir, filename))
 
-    def check_basics(self, base_dir, head_dir, project, branch):
+    def check_basics(self, base_repo, head_repo, project, branch):
         print('Inspecting project %s, branch %s.' % (project, branch))
-
+        head_dir = head_repo.working_dir
         if not print_status('Repo name valid', re.fullmatch('[a-z0-9._]+', project)): return False
         if not print_status('Branch name valid', re.fullmatch('[a-z0-9._]+', branch)): return False
         if not print_status('Target branch is not master', branch != 'master'): return False
-        if not print_status('Has commit_zero', 'commit_zero' in self.git_tags(base_dir)): return False
+        if not print_status('Has commit_zero', 'commit_zero' in self.git_tags(base_repo)): return False
         if not print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt')): return False
         if not print_status('Has LICENSE.build', self.isfile(head_dir, 'LICENSE.build')): return False
         if not print_status('Has upstream.wrap', self.isfile(head_dir, 'upstream.wrap')): return False
