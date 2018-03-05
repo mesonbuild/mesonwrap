@@ -18,6 +18,7 @@ import sys, os, re
 import urllib.request, json, hashlib
 import tempfile, subprocess
 import configparser
+import github
 
 
 def print_status(msg, check):
@@ -34,13 +35,10 @@ def print_status(msg, check):
 
 class Reviewer:
     def __init__(self, project, pull_id):
-        self.parse_url(project, pull_id)
-
-    def parse_url(self, project, pull_id):
-        data_url = 'https://api.github.com/repos/mesonbuild/%s/pulls/%d' % (project, pull_id)
-        with urllib.request.urlopen(data_url) as u:
-            text = u.read().decode()
-            self.values = json.loads(text)
+        self._github = github.Github()
+        self._org = self._github.get_organization('mesonbuild')
+        self._project = self._org.get_repo(project)
+        self._pull = self._project.get_pull(pull_id)
 
     def review(self):
         with tempfile.TemporaryDirectory() as base_dir:
@@ -48,19 +46,17 @@ class Reviewer:
                 self.review_int(base_dir, head_dir)
 
     def clone_repos(self, base_dir, head_dir):
-        branch = self.values['base']['ref']
-        base_git = self.values['base']['repo']['clone_url']
-        head_git = 'https://github.com/%s/%s.git' % (self.values['head']['user']['login'],
-                                                     self.values['base']['repo']['name'])
+        branch = self._pull.base.ref
+        base_git = self._pull.base.repo.clone_url
+        head_git = self._pull.head.repo.clone_url
         subprocess.check_call(['git', 'clone', '-b', branch, base_git, base_dir],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.check_call(['git', 'clone', '-b', branch, head_git, head_dir],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def review_int(self, base_dir, head_dir):
-        #print(json.dumps(self.values, sort_keys=True, indent=4))
-        project = self.values['base']['repo']['name']
-        branch = self.values['base']['ref']
+        project = self._pull.base.repo.name
+        branch = self._pull.base.ref
         self.clone_repos(base_dir, head_dir)
         if not self.check_basics(base_dir, head_dir, project, branch): return False
         if not self.check_files(head_dir): return False
