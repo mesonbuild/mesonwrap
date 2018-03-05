@@ -89,6 +89,9 @@ class FakeProject:
             ofile.write("project('hello world')\n")
         self.builder.repo.index.commit('Add files')
 
+    def commit(self, message):
+        self.builder.repo.index.commit(message)
+
     @property
     def url(self):
         return self.builder.repo.git_dir
@@ -137,6 +140,15 @@ class ToolsTest(unittest.TestCase):
         self.assertIn(f.name, self.server.projects())
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         self.assertUploaded(Project(f.name, '1.0.1', 1))
+
+    def test_wrapupdater_revisions(self):
+        f = FakeProject('test2', self.tmpdir)
+        f.create_version('1.0.0')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        f.commit('update')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.assertUploaded(Project(f.name, '1.0.0', 1))
+        self.assertUploaded(Project(f.name, '1.0.0', 2))
 
 
 if __name__ == '__main__':
