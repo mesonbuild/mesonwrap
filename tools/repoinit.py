@@ -70,10 +70,8 @@ def initialize(reponame):
         ofile.write(mit_license.format(year=datetime.datetime.now().year))
     subprocess.check_call(['git', 'add', 'readme.txt', 'LICENSE.build'])
     subprocess.check_call(['git', 'commit', '-a', '-m', 'Created repository for project %s.' % reponame])
-    subprocess.check_call(['git', 'tag', 'commit_zero', '-a', '-m', 'A tag that helps get revision ids for releases.'])
     subprocess.check_call(['git', 'remote', 'add', 'origin', 'git@github.com:mesonbuild/%s.git' % reponame])
     subprocess.check_call(['git', 'push', '-u', 'origin', 'master'])
-    subprocess.check_call(['git', 'push', '--tags'])
     shutil.rmtree('.git')
     os.unlink('readme.txt')
 
