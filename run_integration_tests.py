@@ -77,14 +77,14 @@ class FakeProject:
         self.name = name
         self.builder = RepoBuilder(name, os.path.join(tmpdir, name))
 
-    def create_version(self, version):
+    def create_version(self, version, base='master'):
         self.builder.create_version(
             version=version,
             zipurl='http://localhost/file.zip',
             filename='file.zip',
             directory='project',
             ziphash='myhash',
-            base='master')
+            base=base)
         with self.builder.open('meson.build', 'w') as ofile:
             ofile.write("project('hello world')\n")
         self.builder.repo.index.commit('Add files')
@@ -149,6 +149,15 @@ class ToolsTest(unittest.TestCase):
         subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         self.assertUploaded(Project(f.name, '1.0.0', 2))
+
+    def test_wrapupdater_branched_revisions(self):
+        f = FakeProject('test3', self.tmpdir)
+        f.create_version('1.0.0')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        f.create_version('1.0.1', base='1.0.0')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.1'])
+        self.assertUploaded(Project(f.name, '1.0.0', 1))
+        self.assertUploaded(Project(f.name, '1.0.1', 2))  # FIXME we want 1 here
 
 
 if __name__ == '__main__':
