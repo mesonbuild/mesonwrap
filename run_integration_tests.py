@@ -101,7 +101,7 @@ class FakeProject:
         return self.builder.repo
 
 
-class ToolsTest(unittest.TestCase):
+class IntegrationTestBase(unittest.TestCase):
 
     def setUp(self):
         try:
@@ -127,6 +127,9 @@ class ToolsTest(unittest.TestCase):
             if v['branch'] == project.version and v['revision'] == project.revision:
                 return
         self.fail('{!r} not found'.format(project))
+
+
+class WrapUpdaterTest(IntegrationTestBase):
 
     def wrapupdater(self, name, url, version):
         subprocess.check_call(args=WRAPUPDATER + [name, url, version])
