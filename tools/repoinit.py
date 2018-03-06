@@ -87,8 +87,6 @@ class RepoBuilder:
         with self.open('LICENSE.build', 'w') as ofile:
             ofile.write(mit_license.format(year=datetime.datetime.now().year))
         self.commit = self.repo.index.commit('Created repository for project %s.' % name)
-        self.tag = self.repo.create_tag('commit_zero', self.commit,
-                                        message=' tag that helps get revision ids for releases.')
 
     def open(self, path, mode='r'):
         abspath = os.path.join(self.repo.working_dir, path)
@@ -102,7 +100,6 @@ class RepoBuilder:
             remote = 'git@github.com:mesonbuild/%s.git' % self.name
         origin = self.repo.create_remote('origin', remote)
         origin.push(self.repo.head.ref.name)
-        origin.push(self.tag)
 
     @staticmethod
     def _get_hash(url):
