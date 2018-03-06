@@ -90,7 +90,11 @@ class FakeProject:
         self.builder.repo.index.commit(message)
 
     def commit(self, message):
-        self.builder.repo.index.commit(message)
+        return self.builder.repo.index.commit(message)
+
+    def merge_commit(self, message, parent):
+        return self.builder.repo.index.commit(
+            message, parent_commits=(self.builder.repo.head.commit, parent))
 
     @property
     def url(self):
@@ -177,19 +181,19 @@ class WrapUpdaterTest(IntegrationTestBase):
         f.create_version('1.0.0')
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 1))
-        f.repo.index.commit('commit 1')
+        f.commit('commit 1')
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 2))
-        p = f.repo.index.commit('commit 2')
+        p = f.commit('commit 2')
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 3))
-        f.repo.index.commit('commit 3')
+        f.commit('commit 3')
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 4))
-        f.repo.index.commit('commit 4', parent_commits=(p, f.repo.head.commit))
+        f.merge_commit('commit 4', parent=p)
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 5))
-        f.repo.index.commit('commit 5', parent_commits=(p, f.repo.head.commit))
+        f.merge_commit('commit 5', parent=p)
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 6))
 
