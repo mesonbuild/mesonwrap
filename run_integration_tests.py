@@ -59,7 +59,7 @@ class Server(subprocess.Popen):
             return r.read()
 
     def fetch_json(self, addr):
-        j = json.loads(self.fetch(addr))
+        j = json.loads(self.fetch(addr).decode('utf8'))
         if j['output'] != 'ok':
             raise ValueError('Bad server response')
         return j
@@ -77,7 +77,7 @@ class FakeProject:
         self.name = name
         self.builder = RepoBuilder(name, os.path.join(tmpdir, name))
 
-    def create_version(self, version, base='master'):
+    def create_version(self, version, base='master', message='Add files'):
         self.builder.create_version(
             version=version,
             zipurl='http://localhost/file.zip',
@@ -87,17 +87,25 @@ class FakeProject:
             base=base)
         with self.builder.open('meson.build', 'w') as ofile:
             ofile.write("project('hello world')\n")
-        self.builder.repo.index.commit('Add files')
+        self.builder.repo.index.commit(message)
 
     def commit(self, message):
-        self.builder.repo.index.commit(message)
+        return self.builder.repo.index.commit(message)
+
+    def merge_commit(self, message, parent):
+        return self.builder.repo.index.commit(
+            message, parent_commits=(self.builder.repo.head.commit, parent))
 
     @property
     def url(self):
         return self.builder.repo.git_dir
 
+    @property
+    def repo(self):
+        return self.builder.repo
 
-class ToolsTest(unittest.TestCase):
+
+class IntegrationTestBase(unittest.TestCase):
 
     def setUp(self):
         try:
@@ -124,10 +132,16 @@ class ToolsTest(unittest.TestCase):
                 return
         self.fail('{!r} not found'.format(project))
 
+
+class WrapUpdaterTest(IntegrationTestBase):
+
+    def wrapupdater(self, name, url, version):
+        subprocess.check_call(args=WRAPUPDATER + [name, url, version])
+
     def test_existing_wrapupdater(self):
         for project in projects:
             url = 'https://github.com/mesonbuild/{name}.git'.format(name=project.name)
-            subprocess.check_call(args=WRAPUPDATER + [project.name, url, project.version])
+            self.wrapupdater(project.name, url, project.version)
             self.assertIn(project.name, self.server.projects())
             self.assertLooseUploaded(project)
 
@@ -135,8 +149,8 @@ class ToolsTest(unittest.TestCase):
         f = FakeProject('test1', self.tmpdir)
         f.create_version('1.0.0')
         f.create_version('1.0.1')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.1'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.wrapupdater(f.name, f.url, '1.0.1')
         self.assertIn(f.name, self.server.projects())
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         self.assertUploaded(Project(f.name, '1.0.1', 1))
@@ -144,20 +158,57 @@ class ToolsTest(unittest.TestCase):
     def test_wrapupdater_revisions(self):
         f = FakeProject('test2', self.tmpdir)
         f.create_version('1.0.0')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         f.commit('update')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         self.assertUploaded(Project(f.name, '1.0.0', 2))
 
     def test_wrapupdater_branched_revisions(self):
         f = FakeProject('test3', self.tmpdir)
         f.create_version('1.0.0')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
-        f.create_version('1.0.1', base='1.0.0')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.1'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        f.create_version('1.0.1', base='1.0.0', message='New [wrap version]')
+        self.wrapupdater(f.name, f.url, '1.0.1')
+        f.commit('another commit')
+        self.wrapupdater(f.name, f.url, '1.0.1')
         self.assertUploaded(Project(f.name, '1.0.0', 1))
-        self.assertUploaded(Project(f.name, '1.0.1', 2))  # FIXME we want 1 here
+        self.assertUploaded(Project(f.name, '1.0.1', 1))
+        self.assertUploaded(Project(f.name, '1.0.1', 2))
+
+    def test_wrapupdater_merged_revisions(self):
+        f = FakeProject('test', self.tmpdir)
+        f.create_version('1.0.0')
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.assertUploaded(Project(f.name, '1.0.0', 1))
+        f.commit('commit 1')
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.assertUploaded(Project(f.name, '1.0.0', 2))
+        p = f.commit('commit 2')
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.assertUploaded(Project(f.name, '1.0.0', 3))
+        f.commit('commit 3')
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.assertUploaded(Project(f.name, '1.0.0', 4))
+        f.merge_commit('commit 4', parent=p)
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.assertUploaded(Project(f.name, '1.0.0', 5))
+        f.merge_commit('commit 5', parent=p)
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.assertUploaded(Project(f.name, '1.0.0', 6))
+
+    def test_wrapupdater_latest_revision_only(self):
+        f = FakeProject('test3', self.tmpdir)
+        f.create_version('1.0.0')
+        f.commit('revision 2')
+        f.create_version('1.0.1', base='1.0.0', message='New [wrap version]')
+        f.commit('revision 2')
+        f.commit('revision 3')
+        f.commit('revision 4')
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.wrapupdater(f.name, f.url, '1.0.1')
+        self.assertUploaded(Project(f.name, '1.0.0', 2))
+        self.assertUploaded(Project(f.name, '1.0.1', 4))
 
 
 if __name__ == '__main__':
