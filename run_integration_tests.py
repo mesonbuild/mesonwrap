@@ -128,10 +128,13 @@ class ToolsTest(unittest.TestCase):
                 return
         self.fail('{!r} not found'.format(project))
 
+    def wrapupdater(self, name, url, version):
+        subprocess.check_call(args=WRAPUPDATER + [name, url, version])
+
     def test_existing_wrapupdater(self):
         for project in projects:
             url = 'https://github.com/mesonbuild/{name}.git'.format(name=project.name)
-            subprocess.check_call(args=WRAPUPDATER + [project.name, url, project.version])
+            self.wrapupdater(project.name, url, project.version)
             self.assertIn(project.name, self.server.projects())
             self.assertLooseUploaded(project)
 
@@ -139,8 +142,8 @@ class ToolsTest(unittest.TestCase):
         f = FakeProject('test1', self.tmpdir)
         f.create_version('1.0.0')
         f.create_version('1.0.1')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.1'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.wrapupdater(f.name, f.url, '1.0.1')
         self.assertIn(f.name, self.server.projects())
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         self.assertUploaded(Project(f.name, '1.0.1', 1))
@@ -148,20 +151,20 @@ class ToolsTest(unittest.TestCase):
     def test_wrapupdater_revisions(self):
         f = FakeProject('test2', self.tmpdir)
         f.create_version('1.0.0')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         f.commit('update')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         self.assertUploaded(Project(f.name, '1.0.0', 2))
 
     def test_wrapupdater_branched_revisions(self):
         f = FakeProject('test3', self.tmpdir)
         f.create_version('1.0.0')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         f.create_version('1.0.1', base='1.0.0', message='New [wrap version]')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.1'])
+        self.wrapupdater(f.name, f.url, '1.0.1')
         f.commit('another commit')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.1'])
+        self.wrapupdater(f.name, f.url, '1.0.1')
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         self.assertUploaded(Project(f.name, '1.0.1', 1))
         self.assertUploaded(Project(f.name, '1.0.1', 2))
@@ -169,22 +172,22 @@ class ToolsTest(unittest.TestCase):
     def test_wrapupdater_merged_revisions(self):
         f = FakeProject('test', self.tmpdir)
         f.create_version('1.0.0')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         f.repo.index.commit('commit 1')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 2))
         p = f.repo.index.commit('commit 2')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 3))
         f.repo.index.commit('commit 3')
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 4))
         f.repo.index.commit('commit 4', parent_commits=(p, f.repo.head.commit))
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 5))
         f.repo.index.commit('commit 5', parent_commits=(p, f.repo.head.commit))
-        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 6))
 
 
