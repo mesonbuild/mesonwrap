@@ -59,7 +59,7 @@ class Server(subprocess.Popen):
             return r.read()
 
     def fetch_json(self, addr):
-        j = json.loads(self.fetch(addr))
+        j = json.loads(self.fetch(addr).decode('utf8'))
         if j['output'] != 'ok':
             raise ValueError('Bad server response')
         return j
