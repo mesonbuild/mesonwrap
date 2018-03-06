@@ -190,6 +190,19 @@ class ToolsTest(unittest.TestCase):
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 6))
 
+    def test_wrapupdater_latest_revision_only(self):
+        f = FakeProject('test3', self.tmpdir)
+        f.create_version('1.0.0')
+        f.commit('revision 2')
+        f.create_version('1.0.1', base='1.0.0', message='New [wrap version]')
+        f.commit('revision 2')
+        f.commit('revision 3')
+        f.commit('revision 4')
+        self.wrapupdater(f.name, f.url, '1.0.0')
+        self.wrapupdater(f.name, f.url, '1.0.1')
+        self.assertUploaded(Project(f.name, '1.0.0', 2))
+        self.assertUploaded(Project(f.name, '1.0.1', 4))
+
 
 if __name__ == '__main__':
     unittest.main()
