@@ -77,7 +77,7 @@ class FakeProject:
         self.name = name
         self.builder = RepoBuilder(name, os.path.join(tmpdir, name))
 
-    def create_version(self, version, base='master'):
+    def create_version(self, version, base='master', message='Add files'):
         self.builder.create_version(
             version=version,
             zipurl='http://localhost/file.zip',
@@ -87,7 +87,7 @@ class FakeProject:
             base=base)
         with self.builder.open('meson.build', 'w') as ofile:
             ofile.write("project('hello world')\n")
-        self.builder.repo.index.commit('Add files')
+        self.builder.repo.index.commit(message)
 
     def commit(self, message):
         self.builder.repo.index.commit(message)
@@ -95,6 +95,10 @@ class FakeProject:
     @property
     def url(self):
         return self.builder.repo.git_dir
+
+    @property
+    def repo(self):
+        return self.builder.repo
 
 
 class ToolsTest(unittest.TestCase):
@@ -154,10 +158,34 @@ class ToolsTest(unittest.TestCase):
         f = FakeProject('test3', self.tmpdir)
         f.create_version('1.0.0')
         subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
-        f.create_version('1.0.1', base='1.0.0')
+        f.create_version('1.0.1', base='1.0.0', message='New [wrap version]')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.1'])
+        f.commit('another commit')
         subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.1'])
         self.assertUploaded(Project(f.name, '1.0.0', 1))
-        self.assertUploaded(Project(f.name, '1.0.1', 2))  # FIXME we want 1 here
+        self.assertUploaded(Project(f.name, '1.0.1', 1))
+        self.assertUploaded(Project(f.name, '1.0.1', 2))
+
+    def test_wrapupdater_merged_revisions(self):
+        f = FakeProject('test', self.tmpdir)
+        f.create_version('1.0.0')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.assertUploaded(Project(f.name, '1.0.0', 1))
+        f.repo.index.commit('commit 1')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.assertUploaded(Project(f.name, '1.0.0', 2))
+        p = f.repo.index.commit('commit 2')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.assertUploaded(Project(f.name, '1.0.0', 3))
+        f.repo.index.commit('commit 3')
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.assertUploaded(Project(f.name, '1.0.0', 4))
+        f.repo.index.commit('commit 4', parent_commits=(p, f.repo.head.commit))
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.assertUploaded(Project(f.name, '1.0.0', 5))
+        f.repo.index.commit('commit 5', parent_commits=(p, f.repo.head.commit))
+        subprocess.check_call(args=WRAPUPDATER + [f.name, f.url, '1.0.0'])
+        self.assertUploaded(Project(f.name, '1.0.0', 6))
 
 
 if __name__ == '__main__':

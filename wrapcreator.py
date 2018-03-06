@@ -59,8 +59,26 @@ class WrapCreator:
 
     @staticmethod
     def _get_revision(repo):
-        revision_str = repo.git.describe()
-        return int(revision_str.split('-')[1])
+        # BFS over acyclic graph
+        # revision is number of commits we visit
+        # we cut off BFS by '[wrap revision]' and 'upstream.wrap'
+        cur = repo.head.commit
+        commits = set()
+        todo = [repo.head.commit]
+        while todo:
+            cur = todo.pop()
+            if '[wrap version]' in cur.message:
+                # count commit but cut off BFS
+                commits.add(cur.hexsha)
+            elif 'upstream.wrap' not in cur.tree:
+                # just cut off BFS
+                pass
+            else:
+                # do not repeat work, we already visited this subtree
+                if cur.hexsha not in commits:
+                    commits.add(cur.hexsha)
+                    todo.extend(cur.parents)
+        return len(commits)
 
     def create_internal(self, workdir):
         repo = git.Repo.clone_from(self.repo_url, workdir, branch=self.branch)
