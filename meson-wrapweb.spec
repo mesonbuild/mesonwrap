@@ -13,6 +13,7 @@ BuildArch:     noarch
 BuildRequires: python3-devel
 Requires:      python3-flask
 Requires:      python3-GitPython
+Requires:      python3-PyGithub
 Requires:      nginx
 Requires:      uwsgi
 Requires:      uwsgi-plugin-python3
