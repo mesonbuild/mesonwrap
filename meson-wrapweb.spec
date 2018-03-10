@@ -22,7 +22,7 @@ Requires:      uwsgi-plugin-python3
 %{summary}.
 
 %prep
-%setup -q
+%autosetup -n wrapweb-%{version}
 
 %install
 mkdir -p %{buildroot}%{_datadir}/%{name}/
