@@ -33,6 +33,7 @@ class Project:
 
 # revision is not exact match, it should be at least that number, but might be higher
 projects = [
+    Project(name='protobuf', version='3.5.1', revision=2),
     Project(name='protobuf', version='3.5.0', revision=2),
     Project(name='zlib', version='1.2.8', revision=8),
     Project(name='zlib', version='1.2.11', revision=1),
