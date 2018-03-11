@@ -113,11 +113,22 @@ class IntegrationTestBase(unittest.TestCase):
         self.assertIn(project.version, projects[project.name].versions)
         self.assertIn(project.revision, projects[project.name].versions[project.version].revisions)
 
-
-class WrapUpdaterTest(IntegrationTestBase):
-
     def wrapupdater(self, name, url, version):
         subprocess.check_call(args=WRAPUPDATER + [name, url, version])
+
+
+class ConsistentVersioningTest(IntegrationTestBase):
+
+    def testRevisions(self):
+        prod = webapi.WebAPI('https://wrapdb.mesonbuild.com')
+        projects = prod.projects()
+        for project in projects:
+            for ver_id, version in project.versions.items():
+                self.wrapupdater(project.name, 'https://github.com/mesonbuild/{}.git'.format(project.name), ver_id)
+                self.assertUploaded(Project(project.name, ver_id, version.latest.revision))
+
+
+class WrapUpdaterTest(IntegrationTestBase):
 
     def test_existing_wrapupdater(self):
         for project in projects:
