@@ -10,8 +10,7 @@ import tempfile
 import time
 from tools.repoinit import RepoBuilder
 import unittest
-import urllib.error
-import urllib.request
+import webapi
 
 
 ROOT = os.path.dirname(sys.argv[0])
@@ -45,31 +44,12 @@ class Server(subprocess.Popen):
 
     def __init__(self):
         super(Server, self).__init__(args=SERVER)
+        self.api = webapi.WebAPI('http://localhost:5000')
         self._wait_server_ready()
 
     def _wait_server_ready(self):
-        while True:
-            try:
-                self.fetch('/')
-                break
-            except urllib.error.URLError:
-                time.sleep(0.1)
-
-    def fetch(self, addr):
-        with urllib.request.urlopen('http://localhost:5000' + addr) as r:
-            return r.read()
-
-    def fetch_json(self, addr):
-        j = json.loads(self.fetch(addr).decode('utf8'))
-        if j['output'] != 'ok':
-            raise ValueError('Bad server response')
-        return j
-
-    def projects(self):
-        return self.fetch_json('/v1/projects')['projects']
-
-    def project(self, name):
-        return self.fetch_json('/v1/projects/' + name)
+        while not self.api.ping():
+            time.sleep(0.1)
 
 
 class FakeProject:
@@ -122,16 +102,16 @@ class IntegrationTestBase(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def assertLooseUploaded(self, project):
-        for v in self.server.project(project.name)['versions']:
-            if v['branch'] == project.version and v['revision'] >= project.revision:
-                return
-        self.fail('{!r} not found'.format(project))
+        projects = self.server.api.projects()
+        self.assertIn(project.name, projects)
+        self.assertIn(project.version, projects[project.name].versions)
+        self.assertLessEqual(project.revision, projects[project.name].versions[project.version].latest.revision)
 
     def assertUploaded(self, project):
-        for v in self.server.project(project.name)['versions']:
-            if v['branch'] == project.version and v['revision'] == project.revision:
-                return
-        self.fail('{!r} not found'.format(project))
+        projects = self.server.api.projects()
+        self.assertIn(project.name, projects)
+        self.assertIn(project.version, projects[project.name].versions)
+        self.assertIn(project.revision, projects[project.name].versions[project.version].revisions)
 
 
 class WrapUpdaterTest(IntegrationTestBase):
@@ -143,7 +123,7 @@ class WrapUpdaterTest(IntegrationTestBase):
         for project in projects:
             url = 'https://github.com/mesonbuild/{name}.git'.format(name=project.name)
             self.wrapupdater(project.name, url, project.version)
-            self.assertIn(project.name, self.server.projects())
+            self.assertIn(project.name, self.server.api.projects())
             self.assertLooseUploaded(project)
 
     def test_wrapupdater(self):
@@ -152,7 +132,7 @@ class WrapUpdaterTest(IntegrationTestBase):
         f.create_version('1.0.1')
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.wrapupdater(f.name, f.url, '1.0.1')
-        self.assertIn(f.name, self.server.projects())
+        self.assertIn(f.name, self.server.api.projects())
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         self.assertUploaded(Project(f.name, '1.0.1', 1))
 
