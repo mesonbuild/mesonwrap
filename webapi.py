@@ -68,6 +68,7 @@ class _APIClient:
 class Revision:
 
     def __init__(self, api: _APIClient, project: 'Project', version: 'Version', revision: int):
+        self._api = api
         self.project = project
         self.version = version
         self.revision = revision
@@ -77,13 +78,13 @@ class Revision:
     @property
     def wrap(self):
         if self.__wrap is None:
-            self.__wrap = self._api.fetch_v1_project_wrap(self.project, self.version, self.revision)
+            self.__wrap = self._api.fetch_v1_project_wrap(self.project.name, self.version.version, self.revision)
         return self.__wrap
 
     @property
     def zip(self):
         if self.__zip is None:
-            self.__zip = self._api.fetch_v1_project_zip(self.project, self.version, self.revision)
+            self.__zip = self._api.fetch_v1_project_zip(self.project.name, self.version.version, self.revision)
         return self.__zip
 
 

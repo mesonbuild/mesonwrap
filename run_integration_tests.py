@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import git
+import io
 import json
 import os.path
 import shutil
@@ -11,6 +12,7 @@ import time
 from tools.repoinit import RepoBuilder
 import unittest
 import webapi
+import zipfile
 
 
 ROOT = os.path.dirname(sys.argv[0])
@@ -126,6 +128,18 @@ class ConsistentVersioningTest(IntegrationTestBase):
             for ver_id, version in project.versions.items():
                 self.wrapupdater(project.name, 'https://github.com/mesonbuild/{}.git'.format(project.name), ver_id)
                 self.assertUploaded(Project(project.name, ver_id, version.latest.revision))
+                rev = self.server.api.projects()[project.name].versions[ver_id].latest
+                self.assertEqual(version.latest.revision, rev.revision)
+                self.assertIn(b'[wrap-file]', rev.wrap)
+                self.assertIn(b'directory', rev.wrap)
+                self.assertIn(b'source_url', rev.wrap)
+                self.assertIn(b'source_filename', rev.wrap)
+                self.assertIn(b'source_hash', rev.wrap)
+                self.assertIn(b'patch_url', rev.wrap)
+                self.assertIn(b'patch_filename', rev.wrap)
+                self.assertIn(b'patch_hash', rev.wrap)
+                with zipfile.ZipFile(io.BytesIO(rev.zip)) as zipf:
+                    self.assertGreater(len(zipf.namelist()), 0)
 
 
 class WrapUpdaterTest(IntegrationTestBase):
