@@ -3,15 +3,6 @@ import urllib.request
 import urllib.error
 
 
-class _List(list):
-
-    def __contains__(self, item):
-        for i in self:
-            if item == i._id:
-                return True
-        return False
-
-
 class ServerError(Exception):
     pass
 
