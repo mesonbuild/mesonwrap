@@ -44,7 +44,7 @@ class Reviewer:
 
     def review(self):
         with tempfile.TemporaryDirectory() as head_dir:
-            self.review_int(head_dir)
+            return self.review_int(head_dir)
 
     def review_int(self, head_dir):
         project = self._pull.base.repo.name
@@ -142,4 +142,5 @@ if __name__ == '__main__':
         sys.exit(1)
     pull_id = int(sys.argv[2])
     r = Reviewer(sys.argv[1], pull_id)
-    sys.exit(r.review())
+    if not r.review():
+        sys.exit(1)
