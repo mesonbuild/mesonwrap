@@ -21,6 +21,7 @@ import configparser
 import github
 import git
 
+import environment
 
 def print_status(msg, check):
     '''
@@ -36,7 +37,7 @@ def print_status(msg, check):
 
 class Reviewer:
     def __init__(self, project, pull_id):
-        self._github = github.Github()
+        self._github = environment.Github()
         self._org = self._github.get_organization('mesonbuild')
         self._project = self._org.get_repo(project)
         self._pull = self._project.get_pull(pull_id)
@@ -142,4 +143,3 @@ if __name__ == '__main__':
     pull_id = int(sys.argv[2])
     r = Reviewer(sys.argv[1], pull_id)
     sys.exit(r.review())
-
