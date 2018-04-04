@@ -4,6 +4,7 @@ import argparse
 import sys
 from tools import repoinit, reviewtool
 from wrapweb.app import APP
+import wrapcreator
 
 
 class Command:
@@ -49,6 +50,10 @@ class Command:
     def command_repoinit(self):
         '''Initialize new wrap repository'''
         repoinit.main(sys.argv[2:])
+
+    def command_wrapcreate(self):
+        '''Create wrap from remote repository'''
+        wrapcreator.main(sys.argv[2:])
 
 
 if __name__ == '__main__':

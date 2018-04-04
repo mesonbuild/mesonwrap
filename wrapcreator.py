@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import sys, os, shutil
 import tempfile
 from glob import glob
@@ -118,10 +119,12 @@ class WrapCreator:
         zip_contents = open(zip_full, 'rb').read()
         return (wrap_contents, zip_contents, revision_id)
 
-if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print(sys.argv[0], '<project name> <data repo url> <branch>')
-        sys.exit(1)
-    x = WrapCreator(sys.argv[1], sys.argv[2], sys.argv[3])
-    x.create()
 
+def main(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('project_name')
+    parser.add_argument('data_repo_url')
+    parser.add_argument('branch')
+    args = parser.parse_args(args)
+    x = WrapCreator(args.project_name, args.data_repo_url, args.branch)
+    x.create()
