@@ -93,7 +93,7 @@ class WrapCreator:
         os.unlink(upstream_file)
         try:
             os.unlink(os.path.join(workdir, '.gitignore'))
-        except Exception:
+        except OSError:
             pass
         base_name = self.name + '-' + self.branch + '-' + str(revision_id) + '-wrap'
         zip_name = base_name + '.zip'
