@@ -25,10 +25,11 @@ class Command:
         return '{} command\n'.format(sys.argv[0]) + self.format_commands()
 
     def format_commands(self):
-        strings = []
-        for cmd, descr in sorted(self.extract_commands().items(), key=lambda x: x[0]):
-            strings.append('  {:10} {}'.format(cmd, descr))
-        return '\n'.join(strings)
+        return '\n'.join(
+            '  {:10} {}'.format(cmd, descr)
+            for cmd, descr in sorted(self.extract_commands().items(),
+                                     key=lambda x: x[0])
+        )
 
     def extract_commands(self):
         return {
