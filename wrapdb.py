@@ -32,9 +32,9 @@ class WrapDatabase:
         self.conn.close()
 
     def insert(self, project, branch, revision, wrap, zip):
-        assert(isinstance(wrap, str))
-        assert(isinstance(zip, bytes))
-        assert(isinstance(revision, int))
+        assert isinstance(wrap, str)
+        assert isinstance(zip, bytes)
+        assert isinstance(revision, int)
         c = self.conn.cursor()
         project = project.lower()
         branch = branch.lower()
