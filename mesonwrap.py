@@ -27,8 +27,10 @@ class Command:
         return '{} command\n'.format(sys.argv[0]) + self.format_commands()
 
     def format_commands(self):
+        maxlen = max(len(cmd) for cmd in self.extract_commands().keys())
+        fmt = '  {:' + str(maxlen + 1) + '} {}'
         return '\n'.join(
-            '  {:10} {}'.format(cmd, descr)
+            fmt.format(cmd, descr)
             for cmd, descr in sorted(self.extract_commands().items(),
                                      key=lambda x: x[0])
         )
