@@ -17,7 +17,7 @@ import zipfile
 
 ROOT = os.path.dirname(sys.argv[0])
 SERVER = [sys.executable, os.path.join(ROOT, 'runserver.py')]
-WRAPUPDATER = [sys.executable, os.path.join(ROOT, 'wrapupdater.py')]
+WRAPUPDATER = [sys.executable, os.path.join(ROOT, 'mesonwrap.py'), 'wrapupdate']
 DBFILE = os.path.join(ROOT, 'wrapdb.sqlite')
 
 

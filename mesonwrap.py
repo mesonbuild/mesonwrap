@@ -5,6 +5,7 @@ import sys
 from tools import repoinit, reviewtool
 from wrapweb.app import APP
 import wrapcreator
+import wrapupdater
 
 
 class Command:
@@ -54,6 +55,10 @@ class Command:
     def command_wrapcreate(self):
         '''Create wrap from remote repository'''
         wrapcreator.main(sys.argv[2:])
+
+    def command_wrapupdate(self):
+        '''Create wrap and import it into local database'''
+        wrapupdater.main(sys.argv[2:])
 
 
 if __name__ == '__main__':

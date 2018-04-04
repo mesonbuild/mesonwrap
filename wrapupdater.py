@@ -14,9 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import wrapdb, wrapcreator
-import sys, os
+import os
 import tempfile, shutil
+
 
 class WrapUpdater:
     def __init__(self, dbdir='.'):
@@ -32,9 +34,12 @@ class WrapUpdater:
             (wrap_contents, zip_contents, revision_id) = creator.create()
             self.db.insert(project_name, branch, revision_id, wrap_contents, zip_contents)
 
-if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print(sys.argv[0], 'project repo_url branch')
-        sys.exit(1)
+
+def main(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('project')
+    parser.add_argument('repo_url')
+    parser.add_argument('branch')
+    args = parser.parse_args(args)
     m = WrapUpdater()
-    m.update_db(sys.argv[1], sys.argv[2], sys.argv[3])
+    m.update_db(args.project, args.repo_url, args.branch)
