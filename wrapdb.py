@@ -85,7 +85,3 @@ class WrapDatabase:
         c.execute('''CREATE INDEX namesearch ON wraps(project);''')
         self.conn.commit()
         self.close()
-
-if __name__ == '__main__':
-    db = WrapDatabase('.')
-    db.insert('zlib', '1.2.8', 1, 'foobar', b'barfoo')
