@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from wrapweb.app import APP
+
+import mesonwrap
+
 
 if __name__ == "__main__":
-    APP.debug = True
-    APP.run(host="0.0.0.0")
+    mesonwrap.Command('serve')

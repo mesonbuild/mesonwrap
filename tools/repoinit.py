@@ -27,7 +27,8 @@ import shutil
 import sys
 import urllib.request
 
-import environment
+from . import environment
+
 
 upstream_templ = '''[wrap-file]
 directory = %s
@@ -134,14 +135,14 @@ class RepoBuilder:
         self.repo.index.add(['upstream.wrap'])
 
 
-if __name__ == '__main__':
+def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('name')
     parser.add_argument('--directory')
     parser.add_argument('--version')
     parser.add_argument('--homepage')
     parser.add_argument('--test', action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     organization = 'mesonbuild-test' if args.test else 'mesonbuild'
     builder = RepoBuilder(name=args.name,
                           path=args.directory,

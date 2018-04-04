@@ -21,7 +21,8 @@ import tempfile
 import configparser
 import git
 
-import environment
+from . import environment
+
 
 def print_status(msg, check):
     '''
@@ -136,11 +137,12 @@ class Reviewer:
             return False
         return True
 
-if __name__ == '__main__':
+
+def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('name')
     parser.add_argument('pull_request', type=int)
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     r = Reviewer(args.name, args.pull_request)
     if not r.review():
         sys.exit(1)
