@@ -18,7 +18,6 @@ import sys, os, re
 import urllib.request, json, hashlib
 import tempfile
 import configparser
-import github
 import git
 
 import environment
