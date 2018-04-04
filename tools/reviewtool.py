@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import sys, os, re
 import urllib.request, json, hashlib
 import tempfile
@@ -136,10 +137,10 @@ class Reviewer:
         return True
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print(sys.argv[0], '<project name> <merge request number>')
-        sys.exit(1)
-    pull_id = int(sys.argv[2])
-    r = Reviewer(sys.argv[1], pull_id)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('name')
+    parser.add_argument('pull_request', type=int)
+    args = parser.parse_args()
+    r = Reviewer(args.name, args.pull_request)
     if not r.review():
         sys.exit(1)
