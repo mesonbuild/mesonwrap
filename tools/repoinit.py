@@ -18,6 +18,7 @@
 used as a basis for a Wrap db entry. Also calculates a basic
 upstream.wrap."""
 
+import argparse
 import datetime
 import git
 import hashlib
@@ -25,6 +26,8 @@ import os
 import shutil
 import sys
 import urllib.request
+
+import environment
 
 upstream_templ = '''[wrap-file]
 directory = %s
@@ -79,14 +82,26 @@ class GitFile:
 
 class RepoBuilder:
 
-    def __init__(self, name, path):
+    def __init__(self, name, path=None, homepage=None, organization=None):
         self.name = name
-        self.repo = git.Repo.init(path)
-        with self.open('readme.txt', 'w') as ofile:
-            ofile.write(readme.format(reponame=name))
-        with self.open('LICENSE.build', 'w') as ofile:
-            ofile.write(mit_license.format(year=datetime.datetime.now().year))
-        self.commit = self.repo.index.commit('Created repository for project %s.' % name)
+        try:
+            self.repo = git.Repo(path)
+            self.origin = self.repo.remote('origin')
+        except git.InvalidGitRepositoryError:
+            if homepage is None:
+                raise ValueError('homepage is required')
+            gh = environment.Github()
+            mesonbuild = gh.get_organization(organization)
+            description = 'Meson build definitions for %s' % name
+            ghrepo = mesonbuild.create_repo(name, description=description, homepage=homepage)
+            self.repo = git.Repo.init(path)
+            with self.open('readme.txt', 'w') as ofile:
+                ofile.write(readme.format(reponame=name))
+            with self.open('LICENSE.build', 'w') as ofile:
+                ofile.write(mit_license.format(year=datetime.datetime.now().year))
+            self.commit = self.repo.index.commit('Create repository for project %s' % name)
+            self.origin = self.repo.create_remote('origin', ghrepo.ssh_url)
+            self.origin.push(self.repo.head.ref.name)
 
     def open(self, path, mode='r'):
         abspath = os.path.join(self.repo.working_dir, path)
@@ -94,12 +109,6 @@ class RepoBuilder:
         if f.writable():
             return GitFile(path, f, self.repo.index)
         return f
-
-    def push(self, remote=None):
-        if remote is None:
-            remote = 'git@github.com:mesonbuild/%s.git' % self.name
-        origin = self.repo.create_remote('origin', remote)
-        origin.push(self.repo.head.ref.name)
 
     @staticmethod
     def _get_hash(url):
@@ -109,7 +118,12 @@ class RepoBuilder:
         h.update(data)
         return h.hexdigest()
 
+    def init_version(self, version):
+        branch = self.repo.create_head(version)
+        self.origin.push(branch)
+
     def create_version(self, version, zipurl, filename, directory, ziphash=None, base=None):
+        # TODO use provide interface for this function
         if ziphash is None:
             ziphash = self._get_hash(zipurl)
         self.repo.head.reference = self.repo.create_head(version, commit=base)
@@ -121,16 +135,17 @@ class RepoBuilder:
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 6:
-        print(sys.argv[0], '<reponame> <version> <zipurl> <filename> <directory>')
-        sys.exit(1)
-    reponame = sys.argv[1]
-    version = sys.argv[2]
-    zipurl = sys.argv[3]
-    filename = sys.argv[4]
-    directory = sys.argv[5]
-    builder = RepoBuilder(reponame, '.')
-    builder.push()
-    builder.create_version(version, zipurl, filename, directory)
-    print('Done, now do the branching + stuff.')
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('name')
+    parser.add_argument('--directory')
+    parser.add_argument('--version')
+    parser.add_argument('--homepage')
+    parser.add_argument('--test', action='store_true')
+    args = parser.parse_args()
+    organization = 'mesonbuild-test' if args.test else 'mesonbuild'
+    builder = RepoBuilder(name=args.name,
+                          path=args.directory,
+                          homepage=args.homepage,
+                          organization=organization)
+    if args.version:
+        builder.init_version(args.version)
