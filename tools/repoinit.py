@@ -83,26 +83,39 @@ class GitFile:
 
 class RepoBuilder:
 
-    def __init__(self, name, path=None, homepage=None, organization=None):
+    def __init__(self, name, path=None, organization=None, homepage=None):
+        '''Pushes to github only if organization is set'''
         self.name = name
         try:
             self.repo = git.Repo(path)
-            self.origin = self.repo.remote('origin')
-        except git.InvalidGitRepositoryError:
-            if homepage is None:
-                raise ValueError('homepage is required')
-            gh = environment.Github()
-            mesonbuild = gh.get_organization(organization)
-            description = 'Meson build definitions for %s' % name
-            ghrepo = mesonbuild.create_repo(name, description=description, homepage=homepage)
-            self.repo = git.Repo.init(path)
-            with self.open('readme.txt', 'w') as ofile:
-                ofile.write(readme.format(reponame=name))
-            with self.open('LICENSE.build', 'w') as ofile:
-                ofile.write(mit_license.format(year=datetime.datetime.now().year))
-            self.commit = self.repo.index.commit('Create repository for project %s' % name)
-            self.origin = self.repo.create_remote('origin', ghrepo.ssh_url)
+            try:
+                self.origin = self.repo.remote('origin')
+            except ValueError:
+                self.origin = None
+        except (git.InvalidGitRepositoryError, git.NoSuchPathError):
+            if organization is None:
+                self.init(name, path)
+            else:
+                self.init_github(name, path, organization, homepage)
+
+    def init(self, name, path, origin=None):
+        '''Push if origin is not None'''
+        self.repo = git.Repo.init(path)
+        with self.open('readme.txt', 'w') as ofile:
+            ofile.write(readme.format(reponame=name))
+        with self.open('LICENSE.build', 'w') as ofile:
+            ofile.write(mit_license.format(year=datetime.datetime.now().year))
+        self.commit = self.repo.index.commit('Create repository for project %s' % name)
+        if origin is not None:
+            self.origin = self.repo.create_remote('origin', origin)
             self.origin.push(self.repo.head.ref.name)
+
+    def init_github(self, name, path, homepage, organization):
+        gh = environment.Github()
+        mesonbuild = gh.get_organization(organization)
+        description = 'Meson build definitions for %s' % name
+        ghrepo = mesonbuild.create_repo(name, description=description, homepage=homepage)
+        self.init(name, path, ghrepo.ssh_url)
 
     def open(self, path, mode='r'):
         abspath = os.path.join(self.repo.working_dir, path)
@@ -121,7 +134,8 @@ class RepoBuilder:
 
     def init_version(self, version):
         branch = self.repo.create_head(version)
-        self.origin.push(branch)
+        if self.origin is not None:
+            self.origin.push(branch)
 
     def create_version(self, version, zipurl, filename, directory, ziphash=None, base=None):
         # TODO use provide interface for this function
@@ -146,7 +160,7 @@ def main(args):
     organization = 'mesonbuild-test' if args.test else 'mesonbuild'
     builder = RepoBuilder(name=args.name,
                           path=args.directory,
-                          homepage=args.homepage,
-                          organization=organization)
+                          organization=organization,
+                          homepage=args.homepage)
     if args.version:
         builder.init_version(args.version)
