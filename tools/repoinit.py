@@ -110,7 +110,7 @@ class RepoBuilder:
             self.origin = self.repo.create_remote('origin', origin)
             self.origin.push(self.repo.head.ref.name)
 
-    def init_github(self, name, path, homepage, organization):
+    def init_github(self, name, path, organization, homepage):
         gh = environment.Github()
         mesonbuild = gh.get_organization(organization)
         description = 'Meson build definitions for %s' % name
