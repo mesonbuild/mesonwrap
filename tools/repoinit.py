@@ -131,7 +131,7 @@ class RepoBuilder:
 
     @staticmethod
     def _get_hash(url):
-        with urllib.request.urlopen(zipurl) as r:
+        with urllib.request.urlopen(url) as r:
             data = r.read()
         h = hashlib.sha256()
         h.update(data)
@@ -143,10 +143,9 @@ class RepoBuilder:
             self.origin.push(branch)
 
     def create_version(self, version, zipurl, filename, directory, ziphash=None, base=None):
-        # TODO use provide interface for this function
         if ziphash is None:
             ziphash = self._get_hash(zipurl)
-        self.repo.head.reference = self.repo.create_head(version, commit=base)
+        self.repo.head.reference = self.repo.create_head(version)
         assert not self.repo.head.is_detached
         self.repo.head.reset(index=True, working_tree=True)
         with self.open('upstream.wrap', 'w') as ofile:
@@ -154,15 +153,14 @@ class RepoBuilder:
         self.repo.index.add(['upstream.wrap'])
 
 
-def main(args):
+def new_repo(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('name')
-    parser.add_argument('--message')
-    parser.add_argument('--directory')
-    parser.add_argument('--version')
-    parser.add_argument('--homepage')
-    parser.add_argument('--test', action='store_true')
-    parser.add_argument('--refresh', action='store_true')
+    parser.add_argument('--directory', help='Working directory')
+    parser.add_argument('--version', help='Initialize dummy version')
+    parser.add_argument('--homepage', required=True)
+    parser.add_argument('--test', action='store_true',
+                        help='Publish to http://github.com/mesonbuild-test')
     args = parser.parse_args(args)
     organization = 'mesonbuild-test' if args.test else 'mesonbuild'
     builder = RepoBuilder(name=args.name,
@@ -171,5 +169,26 @@ def main(args):
                           homepage=args.homepage)
     if args.version:
         builder.init_version(args.version)
-    if args.refresh:
-        builder.refresh(args.message)
+
+
+def refresh(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('name')
+    parser.add_argument('--directory', help='Working directory')
+    parser.add_argument('--message')
+    args = parser.parse_args(args)
+    builder = RepoBuilder(name=args.name, path=args.directory)
+    builder.refresh(args.message)
+
+
+def new_version(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('name')
+    parser.add_argument('--directory', help='Working directory')
+    parser.add_argument('--version', required=True)
+    parser.add_argument('--zipurl', required=True)
+    parser.add_argument('--filename', required=True)
+    parser.add_argument('--srcdir', required=True)
+    args = parser.parse_args(args)
+    builder = RepoBuilder(name=args.name, path=args.directory)
+    builder.create_version(args.version, args.zipurl, args.filename, args.srcdir)

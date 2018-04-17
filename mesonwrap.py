@@ -50,9 +50,17 @@ class Command:
         '''Review wrap PR'''
         reviewtool.main(sys.argv[2:])
 
-    def command_repoinit(self):
-        '''Initialize new wrap repository'''
-        repoinit.main(sys.argv[2:])
+    def command_new_repo(self):
+        '''Create and push new wrap repository'''
+        repoinit.new_repo(sys.argv[2:])
+
+    def command_new_version(self):
+        '''Create new version and prefill upstream.wrap'''
+        repoinit.new_version(sys.argv[2:])
+
+    def command_refresh_repo(self):
+        '''Refresh statically created file'''
+        repoinit.refresh(sys.argv[2:])
 
     def command_wrapcreate(self):
         '''Create wrap from remote repository'''
