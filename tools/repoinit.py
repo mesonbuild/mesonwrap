@@ -94,28 +94,33 @@ class RepoBuilder:
                 self.origin = None
         except (git.InvalidGitRepositoryError, git.NoSuchPathError):
             if organization is None:
-                self.init(name, path)
+                self.init(path)
             else:
-                self.init_github(name, path, organization, homepage)
+                self.init_github(path, organization, homepage)
 
-    def init(self, name, path, origin=None):
+    def init(self, path, origin=None):
         '''Push if origin is not None'''
         self.repo = git.Repo.init(path)
-        with self.open('readme.txt', 'w') as ofile:
-            ofile.write(readme.format(reponame=name))
-        with self.open('LICENSE.build', 'w') as ofile:
-            ofile.write(mit_license.format(year=datetime.datetime.now().year))
-        self.commit = self.repo.index.commit('Create repository for project %s' % name)
+        self.refresh('Create repository for project %s' % self.name)
         if origin is not None:
             self.origin = self.repo.create_remote('origin', origin)
             self.origin.push(self.repo.head.ref.name)
 
-    def init_github(self, name, path, organization, homepage):
+    def refresh(self, message=None):
+        if message is None:
+            message = 'Refresh repository %s' % self.name
+        with self.open('readme.txt', 'w') as ofile:
+            ofile.write(readme.format(reponame=self.name))
+        with self.open('LICENSE.build', 'w') as ofile:
+            ofile.write(mit_license.format(year=datetime.datetime.now().year))
+        self.repo.index.commit(message)
+
+    def init_github(self, path, organization, homepage):
         gh = environment.Github()
         mesonbuild = gh.get_organization(organization)
-        description = 'Meson build definitions for %s' % name
-        ghrepo = mesonbuild.create_repo(name, description=description, homepage=homepage)
-        self.init(name, path, ghrepo.ssh_url)
+        description = 'Meson build definitions for %s' % self.name
+        ghrepo = mesonbuild.create_repo(self.name, description=description, homepage=homepage)
+        self.init(path, ghrepo.ssh_url)
 
     def open(self, path, mode='r'):
         abspath = os.path.join(self.repo.working_dir, path)
@@ -152,10 +157,12 @@ class RepoBuilder:
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('name')
+    parser.add_argument('--message')
     parser.add_argument('--directory')
     parser.add_argument('--version')
     parser.add_argument('--homepage')
     parser.add_argument('--test', action='store_true')
+    parser.add_argument('--refresh', action='store_true')
     args = parser.parse_args(args)
     organization = 'mesonbuild-test' if args.test else 'mesonbuild'
     builder = RepoBuilder(name=args.name,
@@ -164,3 +171,5 @@ def main(args):
                           homepage=args.homepage)
     if args.version:
         builder.init_version(args.version)
+    if args.refresh:
+        builder.refresh(args.message)
