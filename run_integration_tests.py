@@ -125,21 +125,22 @@ class ConsistentVersioningTest(IntegrationTestBase):
         prod = webapi.WebAPI('https://wrapdb.mesonbuild.com')
         projects = prod.projects()
         for project in projects:
-            for ver_id, version in project.versions.items():
-                self.wrapupdater(project.name, 'https://github.com/mesonbuild/{}.git'.format(project.name), ver_id)
-                self.assertUploaded(Project(project.name, ver_id, version.latest.revision))
-                rev = self.server.api.projects()[project.name].versions[ver_id].latest
-                self.assertEqual(version.latest.revision, rev.revision)
-                self.assertIn(b'[wrap-file]', rev.wrap)
-                self.assertIn(b'directory', rev.wrap)
-                self.assertIn(b'source_url', rev.wrap)
-                self.assertIn(b'source_filename', rev.wrap)
-                self.assertIn(b'source_hash', rev.wrap)
-                self.assertIn(b'patch_url', rev.wrap)
-                self.assertIn(b'patch_filename', rev.wrap)
-                self.assertIn(b'patch_hash', rev.wrap)
-                with zipfile.ZipFile(io.BytesIO(rev.zip)) as zipf:
-                    self.assertGreater(len(zipf.namelist()), 0)
+            with self.subTest(project=project.name):
+                for ver_id, version in project.versions.items():
+                    self.wrapupdater(project.name, 'https://github.com/mesonbuild/{}.git'.format(project.name), ver_id)
+                    self.assertUploaded(Project(project.name, ver_id, version.latest.revision))
+                    rev = self.server.api.projects()[project.name].versions[ver_id].latest
+                    self.assertEqual(version.latest.revision, rev.revision)
+                    self.assertIn(b'[wrap-file]', rev.wrap)
+                    self.assertIn(b'directory', rev.wrap)
+                    self.assertIn(b'source_url', rev.wrap)
+                    self.assertIn(b'source_filename', rev.wrap)
+                    self.assertIn(b'source_hash', rev.wrap)
+                    self.assertIn(b'patch_url', rev.wrap)
+                    self.assertIn(b'patch_filename', rev.wrap)
+                    self.assertIn(b'patch_hash', rev.wrap)
+                    with zipfile.ZipFile(io.BytesIO(rev.zip)) as zipf:
+                        self.assertGreater(len(zipf.namelist()), 0)
 
 
 class WrapUpdaterTest(IntegrationTestBase):
