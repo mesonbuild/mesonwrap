@@ -142,10 +142,10 @@ class RepoBuilder:
         if self.origin is not None:
             self.origin.push(branch)
 
-    def create_version(self, version, zipurl, filename, directory, ziphash=None, base=None):
+    def create_version(self, version, zipurl, filename, directory, ziphash=None, base='HEAD'):
         if ziphash is None:
             ziphash = self._get_hash(zipurl)
-        self.repo.head.reference = self.repo.create_head(version)
+        self.repo.head.reference = self.repo.create_head(version, commit=base)
         assert not self.repo.head.is_detached
         self.repo.head.reset(index=True, working_tree=True)
         with self.open('upstream.wrap', 'w') as ofile:
