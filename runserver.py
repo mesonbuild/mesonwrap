@@ -15,8 +15,8 @@
 # limitations under the License.
 
 
-import mesonwrap
+from mesonwrap.cli import Command
 
 
 if __name__ == "__main__":
-    mesonwrap.Command('serve')
+    Command('serve')
