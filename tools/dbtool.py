@@ -14,30 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import wrapdb
 import sys, os
 
 # This is a simple tool to do queries and inserts from the command line.
 
-if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        print(sys.argv[0], 'dbdir queryterm or --arg queryterm')
-        sys.exit(1)
-
-    dbdir = sys.argv[1]
-    first = sys.argv[2]
-    rest = sys.argv[3:]
-    db = wrapdb.WrapDatabase(dbdir)
-    if first == '--wrap':
+def main(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dbdir', required=True)
+    parser.add_argument('command', choices=('wrap', 'versions', 'zip', 'insert', 'search'))
+    args, rest = parser.parse_known_args(args)
+    db = wrapdb.WrapDatabase(args.dbdir)
+    if args.command == 'wrap':
         print(db.get_wrap(*rest))
-    elif first == '--versions':
+    elif args.command == 'versions':
         print(db.get_versions(*rest))
-    elif first == '--zip':
+    elif args.command == 'zip':
         print(db.get_zip(*rest))
-    elif first == '--insert':
+    elif args.command == 'insert':
         rest[2] = int(rest[2])
         rest[4] = rest[4].encode()
         db.insert(*rest)
-    else:
-        for i in db.name_search(first):
+    elif args.command == 'search':
+        for i in db.name_search(rest[0]):
             print(i[0])
+    else:
+        sys.exit('Unrecognized command {!r}'.format(args.command))

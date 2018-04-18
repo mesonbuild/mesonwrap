@@ -2,7 +2,7 @@
 
 import argparse
 import sys
-from tools import repoinit, reviewtool
+from tools import repoinit, reviewtool, dbtool
 from wrapweb.app import APP
 import wrapcreator
 import wrapupdater
@@ -69,6 +69,10 @@ class Command:
     def command_wrapupdate(self):
         '''Create wrap and import it into local database'''
         wrapupdater.main(sys.argv[2:])
+
+    def command_dbtool(self):
+        '''This is a simple tool to do queries and inserts from the command line'''
+        dbtool.main(sys.argv[2:])
 
 
 if __name__ == '__main__':
