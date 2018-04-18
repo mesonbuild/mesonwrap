@@ -2,11 +2,11 @@
 
 import argparse
 import sys
-from tools import repoinit, reviewtool, dbtool
-from wrapweb.app import APP
-import wrapcreator
-import wrapupdater
 
+from wrapweb.app import APP
+from mesonwrap import wrapcreator
+from mesonwrap import wrapupdater
+from mesonwrap.tools import repoinit, reviewtool, dbtool
 
 class Command:
 

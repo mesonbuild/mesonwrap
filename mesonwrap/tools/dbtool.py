@@ -15,8 +15,10 @@
 # limitations under the License.
 
 import argparse
-import wrapdb
 import sys, os
+
+from mesonwrap import wrapdb
+
 
 # This is a simple tool to do queries and inserts from the command line.
 

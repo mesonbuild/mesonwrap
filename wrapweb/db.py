@@ -15,8 +15,8 @@
 from flask import g
 import os
 
-import wrapdb
-import wrapupdater
+from mesonwrap import wrapdb
+from mesonwrap import wrapupdater
 
 DB_DIRECTORY = os.path.normpath(os.path.join(os.path.split(__file__)[0], ".."))
 

@@ -9,10 +9,11 @@ import subprocess
 import sys
 import tempfile
 import time
-from tools.repoinit import RepoBuilder
 import unittest
-import webapi
 import zipfile
+
+from mesonwrap.tools.repoinit import RepoBuilder
+from wrapweb import webapi
 
 
 ROOT = os.path.dirname(sys.argv[0])

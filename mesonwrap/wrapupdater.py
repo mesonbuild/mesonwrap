@@ -15,9 +15,10 @@
 # limitations under the License.
 
 import argparse
-import wrapdb, wrapcreator
 import os
 import tempfile, shutil
+
+from mesonwrap import wrapdb, wrapcreator
 
 
 class WrapUpdater:
