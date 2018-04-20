@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 
 import setuptools
+import unittest
+
+
+def discover_tests():
+    test_loader = unittest.TestLoader()
+    return test_loader.discover('.', pattern='*_test.py')
 
 
 setuptools.setup(
@@ -11,4 +17,5 @@ setuptools.setup(
     url='https://github.com/mesonbuild/wrapweb',
     packages=['mesonwrap', 'wrapweb'],
     scripts=['mesonwrap.py'],
+    test_suite='setup.discover_tests',
 )
