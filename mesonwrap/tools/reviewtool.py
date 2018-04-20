@@ -21,7 +21,7 @@ import tempfile
 import configparser
 import git
 
-from . import environment
+from mesonwrap.tools import environment
 
 
 def print_status(msg, check):

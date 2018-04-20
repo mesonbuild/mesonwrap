@@ -27,7 +27,7 @@ import shutil
 import sys
 import urllib.request
 
-from . import environment
+from mesonwrap.tools import environment
 
 
 upstream_templ = '''[wrap-file]
