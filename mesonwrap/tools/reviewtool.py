@@ -18,6 +18,7 @@ import urllib.request, json, hashlib
 import tempfile
 import git
 import shutil
+import subprocess
 
 from mesonwrap import upstream
 from mesonwrap.tools import environment
@@ -73,6 +74,7 @@ class Reviewer:
         if not self.check_wrapformat(upwrap): return False
         if not self.check_download(tmpdir, upwrap): return False
         if not self.check_extract(tmpdir, upwrap): return False
+        if not self.check_build(tmpdir, upwrap): return False
         return True
 
     @staticmethod
@@ -183,6 +185,16 @@ class Reviewer:
                             os.path.exists(srcdir)): return False
         return print_status('Patch merges with source',
                             self.mergetree(os.path.join(tmpdir, 'head'), srcdir))
+
+    def check_build(self, tmpdir, upwrap):
+        # TODO lead_directory_missing
+        srcdir = os.path.join(tmpdir, 'src', upwrap.directory)
+        bindir = os.path.join(tmpdir, 'bin')
+        setup_result = subprocess.call(['meson', 'setup', srcdir, bindir])
+        if not print_status('meson setup', setup_result == 0): return False
+        test_result = subprocess.call(['ninja', '-C', bindir, 'test'])
+        if not print_status('ninja test', test_result == 0): return False
+        return True
 
 
 def main(args):
