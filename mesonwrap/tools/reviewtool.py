@@ -18,9 +18,9 @@ import argparse
 import sys, os, re
 import urllib.request, json, hashlib
 import tempfile
-import configparser
 import git
 
+from mesonwrap import upstream
 from mesonwrap.tools import environment
 
 
@@ -54,19 +54,16 @@ class Reviewer:
                                         branch=self._pull.head.ref)
         if not self.check_basics(head_repo, project, branch): return False
         if not self.check_files(head_dir): return False
-        if not self.check_wrapformat(os.path.join(head_dir, 'upstream.wrap')): return False
-        if not self.check_download(os.path.join(head_dir, 'upstream.wrap')): return False
+        upwrap = upstream.UpstreamWrap.from_file(os.path.join(head_dir, 'upstream.wrap'))
+        if not self.check_wrapformat(upwrap): return False
+        if not self.check_download(upwrap): return False
         return True
 
     def check_wrapformat(self, upwrap):
-        config = configparser.ConfigParser()
-        config.read(upwrap)
-        if not print_status('Has wrap-file section', 'wrap-file' in config): return False
-        sec = config['wrap-file']
-        if not print_status('Section has directory', 'directory' in sec): return False
-        if not print_status('Section has source_url', 'source_url' in sec): return False
-        if not print_status('Section has source_filename', 'source_filename' in sec): return False
-        if not print_status('Section has source_hash', 'source_hash' in sec): return False
+        if not print_status('upstream.wrap has directory', upwrap.has_directory): return False
+        if not print_status('upstream.wrap has source_url', upwrap.has_source_url): return False
+        if not print_status('upstream.wrap has source_filename', upwrap.has_source_filename): return False
+        if not print_status('upstream.wrap has source_hash', upwrap.has_source_hash): return False
         return True
 
     def check_files(self, head_dir):
@@ -120,19 +117,15 @@ class Reviewer:
         return (data, exc)
 
     def check_download(self, upwrap):
-        config = configparser.ConfigParser()
-        config.read(upwrap)
-        dl_url = config['wrap-file']['source_url']
-        expected_hash = config['wrap-file']['source_hash']
-        source_data, download_exc = self._fetch(dl_url)
+        source_data, download_exc = self._fetch(upwrap.source_url)
         if not print_status('Download url works', download_exc is None):
             print(' error:', str(e))
             return False
         h = hashlib.sha256()
         h.update(source_data)
         calculated_hash = h.hexdigest()
-        if not print_status('Hash matches', calculated_hash == expected_hash):
-            print(' expected:', expected_hash)
+        if not print_status('Hash matches', calculated_hash == upwrap.source_hash):
+            print(' expected:', upwrap.source_hash)
             print('      got:', calculated_hash)
             return False
         return True
