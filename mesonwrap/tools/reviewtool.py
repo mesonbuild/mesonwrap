@@ -17,6 +17,7 @@ import sys, os, re
 import urllib.request, json, hashlib
 import tempfile
 import git
+import shutil
 
 from mesonwrap import upstream
 from mesonwrap.tools import environment
@@ -42,10 +43,11 @@ class Reviewer:
         self._pull = self._project.get_pull(pull_id)
 
     def review(self):
-        with tempfile.TemporaryDirectory() as head_dir:
-            return self.review_int(head_dir)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            return self.review_int(tmpdir)
 
-    def review_int(self, head_dir):
+    def review_int(self, tmpdir):
+        head_dir = os.path.join(tmpdir, 'head')
         project = self._pull.base.repo.name
         branch = self._pull.base.ref
         head_repo = git.Repo.clone_from(self._pull.head.repo.clone_url, head_dir,
@@ -54,13 +56,23 @@ class Reviewer:
         if not self.check_files(head_dir): return False
         upwrap = upstream.UpstreamWrap.from_file(os.path.join(head_dir, 'upstream.wrap'))
         if not self.check_wrapformat(upwrap): return False
-        if not self.check_download(upwrap): return False
+        if not self.check_download(tmpdir, upwrap): return False
+        if not self.check_extract(tmpdir, upwrap): return False
         return True
+
+    @staticmethod
+    def check_has_no_path_separators(name, value):
+        return print_status(name + ' has no path separators',
+                            '/' not in value and '\\' not in value)
 
     def check_wrapformat(self, upwrap):
         if not print_status('upstream.wrap has directory', upwrap.has_directory): return False
+        if not self.check_has_no_path_separators('upstream.wrap directory',
+                                                 upwrap.directory): return False
         if not print_status('upstream.wrap has source_url', upwrap.has_source_url): return False
         if not print_status('upstream.wrap has source_filename', upwrap.has_source_filename): return False
+        if not self.check_has_no_path_separators('upstream.wrap source_filename',
+                                                 upwrap.source_filename): return False
         if not print_status('upstream.wrap has source_hash', upwrap.has_source_hash): return False
         return True
 
@@ -110,11 +122,13 @@ class Reviewer:
             exc = e
         return (data, exc)
 
-    def check_download(self, upwrap):
+    def check_download(self, tmpdir, upwrap):
         source_data, download_exc = self._fetch(upwrap.source_url)
         if not print_status('Download url works', download_exc is None):
             print(' error:', str(e))
             return False
+        with open(os.path.join(tmpdir, upwrap.source_filename), 'wb') as f:
+            f.write(source_data)
         h = hashlib.sha256()
         h.update(source_data)
         calculated_hash = h.hexdigest()
@@ -122,6 +136,18 @@ class Reviewer:
             print(' expected:', upwrap.source_hash)
             print('      got:', calculated_hash)
             return False
+        return True
+
+    def check_extract(self, tmpdir, upwrap):
+        # TODO lead_directory_missing
+        srcdir = os.path.join(tmpdir, 'src')
+        os.mkdir(srcdir)
+        shutil.unpack_archive(os.path.join(tmpdir, upwrap.source_filename), srcdir)
+        srcdir = os.path.join(srcdir, upwrap.directory)
+        if not print_status('upstream.wrap directory {!r} exists'.format(upwrap.directory),
+                            os.path.exists(srcdir)): return False
+        shutil.copytree(os.path.join(tmpdir, 'head'), srcdir,
+                        ignore=shutil.ignore_patterns('.git', 'readme.txt', 'upstream.wrap'))
         return True
 
 
