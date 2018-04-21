@@ -154,6 +154,25 @@ class Reviewer:
             return False
         return True
 
+    @staticmethod
+    def mergetree(src, dst, ignore=None):
+        for dirpath, dirnames, filenames in os.walk(src):
+            prefix = os.path.relpath(dirpath, src)
+            dstpath = os.path.join(dst, prefix)
+            for d in dirnames:
+                if d == '.git':
+                    continue
+                os.makedirs(os.path.join(dstpath, d), exist_ok=True)
+            for f in filenames:
+                if d in ('readme.txt', 'upstream.wrap'):
+                    continue
+                dest = os.path.join(dstpath, f)
+                if os.path.exists(dest):
+                    print_status('{!r} already exists', os.path.join(prefix, f))
+                    return False
+                shutil.copy2(os.path.join(dirpath, f), dest)
+        return True
+
     def check_extract(self, tmpdir, upwrap):
         # TODO lead_directory_missing
         srcdir = os.path.join(tmpdir, 'src')
@@ -162,9 +181,8 @@ class Reviewer:
         srcdir = os.path.join(srcdir, upwrap.directory)
         if not print_status('upstream.wrap directory {!r} exists'.format(upwrap.directory),
                             os.path.exists(srcdir)): return False
-        shutil.copytree(os.path.join(tmpdir, 'head'), srcdir,
-                        ignore=shutil.ignore_patterns('.git', 'readme.txt', 'upstream.wrap'))
-        return True
+        return print_status('Patch merges with source',
+                            self.mergetree(os.path.join(tmpdir, 'head'), srcdir))
 
 
 def main(args):
