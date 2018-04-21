@@ -61,9 +61,12 @@ class Reviewer:
         self._branch = branch
         self.strict_fileset = True
 
-    def review(self):
+    def review(self, export_sources=None):
         with tempfile.TemporaryDirectory() as tmpdir:
-            return self.review_int(tmpdir)
+            r = self.review_int(tmpdir)
+            if export_sources:
+                shutil.copytree(os.path.join(tmpdir, 'src'), export_sources)
+            return r
 
     def review_int(self, tmpdir):
         head_dir = os.path.join(tmpdir, 'head')
@@ -203,6 +206,7 @@ def main(args):
     parser.add_argument('--pull_request', type=int)
     parser.add_argument('--branch')
     parser.add_argument('--allow_other_files', action='store_true')
+    parser.add_argument('--export_sources')
     args = parser.parse_args(args)
     if args.pull_request:
         r = Reviewer.from_pull_request(args.name, args.pull_request)
@@ -211,5 +215,5 @@ def main(args):
     else:
         sys.exit('Either --pull_request or --branch must be set')
     r.strict_fileset = not args.allow_other_files
-    if not r.review():
+    if not r.review(args.export_sources):
         sys.exit(1)
