@@ -16,10 +16,16 @@ class UpstreamWrap:
     )
     __slots__ = ('_cfg')
 
-    def __init__(self, filename=None):
+    def __init__(self, **kwargs):
         self._cfg = configparser.ConfigParser()
-        if filename is not None:
-            self.read_file(filename)
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    @classmethod
+    def from_file(cls, filename):
+        upst = cls()
+        upst.read_file(filename)
+        return upst
 
     def read_file(self, filename):
         with open(filename) as f:

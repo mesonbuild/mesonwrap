@@ -5,6 +5,12 @@ from mesonwrap import upstream
 
 class UpstreamWrapTest(unittest.TestCase):
 
+    def test_init(self):
+        w = upstream.UpstreamWrap(source_url='hello',
+                                  source_hash='world')
+        self.assertEqual(w.source_url, 'hello')
+        self.assertEqual(w.source_hash, 'world')
+
     def test_attr(self):
         w = upstream.UpstreamWrap()
         for attr in ('directory',
