@@ -53,8 +53,16 @@ class UpstreamWrap:
     def __getattr__(self, name):
         if name in self.__slots__:
             return super(UpstreamWrap, self).__getattr__(name)
-        self.__checkattr(name)
-        return self._cfg.get(self.__section, name)
+        if name.startswith('has_'):
+            name = name[4:]
+            self.__checkattr(name)
+            return self._cfg.has_option(self.__section, name)
+        else:
+            self.__checkattr(name)
+            try:
+                return self._cfg.get(self.__section, name)
+            except (configparser.NoOptionError, configparser.NoSectionError) as exc:
+                raise ValueError('{!r} was not defined'.format(name)) from exc
 
     def __setattr__(self, name, value):
         if name in self.__slots__:

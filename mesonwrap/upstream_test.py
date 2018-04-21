@@ -22,6 +22,20 @@ class UpstreamWrapTest(unittest.TestCase):
                      'patch_hash'):
             setattr(w, attr, 'test-value')
             self.assertEqual(getattr(w, attr), 'test-value')
+            self.assertTrue(getattr(w, 'has_' + attr))
+
+    def test_section_not_found(self):
+        w = upstream.UpstreamWrap()
+        self.assertFalse(w.has_directory)
+        with self.assertRaises(ValueError):
+            self.assertIsNone(w.directory)
+
+    def test_option_not_found(self):
+        w = upstream.UpstreamWrap()
+        w.source_filename = 'hello'
+        self.assertFalse(w.has_directory)
+        with self.assertRaises(ValueError):
+            w.directory
 
     def test_write(self):
         w = upstream.UpstreamWrap()
