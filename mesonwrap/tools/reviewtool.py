@@ -41,6 +41,7 @@ class Reviewer:
         self._org = self._github.get_organization('mesonbuild')
         self._project = self._org.get_repo(project)
         self._pull = self._project.get_pull(pull_id)
+        self.strict_fileset = True
 
     def review(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -92,7 +93,8 @@ class Reviewer:
                     rel_name = abs_name[len(head_dir)+1:]
                     print(' ', rel_name)
         if not print_status('Repo contains only buildsystem files', not found):
-            return False
+            if self.strict_fileset:
+                return False
         return True
 
     @staticmethod
@@ -155,7 +157,9 @@ def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('name')
     parser.add_argument('pull_request', type=int)
+    parser.add_argument('--allow_other_files', action='store_true')
     args = parser.parse_args(args)
     r = Reviewer(args.name, args.pull_request)
+    r.strict_fileset = not args.allow_other_files
     if not r.review():
         sys.exit(1)
