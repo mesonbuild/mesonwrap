@@ -36,11 +36,28 @@ def print_status(msg, check):
 
 
 class Reviewer:
-    def __init__(self, project, pull_id):
-        self._github = environment.Github()
-        self._org = self._github.get_organization('mesonbuild')
-        self._project = self._org.get_repo(project)
-        self._pull = self._project.get_pull(pull_id)
+
+    @staticmethod
+    def _get_project(project):
+        gh = environment.Github()
+        org = gh.get_organization('mesonbuild')
+        return org.get_repo(project)
+
+    @classmethod
+    def from_pull_request(cls, project, pull_id):
+        pull = cls._get_project(project).get_pull(pull_id)
+        return cls(project=project, clone_url=pull.head.repo.clone_url,
+                   branch=pull.base.ref)
+
+    @classmethod
+    def from_committed(cls, project, branch):
+        return cls(project=project, clone_url=cls._get_project(project).clone_url,
+                   branch=branch)
+
+    def __init__(self, project, clone_url, branch):
+        self._project = project
+        self._clone_url = clone_url
+        self._branch = branch
         self.strict_fileset = True
 
     def review(self):
@@ -49,11 +66,8 @@ class Reviewer:
 
     def review_int(self, tmpdir):
         head_dir = os.path.join(tmpdir, 'head')
-        project = self._pull.base.repo.name
-        branch = self._pull.base.ref
-        head_repo = git.Repo.clone_from(self._pull.head.repo.clone_url, head_dir,
-                                        branch=self._pull.head.ref)
-        if not self.check_basics(head_repo, project, branch): return False
+        head_repo = git.Repo.clone_from(self._clone_url, head_dir, branch=self._branch)
+        if not self.check_basics(head_repo): return False
         if not self.check_files(head_dir): return False
         upwrap = upstream.UpstreamWrap.from_file(os.path.join(head_dir, 'upstream.wrap'))
         if not self.check_wrapformat(upwrap): return False
@@ -101,12 +115,12 @@ class Reviewer:
     def isfile(head_dir, filename):
         return os.path.isfile(os.path.join(head_dir, filename))
 
-    def check_basics(self, head_repo, project, branch):
-        print('Inspecting project %s, branch %s.' % (project, branch))
+    def check_basics(self, head_repo):
+        print('Inspecting project %s, branch %s.' % (self._project, self._branch))
         head_dir = head_repo.working_dir
-        if not print_status('Repo name valid', re.fullmatch('[a-z0-9._]+', project)): return False
-        if not print_status('Branch name valid', re.fullmatch('[a-z0-9._]+', branch)): return False
-        if not print_status('Target branch is not master', branch != 'master'): return False
+        if not print_status('Repo name valid', re.fullmatch('[a-z0-9._]+', self._project)): return False
+        if not print_status('Branch name valid', re.fullmatch('[a-z0-9._]+', self._branch)): return False
+        if not print_status('Target branch is not master', self._branch != 'master'): return False
         if not print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt')): return False
         if not print_status('Has LICENSE.build', self.isfile(head_dir, 'LICENSE.build')): return False
         if not print_status('Has upstream.wrap', self.isfile(head_dir, 'upstream.wrap')): return False
@@ -156,10 +170,16 @@ class Reviewer:
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('name')
-    parser.add_argument('pull_request', type=int)
+    parser.add_argument('--pull_request', type=int)
+    parser.add_argument('--branch')
     parser.add_argument('--allow_other_files', action='store_true')
     args = parser.parse_args(args)
-    r = Reviewer(args.name, args.pull_request)
+    if args.pull_request:
+        r = Reviewer.from_pull_request(args.name, args.pull_request)
+    elif args.branch:
+        r = Reviewer.from_committed(args.name, args.branch)
+    else:
+        sys.exit('Either --pull_request or --branch must be set')
     r.strict_fileset = not args.allow_other_files
     if not r.review():
         sys.exit(1)
