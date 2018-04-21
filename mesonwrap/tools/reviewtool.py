@@ -86,10 +86,6 @@ class Reviewer:
         return True
 
     @staticmethod
-    def git_tags(repo):
-        return list(map(lambda tag: tag.name, repo.tags))
-
-    @staticmethod
     def isfile(head_dir, filename):
         return os.path.isfile(os.path.join(head_dir, filename))
 
