@@ -27,16 +27,9 @@ import shutil
 import sys
 import urllib.request
 
+from mesonwrap import upstream
 from mesonwrap.tools import environment
 
-
-upstream_templ = '''[wrap-file]
-directory = %s
-
-source_url = %s
-source_filename = %s
-source_hash = %s
-'''
 
 readme = '''This repository contains a Meson build definition for project {reponame}.
 
@@ -149,8 +142,11 @@ class RepoBuilder:
         assert not self.repo.head.is_detached
         self.repo.head.reset(index=True, working_tree=True)
         with self.open('upstream.wrap', 'w') as ofile:
-            ofile.write(upstream_templ % (directory, zipurl, filename, ziphash))
-        self.repo.index.add(['upstream.wrap'])
+            upstream.UpstreamWrap(
+                directory=directory,
+                source_url=zipurl,
+                source_filename=filename,
+                source_hash=ziphash).write(ofile)
 
 
 def new_repo(args):
