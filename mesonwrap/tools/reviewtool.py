@@ -55,6 +55,10 @@ class Reviewer:
         return cls(project=project, clone_url=cls._get_project(project).clone_url,
                    branch=branch)
 
+    @classmethod
+    def from_repository(cls, project, clone_url, branch):
+        return cls(project=project, clone_url=clone_url, branch=branch)
+
     def __init__(self, project, clone_url, branch):
         self._project = project
         self._clone_url = clone_url
@@ -205,13 +209,17 @@ def main(args):
     parser.add_argument('name')
     parser.add_argument('--pull_request', type=int)
     parser.add_argument('--branch')
+    parser.add_argument('--clone_url')
     parser.add_argument('--allow_other_files', action='store_true')
     parser.add_argument('--export_sources')
     args = parser.parse_args(args)
     if args.pull_request:
         r = Reviewer.from_pull_request(args.name, args.pull_request)
     elif args.branch:
-        r = Reviewer.from_committed(args.name, args.branch)
+        if args.clone_url:
+            r = Reviewer.from_repository(args.name, args.clone_url, args.branch)
+        else:
+            r = Reviewer.from_committed(args.name, args.branch)
     else:
         sys.exit('Either --pull_request or --branch must be set')
     r.strict_fileset = not args.allow_other_files
