@@ -43,7 +43,7 @@ class Command:
     def command_serve(self):
         '''Run server'''
         APP.debug = True
-        APP.run(host="0.0.0.0")
+        APP.run(host='0.0.0.0')
 
     def command_review(self):
         '''Review wrap PR'''
