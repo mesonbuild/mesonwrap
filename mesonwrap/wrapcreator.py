@@ -21,6 +21,9 @@ from glob import glob
 import zipfile, hashlib
 import git
 
+from mesonwrap import gitutils
+
+
 class UpstreamDefinition:
     def __init__(self, fname):
         self.values = {}
@@ -60,26 +63,7 @@ class WrapCreator:
 
     @staticmethod
     def _get_revision(repo):
-        # BFS over acyclic graph
-        # revision is number of commits we visit
-        # we cut off BFS by '[wrap revision]' and 'upstream.wrap'
-        cur = repo.head.commit
-        commits = set()
-        todo = [repo.head.commit]
-        while todo:
-            cur = todo.pop()
-            if '[wrap version]' in cur.message:
-                # count commit but cut off BFS
-                commits.add(cur.hexsha)
-            elif 'upstream.wrap' not in cur.tree:
-                # just cut off BFS
-                pass
-            else:
-                # do not repeat work, we already visited this subtree
-                if cur.hexsha not in commits:
-                    commits.add(cur.hexsha)
-                    todo.extend(cur.parents)
-        return len(commits)
+        return gitutils.get_revision(repo, repo.head.commit)
 
     def create_internal(self, workdir):
         repo = git.Repo.clone_from(self.repo_url, workdir, branch=self.branch)

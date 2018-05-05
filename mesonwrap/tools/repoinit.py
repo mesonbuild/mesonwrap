@@ -25,7 +25,7 @@ import shutil
 import sys
 import urllib.request
 
-from mesonwrap import upstream
+from mesonwrap import gitutils, upstream
 from mesonwrap.tools import environment
 
 
@@ -55,21 +55,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
-
-
-class GitFile:
-
-    def __init__(self, filename, file, index):
-        self.filename = filename
-        self.file = file
-        self.index = index
-
-    def __enter__(self):
-        return self.file.__enter__()
-
-    def __exit__(self, type, value, traceback):
-        self.file.__exit__(type, value, traceback)
-        self.index.add([self.filename])
 
 
 class RepoBuilder:
@@ -114,11 +99,7 @@ class RepoBuilder:
         self.init(path, ghrepo.ssh_url)
 
     def open(self, path, mode='r'):
-        abspath = os.path.join(self.repo.working_dir, path)
-        f = open(abspath, mode)
-        if f.writable():
-            return GitFile(path, f, self.repo.index)
-        return f
+        return gitutils.GitFile.open(self.repo, path, mode)
 
     @staticmethod
     def _get_hash(url):
