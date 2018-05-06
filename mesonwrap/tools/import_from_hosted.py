@@ -73,17 +73,29 @@ class Importer:
         ghrepo = self._org.get_repo(project)
         tagname = '{}-{}'.format(version, revision.revision)
         try:
-            ghrepo.get_release(tagname)
-            print('Already uploaded')
-            return
+            rel = ghrepo.get_release(tagname)
+            print('Release found')
         except github.GithubException:
-            # No release
-            pass
-        tag = ghrepo.create_git_tag(tag=tagname, message=tagname, type='commit', object=commit.hexsha)
-        ghrepo.create_git_ref('refs/tags/{}'.format(tag.tag), tag.sha)
-        rel = ghrepo.create_git_release(tag=tagname, name=tagname, message=tagname)
-        rel.upload_asset(wrappath, label=os.path.basename(wrappath), content_type='text/plain')
-        rel.upload_asset(zippath, label=os.path.basename(zippath), content_type='application/zip')
+            tag = ghrepo.create_git_tag(tag=tagname, message=tagname, type='commit', object=commit.hexsha)
+            ghrepo.create_git_ref('refs/tags/{}'.format(tag.tag), tag.sha)
+            rel = ghrepo.create_git_release(tag=tagname, name=tagname, message=tagname)
+            print('Release created')
+        patch_label = 'patch.zip'
+        wrap_label = 'upstream.wrap'
+        patch_found = False
+        wrap_found = False
+        for a in rel.get_assets():
+            if a.label == patch_label:
+                patch_found = True
+            elif a.label == wrap_label:
+                wrap_found = True
+            else:
+                print('Removing unknown asset {!r} / {!r}'.format(a.label, a.name))
+                a.delete_asset()
+        if not wrap_found:
+            rel.upload_asset(wrappath, label=wrap_label, content_type='text/plain')
+        if not patch_found:
+            rel.upload_asset(zippath, label=patch_label, content_type='application/zip')
         print('Done')
 
 
