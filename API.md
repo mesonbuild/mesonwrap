@@ -38,3 +38,25 @@ Will return `.wrap` file.
 `/v1/projects/<project>/<branch>/<revision>/get_zip`
 
 Will return zip file with all needed content for meson.
+
+## Querying the latest revision of the package
+`/v1/query/get_latest/<project>`
+```JSON
+{
+  "branch": "3.5.1",
+  "output": "ok",
+  "revision": 2
+}
+```
+
+## Querying all projects that have prefix
+`/v1/query/byname/<project_prefix>`
+```JSON
+{
+  "output": "ok",
+  "projects": [
+    "protobuf",
+    "protobuf-c"
+  ]
+}
+```
