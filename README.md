@@ -4,10 +4,10 @@
 # How to run
 
 ## Default settings
-    ./runserver.py
+    mesonwrap serve
 
 ## Custom settings
-    WRAPDB_CONFIG=/etc/meson-wrapweb/wrapdb.cfg ./runserver.py
+    WRAPDB_CONFIG=/etc/meson-wrapweb/wrapdb.cfg mesonwrap serve
 
 # API
 [API](API.md)
