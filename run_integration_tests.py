@@ -116,6 +116,11 @@ class IntegrationTestBase(unittest.TestCase):
         self.assertIn(project.version, projects[project.name].versions)
         self.assertIn(project.revision, projects[project.name].versions[project.version].revisions)
 
+    def assertLatest(self, project, version, revision):
+        latest = self.server.api.projects()[project].query_latest()
+        self.assertEqual(latest.version.version, version)
+        self.assertEqual(latest.revision, revision)
+
     def wrapupdater(self, name, url, version):
         subprocess.check_call(args=WRAPUPDATER + [name, url, version])
 
@@ -142,6 +147,38 @@ class ConsistentVersioningTest(IntegrationTestBase):
                     self.assertIn(b'patch_hash', rev.wrap)
                     with zipfile.ZipFile(io.BytesIO(rev.zip)) as zipf:
                         self.assertGreater(len(zipf.namelist()), 0)
+
+
+class QueryTest(IntegrationTestBase):
+
+    def test_latest(self):
+        f = FakeProject('test1', self.tmpdir)
+        for version in ['1.0.0', '0.1.2', '1.2.1']:
+            f.create_version(version)
+            self.wrapupdater(f.name, f.url, version)
+        self.assertLatest('test1', '1.2.1', 1)
+        f.create_version('1.3.0')
+        self.wrapupdater(f.name, f.url, '1.3.0')
+        self.assertLatest('test1', '1.3.0', 1)
+        f.commit('update')
+        f.commit('update')
+        self.wrapupdater(f.name, f.url, '1.3.0')
+        self.assertLatest('test1', '1.3.0', 3)
+
+    def test_by_name_prefix(self):
+        baz = FakeProject('baz', self.tmpdir)
+        baz.create_version('1.0.0')
+        self.wrapupdater(baz.name, baz.url, '1.0.0')
+        bar = FakeProject('bar', self.tmpdir)
+        bar.create_version('2.1.1')
+        self.wrapupdater(bar.name, bar.url, '2.1.1')
+        projects = self.server.api.projects()
+        self.assertCountEqual(projects.query_by_name_prefix('baz'),
+                              [projects['baz']])
+        self.assertCountEqual(projects.query_by_name_prefix('bar'),
+                              [projects['bar']])
+        self.assertCountEqual(projects.query_by_name_prefix('ba'),
+                              [projects['baz'], projects['bar']])
 
 
 class WrapUpdaterTest(IntegrationTestBase):

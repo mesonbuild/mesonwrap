@@ -43,6 +43,12 @@ class _APIClient:
         else:
             raise ValueError('Invalid server response')
 
+    def query_v1_byname(self, project: str):
+        return self.fetch_json('/v1/query/byname/' + project)
+
+    def query_v1_get_latest(self, project: str):
+        return self.fetch_json('/v1/query/get_latest/' + project)
+
     def fetch_v1_projects(self):
         return self.fetch_json('/v1/projects')
 
@@ -90,20 +96,33 @@ class Revision:
 
 class Version:
 
-    def __init__(self, api: _APIClient, project: 'Project', version: str, revisions: [int]):
+    def __init__(self, api: _APIClient, project: 'Project', version: str):
         self._api = api
         self.project = project
         self.version = version
-        self._revision_ids = revisions
-        self._latest = max(self._revision_ids)
-        self.__revisions = None
+        self.__revisions_called = False
+        self.__revisions = dict()
+
+    @property
+    def _revision_ids(self):
+        return self.project._version_ids[self.version]
+
+    @property
+    def _latest(self):
+        return max(self._revision_ids)
+
+    def _get_revision(self, rev):
+        if rev not in self.__revisions:
+            self.__revisions[rev] = Revision(self._api, self.project, self, rev)
+        return self.__revisions[rev]
 
     @property
     def revisions(self):
-        if self.__revisions is None:
-            self.__revisions = dict()
+        if not self.__revisions_called:
             for rev in self._revision_ids:
-                self.__revisions[rev] = Revision(self._api, self.project, self, rev)
+                if rev not in self.__revisions:
+                    self.__revisions[rev] = Revision(self._api, self.project, self, rev)
+            self.__revisions_called = True
         return self.__revisions
 
     @property
@@ -117,7 +136,9 @@ class Project:
         self._api = api
         self.name = name
         self.__version_ids = None
-        self.__versions = None
+        self.__versions_called = False
+        self.__versions = dict()
+        self.__latest = None
 
     @property
     def _version_ids(self):
@@ -128,17 +149,30 @@ class Project:
                 ver = version['branch']
                 rev = int(version['revision'])
                 if ver not in self.__version_ids:
-                    self.__version_ids[ver] = list()
-                self.__version_ids[ver].append(rev)
+                    self.__version_ids[ver] = set()
+                self.__version_ids[ver].add(rev)
         return self.__version_ids
+
+    def _get_version(self, ver):
+        if ver not in self.__versions:
+            self.__versions[ver] = Version(self._api, self, ver)
+        return self.__versions[ver]
 
     @property
     def versions(self):
-        if self.__versions is None:
-            self.__versions = dict()
-            for ver, revs in self._version_ids.items():
-                self.__versions[ver] = Version(self._api, self, ver, revs)
+        if not self.__versions_called:
+            for ver in self._version_ids.keys():
+                self._get_version(ver)
+            self.__versions_called = True
         return self.__versions
+
+    def query_latest(self) -> Revision:
+        if self.__latest is None:
+            js = self._api.query_v1_get_latest(self.name)
+            ver = js['branch']
+            rev = js['revision']
+            self.__latest = self._get_version(ver)._get_revision(rev)
+        return self.__latest
 
 
 class ProjectSet:
@@ -146,7 +180,8 @@ class ProjectSet:
     def __init__(self, api):
         self._api = api
         self.__project_names = None
-        self.__projects = None
+        self.__projects_called = False
+        self.__projects = dict()
 
     @property
     def _project_names(self):
@@ -154,10 +189,17 @@ class ProjectSet:
             self.__project_names = self._api.fetch_v1_projects()['projects']
         return self.__project_names
 
+    def _get_project(self, name):
+        if name not in self.__projects:
+            self.__projects[name] = Project(self._api, name)
+        return self.__projects[name]
+
     @property
     def _projects(self):
-        if self.__projects is None:
-            self.__projects = [Project(self._api, name) for name in self._project_names]
+        if not self.__projects_called:
+            for name in self._project_names:
+                self._get_project(name)
+            self.__projects_called = True
         return self.__projects
 
     def __contains__(self, item):
@@ -167,12 +209,14 @@ class ProjectSet:
         return len(self._project_names)
 
     def __getitem__(self, key):
-        if key not in self:
-            raise KeyError(key)
-        return Project(self._api, key)
+        return self._projects[key]
 
     def __iter__(self):
-        return iter(self._projects)
+        return iter(self._projects.values())
+
+    def query_by_name_prefix(self, prefix: str) -> [Project]:
+        js = self._api.query_v1_byname(prefix)
+        return [ self._get_project(name) for name in js['projects'] ]
 
 
 class WebAPI:
