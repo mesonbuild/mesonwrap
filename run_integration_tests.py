@@ -181,6 +181,16 @@ class QueryTest(IntegrationTestBase):
                               [projects['baz'], projects['bar']])
 
 
+
+class GithubHookTest(IntegrationTestBase):
+
+    def test_import(self):
+        foo = FakeProject('foobar', self.tmpdir)
+        foo.create_version('1.2.3')
+        self.server.api.pull_request_hook('mesonbuild', 'foobar', '1.2.3', foo.url)
+        self.assertUploaded(Project(foo.name, '1.2.3', 1))
+
+
 class WrapUpdaterTest(IntegrationTestBase):
 
     def test_existing_wrapupdater(self):

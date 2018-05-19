@@ -1,4 +1,7 @@
 import json
+import hashlib
+import hmac
+import urllib.parse
 import urllib.request
 import urllib.error
 
@@ -35,7 +38,12 @@ class _APIClient:
             return r.read()
 
     def fetch_json(self, url):
-        j = json.loads(self.fetch(url).decode('utf8'))
+        return self.parse_json(self.fetch(url))
+
+    def parse_json(self, data):
+        if isinstance(data, bytes):
+            data = data.decode('utf8')
+        j = json.loads(data)
         if j['output'] == 'ok':
             return j
         elif j['output'] == 'notok':
@@ -69,6 +77,19 @@ class _APIClient:
         self._check_revision(revision)
         return self.fetch('/v1/projects/{project}/{version}/{revision}/get_zip'.format(
             project=project, version=version, revision=revision))
+
+    def pull_request_hook(self, js, secret):
+        data = json.dumps(js).encode('utf8')
+        signature = hmac.new(secret, data, hashlib.sha1).hexdigest()
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': 'GitHub-Hookshot/MesonWrap-Client',
+            'X-Hub-Signature': 'sha1=' + signature,
+            'X-Github-Event': 'pull_request',
+        }
+        req = urllib.request.Request(self.url + '/github-hook', data, headers)
+        with urllib.request.urlopen(req) as r:
+            return self.parse_json(r.read())
 
 
 class Revision:
@@ -238,3 +259,13 @@ class WebAPI:
             return True
         except urllib.error.URLError:
             return False
+
+    def pull_request_hook(self, organization, project, branch, clone_url):
+        repo = dict(full_name='{}/{}'.format(organization, project),
+                    name=project,
+                    clone_url=clone_url)
+        base = dict(repo=repo, ref=branch)
+        js = dict(pull_request=dict(base=base, merged=True),
+                  action='closed')
+        # FIXME let user set the key
+        return self._api.pull_request_hook(js, b'changeme please')
