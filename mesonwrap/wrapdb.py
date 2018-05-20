@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from distutils import version
 import sqlite3
 import os, sys
+
 
 class WrapDatabase:
     def __init__(self, dirname, readwrite=False):
@@ -49,13 +51,15 @@ class WrapDatabase:
 
     def get_versions(self, project, latest=False):
         c = self.conn.cursor()
-        qtempl = '''SELECT branch, revision FROM wraps WHERE project == ? ORDER BY branch DESC, revision DESC %s;'''
-        if latest:
-            query = qtempl % 'LIMIT 1'
-        else:
-            query = qtempl % ''
+        query = '''SELECT branch, revision FROM wraps WHERE project == ? ORDER BY branch DESC, revision DESC;'''
         c.execute(query, (project,))
-        return c.fetchall()
+        if latest:
+            # TODO consider computing this during import
+            latest_ver = max(map(lambda r: (version.LooseVersion(r[0]), r[1]),
+                                 c.fetchall()))
+            return [(str(latest_ver[0]), latest_ver[1])]
+        else:
+            return c.fetchall()
 
     def get_wrap(self, project, branch, revision):
         c = self.conn.cursor()
