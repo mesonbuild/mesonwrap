@@ -18,18 +18,18 @@ import wrapweb.api as api
 from wrapweb import response_to_json
 from wrapweb.app import APP
 
-@APP.route("/", methods=["GET"])
+@APP.route('/', methods=['GET'])
 def index():
     j = response_to_json(api.get_projectlist())
     return render_template(
-        "projects.html",
-        projects=j["projects"])
+        'projects.html',
+        projects=j['projects'])
 
-@APP.route("/<project>", methods=["GET"])
+@APP.route('/<project>', methods=['GET'])
 def project_info(project):
     j = response_to_json(api.get_project_info(project))
     return render_template(
-        "project.html",
-        title="%s - Wrap DB" % project,
+        'project.html',
+        title='%s - Wrap DB' % project,
         project=project,
         resp=j)

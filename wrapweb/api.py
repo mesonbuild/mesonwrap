@@ -14,39 +14,43 @@
 
 import flask
 
-import wrapweb.db as db
 from wrapweb.app import APP
+from wrapweb import db
+
 
 def get_projectlist():
     querydb = db.get_query_db()
-    res = {"output" : "ok", "projects" : querydb.name_search("")}
+    res = {'output' : 'ok', 'projects' : querydb.name_search('')}
     return flask.jsonify(res)
 
-@APP.route("/v1/query/byname/<project>", methods=["GET"])
+
+@APP.route('/v1/query/byname/<project>', methods=['GET'])
 def name_query(project):
     querydb = db.get_query_db()
-    res = {"output" : "ok", "projects" : querydb.name_search(project)}
+    res = {'output' : 'ok', 'projects' : querydb.name_search(project)}
     return flask.jsonify(res)
 
-@APP.route("/v1/query/get_latest/<project>", methods=["GET"])
+
+@APP.route('/v1/query/get_latest/<project>', methods=['GET'])
 def get_latest(project):
     querydb = db.get_query_db()
     matches = querydb.get_versions(project, latest=True)
 
     if len(matches) == 0:
-        out = {"output": "notok", "error": "No such project"}
+        out = {'output': 'notok', 'error': 'No such project'}
         jsonout = flask.jsonify(out)
         jsonout.status_code = 500
         return jsonout
 
     latest = matches[0]
-    out = {"output": "ok", "branch": latest[0], "revision" : latest[1]}
+    out = {'output': 'ok', 'branch': latest[0], 'revision' : latest[1]}
     jsonout = flask.jsonify(out)
     jsonout.status_code = 200
     return jsonout
 
-@APP.route("/v1/projects", defaults={"project": None})
-@APP.route("/v1/projects/<project>")
+
+@APP.route('/v1/projects', defaults={'project': None})
+@APP.route('/v1/projects/<project>')
 def get_project_info(project):
     if project is None:
         return get_projectlist()
@@ -54,34 +58,35 @@ def get_project_info(project):
     matches = querydb.get_versions(project)
 
     if len(matches) == 0:
-        out = {"output": "notok", "error": "No such project"}
+        out = {'output': 'notok', 'error': 'No such project'}
         jsonout = flask.jsonify(out)
         jsonout.status_code = 500
         return jsonout
 
-    out = {"output": "ok", "versions": []}
+    out = {'output': 'ok', 'versions': []}
     for i in matches:
-        e = {"branch": i[0], "revision" : i[1]}
-        out["versions"].append(e)
+        e = {'branch': i[0], 'revision' : i[1]}
+        out['versions'].append(e)
     jsonout = flask.jsonify(out)
     jsonout.status_code = 200
     return jsonout
 
-@APP.route("/v1/projects/<project>/<branch>/<int:revision>/get_wrap")
-@APP.route("/v1/projects/<project>/<branch>/<int:revision>/get_zip")
+
+@APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_wrap')
+@APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_zip')
 def get_wrap(project, branch, revision):
     querydb = db.get_query_db()
     revision = revision
-    if flask.request.path.endswith("/get_wrap"):
+    if flask.request.path.endswith('/get_wrap'):
         result = querydb.get_wrap(project, branch, revision)
-        mtype = "text/plain"
-        fname = ""
+        mtype = 'text/plain'
+        fname = ''
     else:
         result = querydb.get_zip(project, branch, revision)
-        mtype = "application/zip"
-        fname = "%s-%s-%d-wrap.zip" % (project, branch, revision)
+        mtype = 'application/zip'
+        fname = '%s-%s-%d-wrap.zip' % (project, branch, revision)
     if result is None:
-        out = {"output": "notok", "error": "No such entry"}
+        out = {'output': 'notok', 'error': 'No such entry'}
         jsonout = flask.jsonify(out)
         jsonout.status_code = 500
         return jsonout
@@ -89,5 +94,5 @@ def get_wrap(project, branch, revision):
         resp = flask.make_response(result)
         resp.mimetype = mtype
         if fname:
-            resp.headers["Content-Disposition"] = "attachment; filename=%s" % fname
+            resp.headers['Content-Disposition'] = 'attachment; filename=%s' % fname
         return resp
