@@ -48,7 +48,7 @@ class Reviewer:
     def from_pull_request(cls, project, pull_id):
         pull = cls._get_project(project).get_pull(pull_id)
         return cls(project=project, clone_url=pull.head.repo.clone_url,
-                   branch=pull.base.ref)
+                   branch=pull.base.ref, source_branch=pull.head.ref)
 
     @classmethod
     def from_committed(cls, project, branch):
@@ -59,10 +59,11 @@ class Reviewer:
     def from_repository(cls, project, clone_url, branch):
         return cls(project=project, clone_url=clone_url, branch=branch)
 
-    def __init__(self, project, clone_url, branch):
+    def __init__(self, project, clone_url, branch, source_branch=None):
         self._project = project
         self._clone_url = clone_url
         self._branch = branch
+        self._source_branch = source_branch or branch
         self.strict_fileset = True
 
     def review(self, export_sources=None):
@@ -74,7 +75,7 @@ class Reviewer:
 
     def review_int(self, tmpdir):
         head_dir = os.path.join(tmpdir, 'head')
-        head_repo = git.Repo.clone_from(self._clone_url, head_dir, branch=self._branch)
+        head_repo = git.Repo.clone_from(self._clone_url, head_dir, branch=self._source_branch)
         if not self.check_basics(head_repo): return False
         if not self.check_files(head_dir): return False
         upwrap = upstream.UpstreamWrap.from_file(os.path.join(head_dir, 'upstream.wrap'))
