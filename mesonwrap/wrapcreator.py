@@ -15,9 +15,8 @@
 # limitations under the License.
 
 import argparse
-import sys, os, shutil
+import os, shutil
 import tempfile
-from glob import glob
 import zipfile, hashlib
 import git
 
@@ -47,6 +46,7 @@ class UpstreamDefinition:
 
     def __getattr__(self, attr):
         return self.values[attr]
+
 
 class WrapCreator:
     def __init__(self, name, repo_url, branch, out_dir='.',

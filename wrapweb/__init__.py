@@ -14,5 +14,6 @@
 
 import json
 
+
 def response_to_json(resp):
     return json.loads(resp.get_data().decode("utf-8"))

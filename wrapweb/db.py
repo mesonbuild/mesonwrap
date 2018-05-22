@@ -20,15 +20,16 @@ from mesonwrap import wrapupdater
 
 DB_DIRECTORY = os.path.normpath(os.path.join(os.path.split(__file__)[0], ".."))
 
+
 def get_query_db():
     db = getattr(g, "_query_database", None)
     if db is None:
         db = g._query_database = wrapdb.WrapDatabase(DB_DIRECTORY)
     return db
 
+
 def get_update_db():
     db = getattr(g, "_update_database", None)
     if db is None:
         db = g._update_database = wrapupdater.WrapUpdater(DB_DIRECTORY)
     return db
-

@@ -37,7 +37,7 @@ class Command:
 
     def extract_commands(self):
         return {
-            cmd[len(self.CMD_PREFIX):] : getattr(self, cmd).__doc__
+            cmd[len(self.CMD_PREFIX):]: getattr(self, cmd).__doc__
             for cmd in dir(self) if cmd.startswith(self.CMD_PREFIX)
         }
 

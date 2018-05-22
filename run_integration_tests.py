@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import git
 import io
-import json
 import os.path
 import shutil
 import subprocess
@@ -210,7 +208,6 @@ class QueryTest(IntegrationTestBase):
                               [projects['bar']])
         self.assertCountEqual(projects.query_by_name_prefix('ba'),
                               [projects['baz'], projects['bar']])
-
 
 
 class GithubHookTest(IntegrationTestBase):

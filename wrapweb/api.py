@@ -20,14 +20,14 @@ from wrapweb import db
 
 def get_projectlist():
     querydb = db.get_query_db()
-    res = {'output' : 'ok', 'projects' : querydb.name_search('')}
+    res = {'output': 'ok', 'projects': querydb.name_search('')}
     return flask.jsonify(res)
 
 
 @APP.route('/v1/query/byname/<project>', methods=['GET'])
 def name_query(project):
     querydb = db.get_query_db()
-    res = {'output' : 'ok', 'projects' : querydb.name_search(project)}
+    res = {'output': 'ok', 'projects': querydb.name_search(project)}
     return flask.jsonify(res)
 
 
@@ -43,7 +43,7 @@ def get_latest(project):
         return jsonout
 
     latest = matches[0]
-    out = {'output': 'ok', 'branch': latest[0], 'revision' : latest[1]}
+    out = {'output': 'ok', 'branch': latest[0], 'revision': latest[1]}
     jsonout = flask.jsonify(out)
     jsonout.status_code = 200
     return jsonout
@@ -65,7 +65,7 @@ def get_project_info(project):
 
     out = {'output': 'ok', 'versions': []}
     for i in matches:
-        e = {'branch': i[0], 'revision' : i[1]}
+        e = {'branch': i[0], 'revision': i[1]}
         out['versions'].append(e)
     jsonout = flask.jsonify(out)
     jsonout.status_code = 200

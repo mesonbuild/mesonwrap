@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import argparse
-import sys, os
+import sys
 
 from mesonwrap import wrapdb
 

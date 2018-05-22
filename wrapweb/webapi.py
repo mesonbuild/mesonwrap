@@ -237,7 +237,7 @@ class ProjectSet:
 
     def query_by_name_prefix(self, prefix: str) -> [Project]:
         js = self._api.query_v1_byname(prefix)
-        return [ self._get_project(name) for name in js['projects'] ]
+        return [self._get_project(name) for name in js['projects']]
 
 
 class WebAPI:

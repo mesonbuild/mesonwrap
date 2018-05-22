@@ -18,12 +18,14 @@ import wrapweb.api as api
 from wrapweb import response_to_json
 from wrapweb.app import APP
 
+
 @APP.route('/', methods=['GET'])
 def index():
     j = response_to_json(api.get_projectlist())
     return render_template(
         'projects.html',
         projects=j['projects'])
+
 
 @APP.route('/<project>', methods=['GET'])
 def project_info(project):

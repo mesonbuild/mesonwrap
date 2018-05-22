@@ -14,7 +14,7 @@
 
 import argparse
 import sys, os, re
-import urllib.request, json, hashlib
+import urllib.request, hashlib
 import tempfile
 import git
 import shutil
@@ -151,7 +151,7 @@ class Reviewer:
     def check_download(self, tmpdir, upwrap):
         source_data, download_exc = self._fetch(upwrap.source_url)
         if not print_status('Download url works', download_exc is None):
-            print(' error:', str(e))
+            print(' error:', str(download_exc))
             return False
         with open(os.path.join(tmpdir, upwrap.source_filename), 'wb') as f:
             f.write(source_data)
@@ -190,7 +190,8 @@ class Reviewer:
         shutil.unpack_archive(os.path.join(tmpdir, upwrap.source_filename), srcdir)
         srcdir = os.path.join(srcdir, upwrap.directory)
         if not print_status('upstream.wrap directory {!r} exists'.format(upwrap.directory),
-                            os.path.exists(srcdir)): return False
+                            os.path.exists(srcdir)):
+            return False
         return print_status('Patch merges with source',
                             self.mergetree(os.path.join(tmpdir, 'head'), srcdir))
 

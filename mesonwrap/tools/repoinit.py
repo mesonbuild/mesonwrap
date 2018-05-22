@@ -20,9 +20,6 @@ import argparse
 import datetime
 import git
 import hashlib
-import os
-import shutil
-import sys
 import urllib.request
 
 from mesonwrap import gitutils, upstream

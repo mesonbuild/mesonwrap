@@ -16,7 +16,7 @@
 
 from distutils import version
 import sqlite3
-import os, sys
+import os
 
 
 class WrapDatabase:

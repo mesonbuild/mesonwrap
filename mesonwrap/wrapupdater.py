@@ -15,8 +15,7 @@
 # limitations under the License.
 
 import argparse
-import os
-import tempfile, shutil
+import tempfile
 
 from mesonwrap import wrapdb, wrapcreator
 
