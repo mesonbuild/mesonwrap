@@ -40,18 +40,22 @@ class WrapDatabase:
         c = self.conn.cursor()
         project = project.lower()
         branch = branch.lower()
-        c.execute('''INSERT OR REPLACE INTO wraps VALUES (?, ?, ?, ?, ?);''', (project, branch, revision, wrap,
-                                                                               sqlite3.Binary(zip)))
+        c.execute('''INSERT OR REPLACE INTO wraps VALUES (?, ?, ?, ?, ?);''',
+                  (project, branch, revision, wrap, sqlite3.Binary(zip)))
         self.conn.commit()
 
     def name_search(self, text):
         c = self.conn.cursor()
-        c.execute('''SELECT DISTINCT project FROM wraps WHERE project LIKE ? ORDER BY project;''', (text + '%',))
+        query = '''SELECT DISTINCT project FROM wraps
+                   WHERE project LIKE ? ORDER BY project;'''
+        c.execute(query, (text + '%',))
         return [x[0] for x in c.fetchall()]
 
     def get_versions(self, project, latest=False):
         c = self.conn.cursor()
-        query = '''SELECT branch, revision FROM wraps WHERE project == ? ORDER BY branch DESC, revision DESC;'''
+        query = '''SELECT branch, revision FROM wraps
+                   WHERE project == ?
+                   ORDER BY branch DESC, revision DESC;'''
         c.execute(query, (project,))
         if latest:
             # TODO consider computing this during import
@@ -64,7 +68,10 @@ class WrapDatabase:
     def get_wrap(self, project, branch, revision):
         c = self.conn.cursor()
         try:
-            c.execute('''SELECT wrap FROM wraps WHERE project == ? AND branch == ? AND revision == ?;''',
+            c.execute('''SELECT wrap FROM wraps
+                         WHERE project == ? AND
+                               branch == ? AND
+                               revision == ?;''',
                       (project, branch, revision))
             return c.fetchone()[0]
         except Exception as e:
@@ -73,7 +80,10 @@ class WrapDatabase:
     def get_zip(self, project, branch, revision):
         c = self.conn.cursor()
         try:
-            c.execute('''SELECT zip FROM wraps WHERE project == ? AND branch == ? AND revision == ?;''',
+            c.execute('''SELECT zip FROM wraps
+                         WHERE project == ? AND
+                               branch == ? AND
+                               revision == ?;''',
                       (project, branch, revision))
             return c.fetchone()[0]
         except Exception as e:
@@ -82,10 +92,16 @@ class WrapDatabase:
     def create_db(self):
         self.conn = sqlite3.connect(self.fname)
         c = self.conn.cursor()
-        c.execute('''CREATE TABLE wraps
-        (project TEXT NOT NULL, branch TEXT NOT NULL, revision INTEGER, wrap TEXT NOT NULL, zip BLOB NOT NULL
-        CHECK (revision > 0));''')
-        c.execute('''CREATE UNIQUE INDEX wrapindex ON wraps(project, branch, revision);''')
+        c.execute('''
+        CREATE TABLE wraps
+        (project TEXT NOT NULL,
+         branch TEXT NOT NULL,
+         revision INTEGER,
+         wrap TEXT NOT NULL,
+         zip BLOB NOT NULL
+         CHECK (revision > 0));''')
+        c.execute('''CREATE UNIQUE INDEX wrapindex ON
+                     wraps(project, branch, revision);''')
         c.execute('''CREATE INDEX namesearch ON wraps(project);''')
         self.conn.commit()
         self.close()

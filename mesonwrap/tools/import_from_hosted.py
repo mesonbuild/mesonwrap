@@ -76,9 +76,11 @@ class Importer:
             rel = ghrepo.get_release(tagname)
             print('Release found')
         except github.GithubException:
-            tag = ghrepo.create_git_tag(tag=tagname, message=tagname, type='commit', object=commit.hexsha)
+            tag = ghrepo.create_git_tag(tag=tagname, message=tagname,
+                                        type='commit', object=commit.hexsha)
             ghrepo.create_git_ref('refs/tags/{}'.format(tag.tag), tag.sha)
-            rel = ghrepo.create_git_release(tag=tagname, name=tagname, message=tagname)
+            rel = ghrepo.create_git_release(tag=tagname, name=tagname,
+                                            message=tagname)
             print('Release created')
         patch_label = 'patch.zip'
         wrap_label = 'upstream.wrap'
@@ -93,9 +95,11 @@ class Importer:
                 print('Removing unknown asset {!r} / {!r}'.format(a.label, a.name))
                 a.delete_asset()
         if not wrap_found:
-            rel.upload_asset(wrappath, label=wrap_label, content_type='text/plain')
+            rel.upload_asset(wrappath, label=wrap_label,
+                             content_type='text/plain')
         if not patch_found:
-            rel.upload_asset(zippath, label=patch_label, content_type='application/zip')
+            rel.upload_asset(zippath, label=patch_label,
+                             content_type='application/zip')
         print('Done')
 
 

@@ -30,9 +30,11 @@ class WrapUpdater:
 
     def update_db(self, project_name, repo_url, branch):
         with tempfile.TemporaryDirectory() as workdir:
-            creator = wrapcreator.WrapCreator(project_name, repo_url, branch, workdir)
+            creator = wrapcreator.WrapCreator(project_name, repo_url, branch,
+                                              workdir)
             (wrap_contents, zip_contents, revision_id) = creator.create()
-            self.db.insert(project_name, branch, revision_id, wrap_contents, zip_contents)
+            self.db.insert(project_name, branch, revision_id, wrap_contents,
+                           zip_contents)
 
 
 def main(args):

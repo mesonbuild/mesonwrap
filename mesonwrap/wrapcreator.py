@@ -81,17 +81,21 @@ class WrapCreator:
             os.unlink(os.path.join(workdir, '.gitignore'))
         except OSError:
             pass
-        base_name = self.name + '-' + self.branch + '-' + str(revision_id) + '-wrap'
+        base_name = (self.name + '-' +
+                     self.branch + '-' +
+                     str(revision_id) + '-wrap')
         zip_name = base_name + '.zip'
         wrap_name = base_name + '.wrap'
         zip_full = os.path.join(self.out_dir, zip_name)
         wrap_full = os.path.join(self.out_dir, wrap_name)
-        with zipfile.ZipFile(zip_full, 'w', compression=zipfile.ZIP_DEFLATED) as zip:
+        with zipfile.ZipFile(zip_full, 'w',
+                             compression=zipfile.ZIP_DEFLATED) as zip:
             for root, dirs, files in os.walk(workdir):
                 for f in files:
                     abspath = os.path.join(root, f)
                     relpath = abspath[len(workdir) + 1:]
-                    zip.write(abspath, os.path.join(self.definition.directory, relpath))
+                    zip.write(abspath, os.path.join(self.definition.directory,
+                                                    relpath))
 
         source_hash = hashlib.sha256(open(zip_full, 'rb').read()).hexdigest()
         with open(wrap_full, 'w') as wrapfile:

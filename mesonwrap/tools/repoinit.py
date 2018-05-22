@@ -98,10 +98,9 @@ class RepoBuilder:
         gh = environment.Github()
         mesonbuild = gh.get_organization(organization)
         description = 'Meson build definitions for %s' % self.name
-        ghrepo = mesonbuild.create_repo(self.name,
-                                        description=description,
-                                        homepage=homepage,
-                                        team_id=maintainers_team_id[organization])
+        ghrepo = mesonbuild.create_repo(
+            self.name, description=description, homepage=homepage,
+            team_id=maintainers_team_id[organization])
         self.init(path, ghrepo.ssh_url)
 
     def open(self, path, mode='r'):
@@ -120,7 +119,8 @@ class RepoBuilder:
         if self.origin is not None:
             self.origin.push(branch)
 
-    def create_version(self, version, zipurl, filename, directory, ziphash=None, base='HEAD'):
+    def create_version(self, version, zipurl, filename, directory,
+                       ziphash=None, base='HEAD'):
         if ziphash is None:
             ziphash = self._get_hash(zipurl)
         self.repo.head.reference = self.repo.create_head(version, commit=base)
@@ -172,4 +172,5 @@ def new_version(args):
     parser.add_argument('--srcdir', required=True)
     args = parser.parse_args(args)
     builder = RepoBuilder(name=args.name, path=args.directory)
-    builder.create_version(args.version, args.zipurl, args.filename, args.srcdir)
+    builder.create_version(args.version, args.zipurl, args.filename,
+                           args.srcdir)

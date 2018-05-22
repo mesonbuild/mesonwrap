@@ -1,9 +1,9 @@
-import json
 import hashlib
 import hmac
+import json
+import urllib.error
 import urllib.parse
 import urllib.request
-import urllib.error
 
 
 class ServerError(Exception):
@@ -94,7 +94,8 @@ class _APIClient:
 
 class Revision:
 
-    def __init__(self, api: _APIClient, project: 'Project', version: 'Version', revision: int):
+    def __init__(self, api: _APIClient, project: 'Project',
+                 version: 'Version', revision: int):
         self._api = api
         self.project = project
         self.version = version
@@ -105,13 +106,17 @@ class Revision:
     @property
     def wrap(self):
         if self.__wrap is None:
-            self.__wrap = self._api.fetch_v1_project_wrap(self.project.name, self.version.version, self.revision)
+            self.__wrap = self._api.fetch_v1_project_wrap(self.project.name,
+                                                          self.version.version,
+                                                          self.revision)
         return self.__wrap
 
     @property
     def zip(self):
         if self.__zip is None:
-            self.__zip = self._api.fetch_v1_project_zip(self.project.name, self.version.version, self.revision)
+            self.__zip = self._api.fetch_v1_project_zip(self.project.name,
+                                                        self.version.version,
+                                                        self.revision)
         return self.__zip
 
 
@@ -134,7 +139,8 @@ class Version:
 
     def _get_revision(self, rev):
         if rev not in self.__revisions:
-            self.__revisions[rev] = Revision(self._api, self.project, self, rev)
+            self.__revisions[rev] = Revision(self._api, self.project, self,
+                                             rev)
         return self.__revisions[rev]
 
     @property
@@ -142,7 +148,8 @@ class Version:
         if not self.__revisions_called:
             for rev in self._revision_ids:
                 if rev not in self.__revisions:
-                    self.__revisions[rev] = Revision(self._api, self.project, self, rev)
+                    self.__revisions[rev] = Revision(self._api, self.project,
+                                                     self, rev)
             self.__revisions_called = True
         return self.__revisions
 
@@ -249,7 +256,10 @@ class WebAPI:
         return self._api.fetch_v1_projects()['projects']
 
     def projects(self):
-        '''Returns new version of ProjectSet, all operations on ProjectSet are cached.'''
+        '''Returns new version of ProjectSet.
+
+           All operations on ProjectSet are cached.
+        '''
         return ProjectSet(self._api)
 
     def ping(self):
