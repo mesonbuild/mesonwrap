@@ -57,6 +57,12 @@ SOFTWARE.
 '''
 
 
+maintainers_team_id = {
+    'mesonbuild': 2766876,
+    'mesonbuild-test': 2767592,
+}
+
+
 class RepoBuilder:
 
     def __init__(self, name, path=None, organization=None, homepage=None):
@@ -95,7 +101,10 @@ class RepoBuilder:
         gh = environment.Github()
         mesonbuild = gh.get_organization(organization)
         description = 'Meson build definitions for %s' % self.name
-        ghrepo = mesonbuild.create_repo(self.name, description=description, homepage=homepage)
+        ghrepo = mesonbuild.create_repo(self.name,
+                                        description=description,
+                                        homepage=homepage,
+                                        team_id=maintainers_team_id[organization])
         self.init(path, ghrepo.ssh_url)
 
     def open(self, path, mode='r'):
