@@ -13,12 +13,15 @@
 # limitations under the License.
 
 import argparse
-import sys, os, re
-import urllib.request, hashlib
-import tempfile
 import git
+import hashlib
+import os
+import re
 import shutil
 import subprocess
+import sys
+import tempfile
+import urllib.request
 
 from mesonwrap import upstream
 from mesonwrap.tools import environment
@@ -114,7 +117,7 @@ class Reviewer:
                         print('Non-buildsystem files found:')
                     found = True
                     abs_name = os.path.join(root, fname)
-                    rel_name = abs_name[len(head_dir)+1:]
+                    rel_name = abs_name[len(head_dir) + 1:]
                     print(' ', rel_name)
         if not print_status('Repo contains only buildsystem files', not found):
             if self.strict_fileset:

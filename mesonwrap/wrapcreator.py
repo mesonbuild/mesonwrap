@@ -15,10 +15,12 @@
 # limitations under the License.
 
 import argparse
-import os, shutil
-import tempfile
-import zipfile, hashlib
 import git
+import hashlib
+import os
+import shutil
+import tempfile
+import zipfile
 
 from mesonwrap import gitutils
 
@@ -88,7 +90,7 @@ class WrapCreator:
             for root, dirs, files in os.walk(workdir):
                 for f in files:
                     abspath = os.path.join(root, f)
-                    relpath = abspath[len(workdir)+1:]
+                    relpath = abspath[len(workdir) + 1:]
                     zip.write(abspath, os.path.join(self.definition.directory, relpath))
 
         source_hash = hashlib.sha256(open(zip_full, 'rb').read()).hexdigest()
