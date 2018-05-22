@@ -165,6 +165,37 @@ class QueryTest(IntegrationTestBase):
         self.wrapupdater(f.name, f.url, '1.3.0')
         self.assertLatest('test1', '1.3.0', 3)
 
+    def test_latest_semantic_version_comparison(self):
+        '''Lexicographical comparison leads to the opposite results.'''
+        f = FakeProject('test', self.tmpdir)
+        for version in ['1.2.8', '1.2.11']:
+            f.create_version(version)
+            self.wrapupdater(f.name, f.url, version)
+        self.assertLatest('test', '1.2.11', 1)
+
+    def test_latest_non_semantic_version_no_minor(self):
+        '''Not every project supports semantic versioning, we should fallback.'''
+        f = FakeProject('test', self.tmpdir)
+        for version in ['1.2', '1.3', '1.7']:
+            f.create_version(version)
+            self.wrapupdater(f.name, f.url, version)
+        self.assertLatest(f.name, '1.7', 1)
+
+    def test_latest_non_semantic_version_single_number(self):
+        '''If it is not a semantic version just sort lexicographically.'''
+        f = FakeProject('test', self.tmpdir)
+        for version in ['212345', '123456']:
+            f.create_version(version)
+            self.wrapupdater(f.name, f.url, version)
+        self.assertLatest(f.name, '212345', 1)
+
+    def test_latest_non_semantic_version_letters(self):
+        f = FakeProject('test', self.tmpdir)
+        for version in ['17a', '2b']:
+            f.create_version(version)
+            self.wrapupdater(f.name, f.url, version)
+        self.assertLatest(f.name, '17a', 1)
+
     def test_by_name_prefix(self):
         baz = FakeProject('baz', self.tmpdir)
         baz.create_version('1.0.0')
