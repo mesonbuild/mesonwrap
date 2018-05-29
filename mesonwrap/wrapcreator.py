@@ -23,31 +23,7 @@ import tempfile
 import zipfile
 
 from mesonwrap import gitutils
-
-
-class UpstreamDefinition:
-    def __init__(self, fname):
-        self.values = {}
-        ifile = open(fname)
-        first = ifile.readline().strip()
-
-        if first != '[wrap-file]':
-            raise RuntimeError('Invalid format of package file')
-        for line in ifile:
-            line = line.split("#")[0]
-            line = line.strip()
-            if line == '':
-                continue
-            (k, v) = line.split('=', 1)
-            k = k.strip()
-            v = v.strip()
-            self.values[k] = v
-        for i in ['directory', 'source_url', 'source_filename', 'source_hash']:
-            if i not in self.values:
-                raise RuntimeError('Missing key %s from upstream wrap file.' % i)
-
-    def __getattr__(self, attr):
-        return self.values[attr]
+from mesonwrap import upstream
 
 
 _OUT_URL_BASE_DEFAULT = (
@@ -72,13 +48,20 @@ class WrapCreator:
     def _get_revision(repo):
         return gitutils.get_revision(repo, repo.head.commit)
 
+    @staticmethod
+    def check_definition(definition):
+        for i in ['directory', 'source_url', 'source_filename', 'source_hash']:
+            if not getattr(definition, 'has_' + i):
+                raise RuntimeError('Missing {!r} in upstream.wrap.'.format(i))
+
     def create_internal(self, workdir):
         repo = git.Repo.clone_from(self.repo_url, workdir, branch=self.branch)
         upstream_file = os.path.join(workdir, 'upstream.wrap')
         upstream_content = open(upstream_file).read()
         revision_id = self._get_revision(repo)
         self.upstream_file = os.path.join(workdir, 'upstream.wrap')
-        self.definition = UpstreamDefinition(self.upstream_file)
+        self.definition = upstream.UpstreamWrap.from_file(self.upstream_file)
+        self.check_definition(self.definition)
         shutil.rmtree(os.path.join(workdir, '.git'))
         os.unlink(os.path.join(workdir, 'readme.txt'))
         os.unlink(upstream_file)

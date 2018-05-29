@@ -306,6 +306,15 @@ class WrapUpdaterTest(IntegrationTestBase):
         self.assertUploaded(Project(f.name, '1.0.0', 2))
         self.assertUploaded(Project(f.name, '1.0.1', 4))
 
+    def test_bad_upstream_wrap(self):
+        f = FakeProject('test', self.tmpdir)
+        f.create_version('1.0.0')
+        with f.builder.open('upstream.wrap', 'w') as up:
+            up.write('[wrap-file]\nhello = world\n')
+        f.commit('revision 2')
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.wrapupdater(f.name, f.url, '1.0.0')
+
 
 if __name__ == '__main__':
     unittest.main()
