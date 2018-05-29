@@ -27,16 +27,26 @@ from mesonwrap import upstream
 from mesonwrap.tools import environment
 
 
-def print_status(msg, check):
-    '''
-    Prints msg with success indicator based on check parameter.
-    Returns: check
+class CheckError(Exception):
+    pass
+
+
+def print_status(msg, check, fatal=True, quiet=False):
+    '''Prints msg with success indicator based on check parameter.
+    Args:
+        msg: str, status message to print
+        check: bool, success of the check
+        fatal: bool, if exception should be raised
+        quiet: bool, if message should be printed on success
+    Raises: CheckError(msg) if not check and fatal
     '''
     OK_CHR = '\u2611'
     FAIL_CHR = '\u2612'
     status = OK_CHR if check else FAIL_CHR
-    print('{msg}: {status}'.format(msg=msg, status=status))
-    return check
+    if not quiet or not check:
+        print('{msg}: {status}'.format(msg=msg, status=status))
+    if not check and fatal:
+        raise CheckError(msg)
 
 
 class Reviewer:
@@ -55,7 +65,8 @@ class Reviewer:
 
     @classmethod
     def from_committed(cls, project, branch):
-        return cls(project=project, clone_url=cls._get_project(project).clone_url,
+        return cls(project=project,
+                   clone_url=cls._get_project(project).clone_url,
                    branch=branch)
 
     @classmethod
@@ -78,31 +89,36 @@ class Reviewer:
 
     def review_int(self, tmpdir):
         head_dir = os.path.join(tmpdir, 'head')
-        head_repo = git.Repo.clone_from(self._clone_url, head_dir, branch=self._source_branch)
-        if not self.check_basics(head_repo): return False
-        if not self.check_files(head_dir): return False
-        upwrap = upstream.UpstreamWrap.from_file(os.path.join(head_dir, 'upstream.wrap'))
-        if not self.check_wrapformat(upwrap): return False
-        if not self.check_download(tmpdir, upwrap): return False
-        if not self.check_extract(tmpdir, upwrap): return False
-        if not self.check_build(tmpdir, upwrap): return False
-        return True
+        head_repo = git.Repo.clone_from(self._clone_url, head_dir,
+                                        branch=self._source_branch)
+        try:
+            self.check_basics(head_repo)
+            self.check_files(head_dir)
+            upwrap = upstream.UpstreamWrap.from_file(
+                os.path.join(head_dir, 'upstream.wrap'))
+            self.check_wrapformat(upwrap)
+            self.check_download(tmpdir, upwrap)
+            self.check_extract(tmpdir, upwrap)
+            self.check_build(tmpdir, upwrap)
+            return True
+        except CheckError:
+            return False
 
     @staticmethod
     def check_has_no_path_separators(name, value):
-        return print_status(name + ' has no path separators',
-                            '/' not in value and '\\' not in value)
+        print_status(name + ' has no path separators',
+                     '/' not in value and '\\' not in value)
 
     def check_wrapformat(self, upwrap):
-        if not print_status('upstream.wrap has directory', upwrap.has_directory): return False
-        if not self.check_has_no_path_separators('upstream.wrap directory',
-                                                 upwrap.directory): return False
-        if not print_status('upstream.wrap has source_url', upwrap.has_source_url): return False
-        if not print_status('upstream.wrap has source_filename', upwrap.has_source_filename): return False
-        if not self.check_has_no_path_separators('upstream.wrap source_filename',
-                                                 upwrap.source_filename): return False
-        if not print_status('upstream.wrap has source_hash', upwrap.has_source_hash): return False
-        return True
+        print_status('upstream.wrap has directory', upwrap.has_directory)
+        self.check_has_no_path_separators('upstream.wrap directory',
+                                          upwrap.directory)
+        print_status('upstream.wrap has source_url', upwrap.has_source_url)
+        print_status('upstream.wrap has source_filename',
+                     upwrap.has_source_filename)
+        self.check_has_no_path_separators('upstream.wrap source_filename',
+                                          upwrap.source_filename)
+        print_status('upstream.wrap has source_hash', upwrap.has_source_hash)
 
     def check_files(self, head_dir):
         found = False
@@ -119,26 +135,29 @@ class Reviewer:
                     abs_name = os.path.join(root, fname)
                     rel_name = abs_name[len(head_dir) + 1:]
                     print(' ', rel_name)
-        if not print_status('Repo contains only buildsystem files', not found):
-            if self.strict_fileset:
-                return False
-        return True
+        print_status('Repo contains only buildsystem files', not found,
+                     fatal=self.strict_fileset)
 
     @staticmethod
     def isfile(head_dir, filename):
         return os.path.isfile(os.path.join(head_dir, filename))
 
     def check_basics(self, head_repo):
-        print('Inspecting project %s, branch %s.' % (self._project, self._branch))
+        print('Inspecting project %s, branch %s.' %
+              (self._project, self._branch))
         head_dir = head_repo.working_dir
-        if not print_status('Repo name valid', re.fullmatch('[a-z0-9._]+', self._project)): return False
-        if not print_status('Branch name valid', re.fullmatch('[a-z0-9._]+', self._branch)): return False
-        if not print_status('Target branch is not master', self._branch != 'master'): return False
-        if not print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt')): return False
-        if not print_status('Has LICENSE.build', self.isfile(head_dir, 'LICENSE.build')): return False
-        if not print_status('Has upstream.wrap', self.isfile(head_dir, 'upstream.wrap')): return False
-        if not print_status('Has toplevel meson.build', self.isfile(head_dir, 'meson.build')): return False
-        return True
+        print_status('Repo name valid',
+                     re.fullmatch('[a-z0-9._]+', self._project))
+        print_status('Branch name valid',
+                     re.fullmatch('[a-z0-9._]+', self._branch))
+        print_status('Target branch is not master', self._branch != 'master')
+        print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt'))
+        print_status('Has LICENSE.build',
+                     self.isfile(head_dir, 'LICENSE.build'))
+        print_status('Has upstream.wrap',
+                     self.isfile(head_dir, 'upstream.wrap'))
+        print_status('Has toplevel meson.build',
+                     self.isfile(head_dir, 'meson.build'))
 
     @staticmethod
     def _fetch(url):
@@ -153,19 +172,22 @@ class Reviewer:
 
     def check_download(self, tmpdir, upwrap):
         source_data, download_exc = self._fetch(upwrap.source_url)
-        if not print_status('Download url works', download_exc is None):
+        try:
+            print_status('Download url works', download_exc is None)
+        except CheckError:
             print(' error:', str(download_exc))
-            return False
+            raise
         with open(os.path.join(tmpdir, upwrap.source_filename), 'wb') as f:
             f.write(source_data)
         h = hashlib.sha256()
         h.update(source_data)
         calculated_hash = h.hexdigest()
-        if not print_status('Hash matches', calculated_hash == upwrap.source_hash):
+        try:
+            print_status('Hash matches', calculated_hash == upwrap.source_hash)
+        except CheckError:
             print(' expected:', upwrap.source_hash)
             print('      got:', calculated_hash)
-            return False
-        return True
+            raise
 
     @staticmethod
     def mergetree(src, dst, ignore=None):
@@ -182,8 +204,10 @@ class Reviewer:
                 if f in ('readme.txt', 'upstream.wrap'):
                     continue
                 dest = os.path.join(dstpath, f)
-                if os.path.exists(dest):
-                    return print_status('{!r} already exists'.format(os.path.join(prefix, f)), False)
+                print_status('{!r} already exists'.format(
+                                 os.path.join(prefix, f)),
+                             not os.path.exists(dest),
+                             quiet=True)
                 shutil.copy2(os.path.join(dirpath, f), dest)
         return True
 
@@ -191,23 +215,23 @@ class Reviewer:
         # TODO lead_directory_missing
         srcdir = os.path.join(tmpdir, 'src')
         os.mkdir(srcdir)
-        shutil.unpack_archive(os.path.join(tmpdir, upwrap.source_filename), srcdir)
+        shutil.unpack_archive(os.path.join(tmpdir, upwrap.source_filename),
+                              srcdir)
         srcdir = os.path.join(srcdir, upwrap.directory)
-        if not print_status('upstream.wrap directory {!r} exists'.format(upwrap.directory),
-                            os.path.exists(srcdir)):
-            return False
-        return print_status('Patch merges with source',
-                            self.mergetree(os.path.join(tmpdir, 'head'), srcdir))
+        print_status('upstream.wrap directory {!r} exists'.format(
+                         upwrap.directory),
+                     os.path.exists(srcdir))
+        print_status('Patch merges with source',
+                     self.mergetree(os.path.join(tmpdir, 'head'), srcdir))
 
     def check_build(self, tmpdir, upwrap):
         # TODO lead_directory_missing
         srcdir = os.path.join(tmpdir, 'src', upwrap.directory)
         bindir = os.path.join(tmpdir, 'bin')
         setup_result = subprocess.call(['meson', 'setup', srcdir, bindir])
-        if not print_status('meson setup', setup_result == 0): return False
+        print_status('meson setup', setup_result == 0)
         test_result = subprocess.call(['ninja', '-C', bindir, 'test'])
-        if not print_status('ninja test', test_result == 0): return False
-        return True
+        print_status('ninja test', test_result == 0)
 
 
 def main(args):
@@ -223,7 +247,8 @@ def main(args):
         r = Reviewer.from_pull_request(args.name, args.pull_request)
     elif args.branch:
         if args.clone_url:
-            r = Reviewer.from_repository(args.name, args.clone_url, args.branch)
+            r = Reviewer.from_repository(args.name, args.clone_url,
+                                         args.branch)
         else:
             r = Reviewer.from_committed(args.name, args.branch)
     else:
