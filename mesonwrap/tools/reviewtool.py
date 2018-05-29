@@ -172,17 +172,18 @@ class Reviewer:
         for dirpath, dirnames, filenames in os.walk(src):
             prefix = os.path.relpath(dirpath, src)
             dstpath = os.path.join(dst, prefix)
+            try:
+                del dirnames[dirnames.index('.git')]
+            except IndexError:
+                pass
             for d in dirnames:
-                if d == '.git':
-                    continue
                 os.makedirs(os.path.join(dstpath, d), exist_ok=True)
             for f in filenames:
-                if d in ('readme.txt', 'upstream.wrap'):
+                if f in ('readme.txt', 'upstream.wrap'):
                     continue
                 dest = os.path.join(dstpath, f)
                 if os.path.exists(dest):
-                    print_status('{!r} already exists', os.path.join(prefix, f))
-                    return False
+                    return print_status('{!r} already exists'.format(os.path.join(prefix, f)), False)
                 shutil.copy2(os.path.join(dirpath, f), dest)
         return True
 
