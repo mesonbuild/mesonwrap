@@ -23,7 +23,8 @@ from mesonwrap import wrapdb
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--dbdir', required=True)
-    parser.add_argument('command', choices=('wrap', 'versions', 'zip', 'insert', 'search'))
+    parser.add_argument('command', choices=('wrap', 'versions', 'zip',
+                                            'insert', 'search'))
     args, rest = parser.parse_known_args(args)
     db = wrapdb.WrapDatabase(args.dbdir)
     if args.command == 'wrap':

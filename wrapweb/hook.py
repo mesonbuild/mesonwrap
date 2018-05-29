@@ -45,8 +45,9 @@ def github_hook():
     headers = flask.request.headers
     if not headers.get('User-Agent').startswith('GitHub-Hookshot/'):
         return json_error(401, 'Not a GitHub hook')
-    signature = 'sha1=%s' % hmac.new(APP.config['SECRET_KEY'].encode('utf-8'),
-                                     flask.request.data, hashlib.sha1).hexdigest()
+    signature = ('sha1=%s' %
+                 hmac.new(APP.config['SECRET_KEY'].encode('utf-8'),
+                          flask.request.data, hashlib.sha1).hexdigest())
     if headers.get('X-Hub-Signature') != signature:
         return json_error(401, 'Not a valid secret key')
     if headers.get('X-Github-Event') != 'pull_request':
@@ -56,7 +57,8 @@ def github_hook():
     if not base['repo']['full_name'].startswith('mesonbuild/'):
         return json_error(406, 'Not a mesonbuild project')
     if base['repo']['full_name'] in RESTRICTED_PROJECTS:
-        return json_error(406, "We don't run hook for restricted project names")
+        return json_error(406, "We don't run hook for "
+                               "restricted project names")
     if d['action'] == 'closed' and d['pull_request']['merged']:
         project = base['repo']['name']
         branch = base['ref']

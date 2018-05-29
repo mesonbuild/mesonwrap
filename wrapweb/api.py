@@ -94,5 +94,6 @@ def get_wrap(project, branch, revision):
         resp = flask.make_response(result)
         resp.mimetype = mtype
         if fname:
-            resp.headers['Content-Disposition'] = 'attachment; filename=%s' % fname
+            resp.headers['Content-Disposition'] = (
+                'attachment; filename=%s' % fname)
         return resp

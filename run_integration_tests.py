@@ -16,7 +16,8 @@ from wrapweb import webapi
 
 ROOT = os.path.dirname(sys.argv[0])
 SERVER = [sys.executable, os.path.join(ROOT, 'mesonwrap.py'), 'serve']
-WRAPUPDATER = [sys.executable, os.path.join(ROOT, 'mesonwrap.py'), 'wrapupdate']
+WRAPUPDATER = [sys.executable, os.path.join(ROOT, 'mesonwrap.py'),
+               'wrapupdate']
 DBFILE = os.path.join(ROOT, 'wrapdb.sqlite')
 
 
@@ -28,10 +29,12 @@ class Project:
         self.revision = revision
 
     def __repr__(self):
-        return 'Project("%s", "%s", "%s")' % (self.name, self.version, self.revision)
+        return ('Project("%s", "%s", "%s")' %
+                (self.name, self.version, self.revision))
 
 
-# revision is not exact match, it should be at least that number, but might be higher
+# revision is not exact match, it should be at least that number,
+# but might be higher
 projects = [
     Project(name='protobuf', version='3.5.1', revision=2),
     Project(name='protobuf', version='3.5.0', revision=2),
@@ -106,13 +109,17 @@ class IntegrationTestBase(unittest.TestCase):
         projects = self.server.api.projects()
         self.assertIn(project.name, projects)
         self.assertIn(project.version, projects[project.name].versions)
-        self.assertLessEqual(project.revision, projects[project.name].versions[project.version].latest.revision)
+        self.assertLessEqual(
+            project.revision,
+            projects[project.name].versions[project.version].latest.revision)
 
     def assertUploaded(self, project):
         projects = self.server.api.projects()
         self.assertIn(project.name, projects)
         self.assertIn(project.version, projects[project.name].versions)
-        self.assertIn(project.revision, projects[project.name].versions[project.version].revisions)
+        self.assertIn(
+            project.revision,
+            projects[project.name].versions[project.version].revisions)
 
     def assertLatest(self, project, version, revision):
         latest = self.server.api.projects()[project].query_latest()
@@ -125,26 +132,31 @@ class IntegrationTestBase(unittest.TestCase):
 
 class ConsistentVersioningTest(IntegrationTestBase):
 
+    def _testProjectVersion(self, project, ver_id, version):
+        git_url = 'https://github.com/mesonbuild/{}.git'.format(project.name)
+        self.wrapupdater(project.name, git_url, ver_id)
+        self.assertUploaded(Project(project.name, ver_id,
+                                    version.latest.revision))
+        rev = self.server.api.projects()[project.name].versions[ver_id].latest
+        self.assertEqual(version.latest.revision, rev.revision)
+        self.assertIn(b'[wrap-file]', rev.wrap)
+        self.assertIn(b'directory', rev.wrap)
+        self.assertIn(b'source_url', rev.wrap)
+        self.assertIn(b'source_filename', rev.wrap)
+        self.assertIn(b'source_hash', rev.wrap)
+        self.assertIn(b'patch_url', rev.wrap)
+        self.assertIn(b'patch_filename', rev.wrap)
+        self.assertIn(b'patch_hash', rev.wrap)
+        with zipfile.ZipFile(io.BytesIO(rev.zip)) as zipf:
+            self.assertGreater(len(zipf.namelist()), 0)
+
     def testRevisions(self):
         prod = webapi.WebAPI('https://wrapdb.mesonbuild.com')
         projects = prod.projects()
         for project in projects:
             with self.subTest(project=project.name):
                 for ver_id, version in project.versions.items():
-                    self.wrapupdater(project.name, 'https://github.com/mesonbuild/{}.git'.format(project.name), ver_id)
-                    self.assertUploaded(Project(project.name, ver_id, version.latest.revision))
-                    rev = self.server.api.projects()[project.name].versions[ver_id].latest
-                    self.assertEqual(version.latest.revision, rev.revision)
-                    self.assertIn(b'[wrap-file]', rev.wrap)
-                    self.assertIn(b'directory', rev.wrap)
-                    self.assertIn(b'source_url', rev.wrap)
-                    self.assertIn(b'source_filename', rev.wrap)
-                    self.assertIn(b'source_hash', rev.wrap)
-                    self.assertIn(b'patch_url', rev.wrap)
-                    self.assertIn(b'patch_filename', rev.wrap)
-                    self.assertIn(b'patch_hash', rev.wrap)
-                    with zipfile.ZipFile(io.BytesIO(rev.zip)) as zipf:
-                        self.assertGreater(len(zipf.namelist()), 0)
+                    self._testProjectVersion(project, ver_id, version)
 
 
 class QueryTest(IntegrationTestBase):
@@ -172,7 +184,7 @@ class QueryTest(IntegrationTestBase):
         self.assertLatest('test', '1.2.11', 1)
 
     def test_latest_non_semantic_version_no_minor(self):
-        '''Not every project supports semantic versioning, we should fallback.'''
+        '''Not every project supports semantic versioning, test fallback.'''
         f = FakeProject('test', self.tmpdir)
         for version in ['1.2', '1.3', '1.7']:
             f.create_version(version)
@@ -215,7 +227,8 @@ class GithubHookTest(IntegrationTestBase):
     def test_import(self):
         foo = FakeProject('foobar', self.tmpdir)
         foo.create_version('1.2.3')
-        self.server.api.pull_request_hook('mesonbuild', 'foobar', '1.2.3', foo.url)
+        self.server.api.pull_request_hook('mesonbuild', 'foobar', '1.2.3',
+                                          foo.url)
         self.assertUploaded(Project(foo.name, '1.2.3', 1))
 
 
@@ -223,7 +236,7 @@ class WrapUpdaterTest(IntegrationTestBase):
 
     def test_existing_wrapupdater(self):
         for project in projects:
-            url = 'https://github.com/mesonbuild/{name}.git'.format(name=project.name)
+            url = 'https://github.com/mesonbuild/{}.git'.format(project.name)
             self.wrapupdater(project.name, url, project.version)
             self.assertIn(project.name, self.server.api.projects())
             self.assertLooseUploaded(project)

@@ -48,7 +48,8 @@ class UpstreamWrap:
 
     def __checkattr(self, name):
         if name not in self.__attrs:
-            raise AttributeError('{!r} has no attribute {!r}'.format(type(self), name))
+            raise AttributeError('{!r} has no attribute {!r}'.format(
+                type(self), name))
 
     def __getattr__(self, name):
         if name in self.__slots__:
@@ -61,7 +62,8 @@ class UpstreamWrap:
             self.__checkattr(name)
             try:
                 return self._cfg.get(self.__section, name)
-            except (configparser.NoOptionError, configparser.NoSectionError) as exc:
+            except (configparser.NoOptionError,
+                    configparser.NoSectionError) as exc:
                 raise ValueError('{!r} was not defined'.format(name)) from exc
 
     def __setattr__(self, name, value):

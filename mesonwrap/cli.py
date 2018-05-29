@@ -71,7 +71,7 @@ class Command:
         wrapupdater.main(sys.argv[2:])
 
     def command_dbtool(self):
-        '''This is a simple tool to do queries and inserts from the command line'''
+        '''This is a simple tool to do queries and inserts'''
         dbtool.main(sys.argv[2:])
 
     def command_import_from_hosted(self):

@@ -33,7 +33,8 @@ class Importer:
         if project not in self._projects:
             repo = self._org.get_repo(project)
             path = os.path.join(self._tmp.name, project)
-            self._projects[project] = git.Repo.clone_from(repo.clone_url, to_path=path)
+            self._projects[project] = git.Repo.clone_from(repo.clone_url,
+                                                          to_path=path)
         return self._projects[project]
 
     def import_project(self, project):
@@ -59,7 +60,9 @@ class Importer:
                 raise ValueError('Impossible revision')
 
     def import_revision(self, revision):
-        print(revision.project.name, revision.version.version, revision.revision)
+        print(revision.project.name,
+              revision.version.version,
+              revision.revision)
         project = revision.project.name
         version = revision.version.version
         wrappath = os.path.join(self._tmp.name, project + '.wrap')
@@ -92,7 +95,8 @@ class Importer:
             elif a.label == wrap_label:
                 wrap_found = True
             else:
-                print('Removing unknown asset {!r} / {!r}'.format(a.label, a.name))
+                print('Removing unknown asset {!r} / {!r}'.format(a.label,
+                                                                  a.name))
                 a.delete_asset()
         if not wrap_found:
             rel.upload_asset(wrappath, label=wrap_label,

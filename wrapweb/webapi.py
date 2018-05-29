@@ -31,7 +31,8 @@ class _APIClient:
     @staticmethod
     def _check_revision(revision):
         if not isinstance(revision, int):
-            raise ValueError('Invalid revision, expected int, got {}'.format(type(revision)))
+            raise ValueError('Invalid revision, '
+                             'expected int, got {}'.format(type(revision)))
 
     def fetch(self, url):
         with urllib.request.urlopen(self.url + url) as r:
@@ -68,15 +69,19 @@ class _APIClient:
         self._check_project(project)
         self._check_version(version)
         self._check_revision(revision)
-        return self.fetch('/v1/projects/{project}/{version}/{revision}/get_wrap'.format(
-            project=project, version=version, revision=revision))
+        url = '/v1/projects/{project}/{version}/{revision}/get_wrap'
+        return self.fetch(url.format(project=project,
+                                     version=version,
+                                     revision=revision))
 
     def fetch_v1_project_zip(self, project: str, version: str, revision: str):
         self._check_project(project)
         self._check_version(version)
         self._check_revision(revision)
-        return self.fetch('/v1/projects/{project}/{version}/{revision}/get_zip'.format(
-            project=project, version=version, revision=revision))
+        url = '/v1/projects/{project}/{version}/{revision}/get_zip'
+        return self.fetch(url.format(project=project,
+                                     version=version,
+                                     revision=revision))
 
     def pull_request_hook(self, js, secret):
         data = json.dumps(js).encode('utf8')
