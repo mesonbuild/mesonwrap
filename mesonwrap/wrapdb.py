@@ -59,8 +59,8 @@ class WrapDatabase:
         c.execute(query, (project,))
         if latest:
             # TODO consider computing this during import
-            latest_ver = max(map(lambda r: (version.LooseVersion(r[0]), r[1]),
-                                 c.fetchall()))
+            latest_ver = max((version.LooseVersion(r[0]), r[1])
+                             for r in c.fetchall())
             return [(str(latest_ver[0]), latest_ver[1])]
         else:
             return c.fetchall()
