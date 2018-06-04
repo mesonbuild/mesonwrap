@@ -14,9 +14,14 @@
 
 from flask import render_template
 
-import wrapweb.api as api
-from wrapweb import response_to_json
+from wrapweb import api
 from wrapweb.app import APP
+
+import json
+
+
+def response_to_json(resp):
+    return json.loads(resp.get_data().decode("utf-8"))
 
 
 @APP.route('/', methods=['GET'])

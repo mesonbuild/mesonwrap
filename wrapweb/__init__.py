@@ -11,9 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import json
-
-
-def response_to_json(resp):
-    return json.loads(resp.get_data().decode("utf-8"))
