@@ -31,10 +31,3 @@ def close_connection(exception):
     db = getattr(flask.g, "_update_database", None)
     if db is not None:
         db.close()
-
-
-# Finalize the import of other controllers
-# pylint: disable=unused-import
-import wrapweb.api
-import wrapweb.hook
-import wrapweb.ui

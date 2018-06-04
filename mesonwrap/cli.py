@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from wrapweb.app import APP
+from wrapweb import APP
 from mesonwrap import wrapcreator
 from mesonwrap import wrapupdater
 from mesonwrap.tools import repoinit, reviewtool, dbtool
