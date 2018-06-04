@@ -196,8 +196,8 @@ class Reviewer:
             dstpath = os.path.join(dst, prefix)
             try:
                 del dirnames[dirnames.index('.git')]
-            except IndexError:
-                pass
+            except ValueError:
+                pass # it's fine if there is no .git directory
             for d in dirnames:
                 os.makedirs(os.path.join(dstpath, d), exist_ok=True)
             for f in filenames:
