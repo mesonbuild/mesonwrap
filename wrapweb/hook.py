@@ -55,7 +55,7 @@ def github_hook():
         return jsonstatus.error(406, 'Not a mesonbuild project')
     if base['repo']['full_name'] in RESTRICTED_PROJECTS:
         return jsonstatus.error(406, "We don't run hook for "
-                               "restricted project names")
+                                "restricted project names")
     if d['action'] == 'closed' and d['pull_request']['merged']:
         project = base['repo']['name']
         branch = base['ref']
