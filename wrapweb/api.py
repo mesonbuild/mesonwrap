@@ -69,7 +69,6 @@ def get_wrap(project, branch, revision):
 
 @APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_zip')
 def get_zip(project, branch, revision):
-    revision = revision
     result = get_query_db().get_zip(project, branch, revision)
     if result is None:
         return jsonstatus.error(500, 'No such entry')
