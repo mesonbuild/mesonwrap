@@ -10,8 +10,8 @@ import time
 import unittest
 import zipfile
 
+from mesonwrap import webapi
 from mesonwrap.tools.repoinit import RepoBuilder
-from wrapweb import webapi
 
 
 ROOT = os.path.dirname(sys.argv[0])

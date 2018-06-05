@@ -5,8 +5,8 @@ import os.path
 import tempfile
 
 from mesonwrap import gitutils
+from mesonwrap import webapi
 from mesonwrap.tools import environment
-from wrapweb import webapi
 
 
 class Importer:
