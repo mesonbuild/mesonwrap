@@ -62,24 +62,26 @@ def get_project_info(project):
 
 
 @APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_wrap')
-@APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_zip')
 def get_wrap(project, branch, revision):
     querydb = get_query_db()
-    revision = revision
-    if flask.request.path.endswith('/get_wrap'):
-        result = querydb.get_wrap(project, branch, revision)
-        mtype = 'text/plain'
-        fname = ''
-    else:
-        result = querydb.get_zip(project, branch, revision)
-        mtype = 'application/zip'
-        fname = '%s-%s-%d-wrap.zip' % (project, branch, revision)
+    result = querydb.get_wrap(project, branch, revision)
     if result is None:
         return jsonstatus.error(500, 'No such entry')
-    else:
-        resp = flask.make_response(result)
-        resp.mimetype = mtype
-        if fname:
-            resp.headers['Content-Disposition'] = (
-                'attachment; filename=%s' % fname)
-        return resp
+    resp = flask.make_response(result)
+    resp.mimetype = 'text/plain'
+    return resp
+
+
+@APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_zip')
+def get_zip(project, branch, revision):
+    querydb = get_query_db()
+    revision = revision
+    result = querydb.get_zip(project, branch, revision)
+    if result is None:
+        return jsonstatus.error(500, 'No such entry')
+    resp = flask.make_response(result)
+    resp.mimetype = 'application/zip'
+    resp.headers['Content-Disposition'] = (
+        'attachment; filename=%s-%s-%d-wrap.zip' %
+        (project, branch, revision))
+    return resp
