@@ -13,23 +13,23 @@
 # limitations under the License.
 
 from flask import g
-import os
 
 from mesonwrap import wrapdb
 from mesonwrap import wrapupdater
-
-DB_DIRECTORY = os.path.normpath(os.path.join(os.path.split(__file__)[0], ".."))
+from wrapweb.app import APP
 
 
 def get_query_db():
     db = getattr(g, "_query_database", None)
     if db is None:
-        db = g._query_database = wrapdb.WrapDatabase(DB_DIRECTORY)
+        dbdir = APP.config['DB_DIRECTORY']
+        db = g._query_database = wrapdb.WrapDatabase(dbdir)
     return db
 
 
 def get_update_db():
     db = getattr(g, "_update_database", None)
     if db is None:
-        db = g._update_database = wrapupdater.WrapUpdater(DB_DIRECTORY)
+        dbdir = APP.config['DB_DIRECTORY']
+        db = g._update_database = wrapupdater.WrapUpdater(dbdir)
     return db
