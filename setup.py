@@ -16,6 +16,9 @@ setuptools.setup(
     license='Apache 2',
     url='https://github.com/mesonbuild/wrapweb',
     packages=['mesonwrap', 'wrapweb'],
+    package_data={
+        'wrapweb': ['templates/*.html'],
+    },
     scripts=['mesonwrap.py'],
     test_suite='setup.discover_tests',
 )
