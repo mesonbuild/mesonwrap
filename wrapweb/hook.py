@@ -29,7 +29,7 @@ RESTRICTED_PROJECTS = [
 
 
 def get_wrapupdater():
-    db = getattr(flask.g, "_wrapupdater", None)
+    db = getattr(flask.g, '_wrapupdater', None)
     if db is None:
         dbdir = APP.config['DB_DIRECTORY']
         db = flask.g._wrapupdater = wrapupdater.WrapUpdater(dbdir)

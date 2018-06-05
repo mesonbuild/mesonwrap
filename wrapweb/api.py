@@ -19,7 +19,7 @@ from wrapweb.app import APP
 
 
 def get_query_db():
-    db = getattr(flask.g, "_query_database", None)
+    db = getattr(flask.g, '_query_database', None)
     if db is None:
         dbdir = APP.config['DB_DIRECTORY']
         db = flask.g._query_database = wrapdb.WrapDatabase(dbdir)
