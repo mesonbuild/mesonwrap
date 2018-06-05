@@ -28,11 +28,11 @@ RESTRICTED_PROJECTS = [
 ]
 
 
-def get_update_db():
-    db = getattr(flask.g, "_update_database", None)
+def get_wrapupdater():
+    db = getattr(flask.g, "_wrapupdater", None)
     if db is None:
         dbdir = APP.config['DB_DIRECTORY']
-        db = flask.g._update_database = wrapupdater.WrapUpdater(dbdir)
+        db = flask.g._wrapupdater = wrapupdater.WrapUpdater(dbdir)
     return db
 
 
@@ -73,7 +73,7 @@ def github_hook():
         repo_url = base['repo']['clone_url']
         if branch == 'master':
             return json_error(406, 'No bananas for you')
-        db_updater = get_update_db()
+        db_updater = get_wrapupdater()
         # FIXME, should launch in the background instead. This will now block
         # until branching is finished.
         try:
