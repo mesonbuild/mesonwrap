@@ -14,26 +14,34 @@
 
 import flask
 
+from mesonwrap import wrapdb
 from wrapweb.app import APP
-from wrapweb import db
+
+
+def get_query_db():
+    db = getattr(flask.g, "_query_database", None)
+    if db is None:
+        dbdir = APP.config['DB_DIRECTORY']
+        db = flask.g._query_database = wrapdb.WrapDatabase(dbdir)
+    return db
 
 
 def get_projectlist():
-    querydb = db.get_query_db()
+    querydb = get_query_db()
     res = {'output': 'ok', 'projects': querydb.name_search('')}
     return flask.jsonify(res)
 
 
 @APP.route('/v1/query/byname/<project>', methods=['GET'])
 def name_query(project):
-    querydb = db.get_query_db()
+    querydb = get_query_db()
     res = {'output': 'ok', 'projects': querydb.name_search(project)}
     return flask.jsonify(res)
 
 
 @APP.route('/v1/query/get_latest/<project>', methods=['GET'])
 def get_latest(project):
-    querydb = db.get_query_db()
+    querydb = get_query_db()
     matches = querydb.get_versions(project, latest=True)
 
     if len(matches) == 0:
@@ -54,7 +62,7 @@ def get_latest(project):
 def get_project_info(project):
     if project is None:
         return get_projectlist()
-    querydb = db.get_query_db()
+    querydb = get_query_db()
     matches = querydb.get_versions(project)
 
     if len(matches) == 0:
@@ -75,7 +83,7 @@ def get_project_info(project):
 @APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_wrap')
 @APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_zip')
 def get_wrap(project, branch, revision):
-    querydb = db.get_query_db()
+    querydb = get_query_db()
     revision = revision
     if flask.request.path.endswith('/get_wrap'):
         result = querydb.get_wrap(project, branch, revision)

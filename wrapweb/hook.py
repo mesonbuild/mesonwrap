@@ -17,8 +17,8 @@ import flask
 import hashlib
 import hmac
 
+from mesonwrap import wrapupdater
 from wrapweb.app import APP
-from wrapweb import db
 
 
 RESTRICTED_PROJECTS = [
@@ -26,6 +26,14 @@ RESTRICTED_PROJECTS = [
     'mesonbuild/wrapweb',
     'mesonbuild/meson-ci',
 ]
+
+
+def get_update_db():
+    db = getattr(flask.g, "_update_database", None)
+    if db is None:
+        dbdir = APP.config['DB_DIRECTORY']
+        db = flask.g._update_database = wrapupdater.WrapUpdater(dbdir)
+    return db
 
 
 def json_ok():
@@ -65,7 +73,7 @@ def github_hook():
         repo_url = base['repo']['clone_url']
         if branch == 'master':
             return json_error(406, 'No bananas for you')
-        db_updater = db.get_update_db()
+        db_updater = get_update_db()
         # FIXME, should launch in the background instead. This will now block
         # until branching is finished.
         try:
