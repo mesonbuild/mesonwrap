@@ -28,20 +28,17 @@ def get_query_db():
 
 
 def get_projectlist():
-    querydb = get_query_db()
-    return jsonstatus.ok(projects=querydb.name_search(''))
+    return jsonstatus.ok(projects=get_query_db().name_search(''))
 
 
 @APP.route('/v1/query/byname/<project>', methods=['GET'])
 def name_query(project):
-    querydb = get_query_db()
-    return jsonstatus.ok(projects=querydb.name_search(project))
+    return jsonstatus.ok(projects=get_query_db().name_search(project))
 
 
 @APP.route('/v1/query/get_latest/<project>', methods=['GET'])
 def get_latest(project):
-    querydb = get_query_db()
-    matches = querydb.get_versions(project, latest=True)
+    matches = get_query_db().get_versions(project, latest=True)
     if len(matches) == 0:
         return jsonstatus.error(500, 'No such project')
     latest = matches[0]
@@ -53,8 +50,7 @@ def get_latest(project):
 def get_project_info(project):
     if project is None:
         return get_projectlist()
-    querydb = get_query_db()
-    matches = querydb.get_versions(project)
+    matches = get_query_db().get_versions(project)
     if len(matches) == 0:
         return jsonstatus.error(500, 'No such project')
     versions = [{'branch': i[0], 'revision': i[1]} for i in matches]
@@ -63,8 +59,7 @@ def get_project_info(project):
 
 @APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_wrap')
 def get_wrap(project, branch, revision):
-    querydb = get_query_db()
-    result = querydb.get_wrap(project, branch, revision)
+    result = get_query_db().get_wrap(project, branch, revision)
     if result is None:
         return jsonstatus.error(500, 'No such entry')
     resp = flask.make_response(result)
@@ -74,9 +69,8 @@ def get_wrap(project, branch, revision):
 
 @APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_zip')
 def get_zip(project, branch, revision):
-    querydb = get_query_db()
     revision = revision
-    result = querydb.get_zip(project, branch, revision)
+    result = get_query_db().get_zip(project, branch, revision)
     if result is None:
         return jsonstatus.error(500, 'No such entry')
     resp = flask.make_response(result)
