@@ -16,6 +16,7 @@ import flask
 
 from mesonwrap import wrapdb
 from wrapweb.app import APP
+from wrapweb import jsonstatus
 
 
 def get_query_db():
@@ -28,33 +29,23 @@ def get_query_db():
 
 def get_projectlist():
     querydb = get_query_db()
-    res = {'output': 'ok', 'projects': querydb.name_search('')}
-    return flask.jsonify(res)
+    return jsonstatus.ok(projects=querydb.name_search(''))
 
 
 @APP.route('/v1/query/byname/<project>', methods=['GET'])
 def name_query(project):
     querydb = get_query_db()
-    res = {'output': 'ok', 'projects': querydb.name_search(project)}
-    return flask.jsonify(res)
+    return jsonstatus.ok(projects=querydb.name_search(project))
 
 
 @APP.route('/v1/query/get_latest/<project>', methods=['GET'])
 def get_latest(project):
     querydb = get_query_db()
     matches = querydb.get_versions(project, latest=True)
-
     if len(matches) == 0:
-        out = {'output': 'notok', 'error': 'No such project'}
-        jsonout = flask.jsonify(out)
-        jsonout.status_code = 500
-        return jsonout
-
+        return jsonstatus.error(500, 'No such project')
     latest = matches[0]
-    out = {'output': 'ok', 'branch': latest[0], 'revision': latest[1]}
-    jsonout = flask.jsonify(out)
-    jsonout.status_code = 200
-    return jsonout
+    return jsonstatus.ok(branch=latest[0], revision=latest[1])
 
 
 @APP.route('/v1/projects', defaults={'project': None})
@@ -64,20 +55,10 @@ def get_project_info(project):
         return get_projectlist()
     querydb = get_query_db()
     matches = querydb.get_versions(project)
-
     if len(matches) == 0:
-        out = {'output': 'notok', 'error': 'No such project'}
-        jsonout = flask.jsonify(out)
-        jsonout.status_code = 500
-        return jsonout
-
-    out = {'output': 'ok', 'versions': []}
-    for i in matches:
-        e = {'branch': i[0], 'revision': i[1]}
-        out['versions'].append(e)
-    jsonout = flask.jsonify(out)
-    jsonout.status_code = 200
-    return jsonout
+        return jsonstatus.error(500, 'No such project')
+    versions = [{'branch': i[0], 'revision': i[1]} for i in matches]
+    return jsonstatus.ok(versions=versions)
 
 
 @APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_wrap')
@@ -94,10 +75,7 @@ def get_wrap(project, branch, revision):
         mtype = 'application/zip'
         fname = '%s-%s-%d-wrap.zip' % (project, branch, revision)
     if result is None:
-        out = {'output': 'notok', 'error': 'No such entry'}
-        jsonout = flask.jsonify(out)
-        jsonout.status_code = 500
-        return jsonout
+        return jsonstatus.error(500, 'No such entry')
     else:
         resp = flask.make_response(result)
         resp.mimetype = mtype

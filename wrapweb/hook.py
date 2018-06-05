@@ -18,6 +18,7 @@ import hashlib
 import hmac
 
 from mesonwrap import wrapupdater
+from wrapweb import jsonstatus
 from wrapweb.app import APP
 
 
@@ -36,51 +37,40 @@ def get_wrapupdater():
     return db
 
 
-def json_ok():
-    jsonout = flask.jsonify({'output': 'ok'})
-    jsonout.status_code = 200
-    return jsonout
-
-
-def json_error(code, message):
-    jsonout = flask.jsonify({'output': 'notok', 'error': message})
-    jsonout.status_code = code
-    return jsonout
-
-
 @APP.route('/github-hook', methods=['POST'])
 def github_hook():
     headers = flask.request.headers
     if not headers.get('User-Agent').startswith('GitHub-Hookshot/'):
-        return json_error(401, 'Not a GitHub hook')
+        return jsonstatus.error(401, 'Not a GitHub hook')
     signature = ('sha1=%s' %
                  hmac.new(APP.config['SECRET_KEY'].encode('utf-8'),
                           flask.request.data, hashlib.sha1).hexdigest())
     if headers.get('X-Hub-Signature') != signature:
-        return json_error(401, 'Not a valid secret key')
+        return jsonstatus.error(401, 'Not a valid secret key')
     if headers.get('X-Github-Event') != 'pull_request':
-        return json_error(405, 'Not a Pull Request hook')
+        return jsonstatus.error(405, 'Not a Pull Request hook')
     d = flask.request.get_json()
     base = d['pull_request']['base']
     if not base['repo']['full_name'].startswith('mesonbuild/'):
-        return json_error(406, 'Not a mesonbuild project')
+        return jsonstatus.error(406, 'Not a mesonbuild project')
     if base['repo']['full_name'] in RESTRICTED_PROJECTS:
-        return json_error(406, "We don't run hook for "
+        return jsonstatus.error(406, "We don't run hook for "
                                "restricted project names")
     if d['action'] == 'closed' and d['pull_request']['merged']:
         project = base['repo']['name']
         branch = base['ref']
         repo_url = base['repo']['clone_url']
         if branch == 'master':
-            return json_error(406, 'No bananas for you')
+            return jsonstatus.error(406, 'No bananas for you')
         db_updater = get_wrapupdater()
         # FIXME, should launch in the background instead. This will now block
         # until branching is finished.
         try:
             db_updater.update_db(project, repo_url, branch)
-            return json_ok()
+            return jsonstatus.ok()
         except Exception as e:
-            return json_error(500, 'Wrap generation failed. %s' % e)
+            return jsonstatus.error(500, 'Wrap generation failed. %s' % e)
     else:
         APP.logger.warning(flask.request.data)
-        return json_error(417, 'We got hook which is not merged pull request')
+        return jsonstatus.error(
+            417, 'We got hook which is not merged pull request')
