@@ -37,6 +37,37 @@ def get_wrapupdater():
     return db
 
 
+def update_project(project, repo_url, branch):
+    if branch == 'master':
+        return jsonstatus.error(406, 'Will not update master branch')
+    # FIXME, should launch in the background instead. This will now block
+    # until branching is finished.
+    try:
+        get_wrapupdater().update_db(project, repo_url, branch)
+        return jsonstatus.ok()
+    except Exception as e:
+        return jsonstatus.error(500, 'Wrap generation failed. %s' % e)
+
+
+def github_pull_request():
+    d = flask.request.get_json()
+    base = d['pull_request']['base']
+    full_repo_name = base['repo']['full_name']
+    if not full_repo_name.startswith('mesonbuild/'):
+        return jsonstatus.error(406, 'Not a mesonbuild project')
+    if full_repo_name in RESTRICTED_PROJECTS:
+        return jsonstatus.error(406, "We don't run hook for "
+                                "restricted project names")
+    if d['action'] == 'closed' and d['pull_request']['merged']:
+        return update_project(project=base['repo']['name'],
+                              repo_url=base['repo']['clone_url'],
+                              branch=base['ref'])
+    else:
+        APP.logger.warning(flask.request.data)
+        return jsonstatus.error(
+            417, 'We got hook which is not merged pull request')
+
+
 @APP.route('/github-hook', methods=['POST'])
 def github_hook():
     headers = flask.request.headers
@@ -47,30 +78,7 @@ def github_hook():
                           flask.request.data, hashlib.sha1).hexdigest())
     if headers.get('X-Hub-Signature') != signature:
         return jsonstatus.error(401, 'Not a valid secret key')
-    if headers.get('X-Github-Event') != 'pull_request':
-        return jsonstatus.error(405, 'Not a Pull Request hook')
-    d = flask.request.get_json()
-    base = d['pull_request']['base']
-    if not base['repo']['full_name'].startswith('mesonbuild/'):
-        return jsonstatus.error(406, 'Not a mesonbuild project')
-    if base['repo']['full_name'] in RESTRICTED_PROJECTS:
-        return jsonstatus.error(406, "We don't run hook for "
-                                "restricted project names")
-    if d['action'] == 'closed' and d['pull_request']['merged']:
-        project = base['repo']['name']
-        branch = base['ref']
-        repo_url = base['repo']['clone_url']
-        if branch == 'master':
-            return jsonstatus.error(406, 'No bananas for you')
-        db_updater = get_wrapupdater()
-        # FIXME, should launch in the background instead. This will now block
-        # until branching is finished.
-        try:
-            db_updater.update_db(project, repo_url, branch)
-            return jsonstatus.ok()
-        except Exception as e:
-            return jsonstatus.error(500, 'Wrap generation failed. %s' % e)
+    if headers.get('X-Github-Event') == 'pull_request':
+        return github_pull_request()
     else:
-        APP.logger.warning(flask.request.data)
-        return jsonstatus.error(
-            417, 'We got hook which is not merged pull request')
+        return jsonstatus.error(405, 'Not a Pull Request hook')
