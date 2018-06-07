@@ -27,6 +27,13 @@ def get_query_db():
     return db
 
 
+@APP.teardown_appcontext
+def close_connection(exception):
+    db = getattr(flask.g, '_update_database', None)
+    if db is not None:
+        db.close()
+
+
 def get_projectlist():
     return jsonstatus.ok(projects=get_query_db().name_search(''))
 

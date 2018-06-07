@@ -37,6 +37,13 @@ def get_wrapupdater():
     return db
 
 
+@APP.teardown_appcontext
+def close_connection(exception):
+    db = getattr(flask.g, '_wrapupdater', None)
+    if db is not None:
+        db.close()
+
+
 def update_project(project, repo_url, branch):
     if branch == 'master':
         return jsonstatus.error(406, 'Will not update master branch')
