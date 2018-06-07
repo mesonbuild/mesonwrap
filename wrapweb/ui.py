@@ -14,7 +14,7 @@
 
 from flask import render_template
 
-from wrapweb import api
+from wrapweb import api, jsonstatus
 from wrapweb.app import APP
 
 import json
@@ -40,3 +40,10 @@ def project_info(project):
         title='%s - Wrap DB' % project,
         project=project,
         resp=j)
+
+
+# This is called when user opens get_wrap handler and CSS override is not
+# present.
+@APP.route('/favicon.ico')
+def favicon():
+    return jsonstatus.error(404, 'Favicon not found')
