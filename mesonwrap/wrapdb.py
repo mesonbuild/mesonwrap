@@ -20,10 +20,11 @@ import os
 
 
 class WrapDatabase:
+
     def __init__(self, dirname, readwrite=False):
         self.fname = os.path.join(dirname, 'wrapdb.sqlite')
         if not os.path.exists(self.fname):
-            self.create_db()
+            self._create_db(self.fname)
         if readwrite:
             self.conn = sqlite3.connect(self.fname)
         else:
@@ -89,19 +90,22 @@ class WrapDatabase:
         except Exception as e:
             return None
 
-    def create_db(self):
-        self.conn = sqlite3.connect(self.fname)
-        c = self.conn.cursor()
-        c.execute('''
-        CREATE TABLE wraps
-        (project TEXT NOT NULL,
-         branch TEXT NOT NULL,
-         revision INTEGER,
-         wrap TEXT NOT NULL,
-         zip BLOB NOT NULL
-         CHECK (revision > 0));''')
-        c.execute('''CREATE UNIQUE INDEX wrapindex ON
-                     wraps(project, branch, revision);''')
-        c.execute('''CREATE INDEX namesearch ON wraps(project);''')
-        self.conn.commit()
-        self.close()
+    @staticmethod
+    def _create_db(fname):
+        try:
+            conn = sqlite3.connect(fname)
+            c = conn.cursor()
+            c.execute('''
+            CREATE TABLE wraps
+            (project TEXT NOT NULL,
+             branch TEXT NOT NULL,
+             revision INTEGER,
+             wrap TEXT NOT NULL,
+             zip BLOB NOT NULL
+             CHECK (revision > 0));''')
+            c.execute('''CREATE UNIQUE INDEX wrapindex ON
+                         wraps(project, branch, revision);''')
+            c.execute('''CREATE INDEX namesearch ON wraps(project);''')
+            conn.commit()
+        finally:
+            conn.close()
