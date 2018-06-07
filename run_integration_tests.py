@@ -8,6 +8,7 @@ import sys
 import tempfile
 import time
 import unittest
+import urllib.error
 import zipfile
 
 from mesonwrap import webapi
@@ -230,6 +231,14 @@ class GithubHookTest(IntegrationTestBase):
         self.server.api.pull_request_hook('mesonbuild', 'foobar', '1.2.3',
                                           foo.url)
         self.assertUploaded(Project(foo.name, '1.2.3', 1))
+
+    def test_restricted_project(self):
+        foo = FakeProject('meson', self.tmpdir)
+        foo.create_version('1.2.3')
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            self.server.api.pull_request_hook('mesonbuild', 'meson', '1.2.3',
+                                              foo.url)
+        self.assertEqual(cm.exception.getcode(), 406)
 
 
 class WrapUpdaterTest(IntegrationTestBase):

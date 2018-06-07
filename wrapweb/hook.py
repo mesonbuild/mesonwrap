@@ -49,23 +49,25 @@ def update_project(project, repo_url, branch):
         return jsonstatus.error(500, 'Wrap generation failed. %s' % e)
 
 
+def check_allowed_project(full_repo_name):
+    if not full_repo_name.startswith('mesonbuild/'):
+        raise jsonstatus.WrapWebError(406, 'Not a mesonbuild project')
+    if full_repo_name in RESTRICTED_PROJECTS:
+        raise jsonstatus.WrapWebError(406, "We don't run hook for "
+                                           "restricted project names")
+
+
 def github_pull_request():
     d = flask.request.get_json()
     base = d['pull_request']['base']
-    full_repo_name = base['repo']['full_name']
-    if not full_repo_name.startswith('mesonbuild/'):
-        return jsonstatus.error(406, 'Not a mesonbuild project')
-    if full_repo_name in RESTRICTED_PROJECTS:
-        return jsonstatus.error(406, "We don't run hook for "
-                                "restricted project names")
-    if d['action'] == 'closed' and d['pull_request']['merged']:
-        return update_project(project=base['repo']['name'],
-                              repo_url=base['repo']['clone_url'],
-                              branch=base['ref'])
-    else:
+    check_allowed_project(base['repo']['full_name'])
+    if d['action'] != 'closed' or not d['pull_request']['merged']:
         APP.logger.warning(flask.request.data)
         return jsonstatus.error(
             417, 'We got hook which is not merged pull request')
+    return update_project(project=base['repo']['name'],
+                          repo_url=base['repo']['clone_url'],
+                          branch=base['ref'])
 
 
 @APP.route('/github-hook', methods=['POST'])
