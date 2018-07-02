@@ -101,6 +101,8 @@ class RepoBuilder:
         ghrepo = mesonbuild.create_repo(
             self.name, description=description, homepage=homepage,
             team_id=maintainers_team_id[organization])
+        team = mesonbuild.get_team(maintainers_team_id[organization])
+        team.set_repo_permission(ghrepo, 'push')
         self.init(path, ghrepo.ssh_url)
 
     def open(self, path, mode='r'):
