@@ -18,6 +18,7 @@ import hashlib
 import hmac
 
 from mesonwrap import wrapupdater
+from wrapweb import flaskutil
 from wrapweb import jsonstatus
 from wrapweb.app import APP
 
@@ -29,19 +30,15 @@ RESTRICTED_PROJECTS = [
 ]
 
 
-def get_wrapupdater():
-    db = getattr(flask.g, '_wrapupdater', None)
-    if db is None:
-        dbdir = APP.config['DB_DIRECTORY']
-        db = flask.g._wrapupdater = wrapupdater.WrapUpdater(dbdir)
-    return db
+@flaskutil.local
+def _wrapupdater():
+    dbdir = APP.config['DB_DIRECTORY']
+    return wrapupdater.WrapUpdater(dbdir)
 
 
-@APP.teardown_appcontext
-def close_connection(exception):
-    db = getattr(flask.g, '_wrapupdater', None)
-    if db is not None:
-        db.close()
+@_wrapupdater.teardown
+def _close_connection(db):
+    db.close()
 
 
 def update_project(project, repo_url, branch):
@@ -50,7 +47,7 @@ def update_project(project, repo_url, branch):
     # FIXME, should launch in the background instead. This will now block
     # until branching is finished.
     try:
-        get_wrapupdater().update_db(project, repo_url, branch)
+        _wrapupdater().update_db(project, repo_url, branch)
         return jsonstatus.ok()
     except Exception as e:
         return jsonstatus.error(500, 'Wrap generation failed. %s' % e)
