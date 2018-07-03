@@ -29,7 +29,7 @@ def get_query_db():
 
 @APP.teardown_appcontext
 def close_connection(exception):
-    db = getattr(flask.g, '_update_database', None)
+    db = getattr(flask.g, '_query_database', None)
     if db is not None:
         db.close()
 
