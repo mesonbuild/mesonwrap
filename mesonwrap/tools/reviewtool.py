@@ -147,7 +147,7 @@ class Reviewer:
               (self._project, self._branch))
         head_dir = head_repo.working_dir
         print_status('Repo name valid',
-                     re.fullmatch('[a-z0-9._]+', self._project))
+                     re.fullmatch('[a-z][a-z0-9._-]*', self._project))
         print_status('Branch name valid',
                      re.fullmatch('[a-z0-9._]+', self._branch))
         print_status('Target branch is not master', self._branch != 'master')
