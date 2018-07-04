@@ -25,8 +25,9 @@ from wrapweb.app import APP
 
 RESTRICTED_PROJECTS = [
     'mesonbuild/meson',
-    'mesonbuild/wrapweb',
     'mesonbuild/meson-ci',
+    'mesonbuild/mesonwrap',
+    'mesonbuild/wrapweb',
 ]
 
 
