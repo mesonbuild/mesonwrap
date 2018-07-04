@@ -15,7 +15,11 @@ setuptools.setup(
     author='The Meson development team',
     license='Apache 2',
     url='https://github.com/mesonbuild/wrapweb',
-    packages=['mesonwrap', 'wrapweb'],
+    packages=[
+        'mesonwrap',
+        'mesonwrap.tools',
+        'wrapweb',
+    ],
     package_data={
         'wrapweb': ['templates/*.html'],
     },
