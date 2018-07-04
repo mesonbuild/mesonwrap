@@ -24,6 +24,10 @@ setuptools.setup(
         'GitPython',
         'PyGithub',
     ],
-    scripts=['mesonwrap.py'],
+    entry_points={
+        'console_scripts': [
+            'mesonwrap=mesonwrap.cli:Command',
+        ],
+    },
     test_suite='setup.discover_tests',
 )
