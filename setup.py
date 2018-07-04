@@ -19,6 +19,11 @@ setuptools.setup(
     package_data={
         'wrapweb': ['templates/*.html'],
     },
+    install_requires=[
+        'Flask',
+        'GitPython',
+        'PyGithub',
+    ],
     scripts=['mesonwrap.py'],
     test_suite='setup.discover_tests',
 )
