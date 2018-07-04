@@ -1,7 +1,7 @@
 %global __python %{__python3}
 
 Name:          meson-wrapweb
-Version:       0.0.4
+Version:       0.0.5
 Release:       1%{?dist}
 Summary:       Web service providing downloadable Wraps
 
