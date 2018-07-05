@@ -234,8 +234,8 @@ class Reviewer:
         print_status('ninja test', test_result == 0)
 
 
-def main(args):
-    parser = argparse.ArgumentParser()
+def main(prog, args):
+    parser = argparse.ArgumentParser(prog)
     parser.add_argument('name')
     parser.add_argument('--pull_request', type=int)
     parser.add_argument('--branch')

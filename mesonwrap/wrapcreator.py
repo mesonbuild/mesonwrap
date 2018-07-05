@@ -98,8 +98,8 @@ class WrapCreator:
         return (wrap_contents, zip_contents, revision_id)
 
 
-def main(args):
-    parser = argparse.ArgumentParser()
+def main(prog, args):
+    parser = argparse.ArgumentParser(prog)
     parser.add_argument('project_name')
     parser.add_argument('data_repo_url')
     parser.add_argument('branch')

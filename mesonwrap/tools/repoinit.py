@@ -136,8 +136,8 @@ class RepoBuilder:
                 source_hash=ziphash).write(ofile)
 
 
-def new_repo(args):
-    parser = argparse.ArgumentParser()
+def new_repo(prog, args):
+    parser = argparse.ArgumentParser(prog)
     parser.add_argument('name')
     parser.add_argument('--directory', help='Working directory')
     parser.add_argument('--version', help='Initialize dummy version')
@@ -154,8 +154,8 @@ def new_repo(args):
         builder.init_version(args.version)
 
 
-def refresh(args):
-    parser = argparse.ArgumentParser()
+def refresh(prog, args):
+    parser = argparse.ArgumentParser(prog)
     parser.add_argument('name')
     parser.add_argument('--directory', help='Working directory')
     parser.add_argument('--message')
@@ -164,8 +164,8 @@ def refresh(args):
     builder.refresh(args.message)
 
 
-def new_version(args):
-    parser = argparse.ArgumentParser()
+def new_version(prog, args):
+    parser = argparse.ArgumentParser(prog)
     parser.add_argument('name')
     parser.add_argument('--directory', help='Working directory')
     parser.add_argument('--version', required=True)

@@ -37,8 +37,8 @@ class WrapUpdater:
                            zip_contents)
 
 
-def main(args):
-    parser = argparse.ArgumentParser()
+def main(prog, args):
+    parser = argparse.ArgumentParser(prog)
     parser.add_argument('project')
     parser.add_argument('repo_url')
     parser.add_argument('branch')
