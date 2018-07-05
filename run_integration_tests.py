@@ -177,7 +177,7 @@ class QueryTest(IntegrationTestBase):
         self.assertLatest('test1', '1.3.0', 3)
 
     def test_latest_semantic_version_comparison(self):
-        '''Lexicographical comparison leads to the opposite results.'''
+        """Lexicographical comparison leads to the opposite results."""
         f = FakeProject('test', self.tmpdir)
         for version in ['1.2.8', '1.2.11']:
             f.create_version(version)
@@ -185,7 +185,7 @@ class QueryTest(IntegrationTestBase):
         self.assertLatest('test', '1.2.11', 1)
 
     def test_latest_non_semantic_version_no_minor(self):
-        '''Not every project supports semantic versioning, test fallback.'''
+        """Not every project supports semantic versioning, test fallback."""
         f = FakeProject('test', self.tmpdir)
         for version in ['1.2', '1.3', '1.7']:
             f.create_version(version)
@@ -193,7 +193,7 @@ class QueryTest(IntegrationTestBase):
         self.assertLatest(f.name, '1.7', 1)
 
     def test_latest_non_semantic_version_single_number(self):
-        '''If it is not a semantic version just sort lexicographically.'''
+        """If it is not a semantic version just sort lexicographically."""
         f = FakeProject('test', self.tmpdir)
         for version in ['212345', '123456']:
             f.create_version(version)

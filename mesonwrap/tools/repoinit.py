@@ -63,7 +63,7 @@ maintainers_team_id = {
 class RepoBuilder:
 
     def __init__(self, name, path=None, organization=None, homepage=None):
-        '''Pushes to github only if organization is set'''
+        """Pushes to github only if organization is set."""
         self.name = name
         try:
             self.repo = git.Repo(path)
@@ -78,7 +78,7 @@ class RepoBuilder:
                 self.init_github(path, organization, homepage)
 
     def init(self, path, origin=None):
-        '''Push if origin is not None'''
+        """Push if origin is not None."""
         self.repo = git.Repo.init(path)
         self.refresh('Create repository for project %s' % self.name)
         if origin is not None:

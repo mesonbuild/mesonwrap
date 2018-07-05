@@ -261,14 +261,14 @@ class WebAPI:
         return self._api.fetch_v1_projects()['projects']
 
     def projects(self):
-        '''Returns new version of ProjectSet.
+        """Returns new version of ProjectSet.
 
            All operations on ProjectSet are cached.
-        '''
+        """
         return ProjectSet(self._api)
 
     def ping(self):
-        '''Returns True if able to connect'''
+        """Returns True if able to connect."""
         try:
             self._api.fetch('/')
             return True

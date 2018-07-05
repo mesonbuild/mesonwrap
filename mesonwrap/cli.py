@@ -44,45 +44,45 @@ class Command:
         }
 
     def args(self) -> typing.Tuple[str, typing.List[str]]:
-        '''Returns (program name, list of arguments).'''
+        """Returns (program name, list of arguments)."""
         func = inspect.stack()[1][3]
         command = func[len(self.CMD_PREFIX):]
         return ('{} {}'.format(sys.argv[0], command),
                 sys.argv[2:])
 
     def command_serve(self):
-        '''Run server'''
+        """Run server"""
         APP.debug = True
         APP.run(host='0.0.0.0')
 
     def command_review(self):
-        '''Review wrap PR'''
+        """Review wrap PR"""
         reviewtool.main(*self.args())
 
     def command_new_repo(self):
-        '''Create and push new wrap repository'''
+        """Create and push new wrap repository"""
         repoinit.new_repo(*self.args())
 
     def command_new_version(self):
-        '''Create new version and prefill upstream.wrap'''
+        """Create new version and prefill upstream.wrap"""
         repoinit.new_version(*self.args())
 
     def command_refresh_repo(self):
-        '''Refresh statically created file'''
+        """Refresh statically created file"""
         repoinit.refresh(*self.args())
 
     def command_wrapcreate(self):
-        '''Create wrap from remote repository'''
+        """Create wrap from remote repository"""
         wrapcreator.main(*self.args())
 
     def command_wrapupdate(self):
-        '''Create wrap and import it into local database'''
+        """Create wrap and import it into local database"""
         wrapupdater.main(*self.args())
 
     def command_dbtool(self):
-        '''This is a simple tool to do queries and inserts'''
+        """This is a simple tool to do queries and inserts"""
         dbtool.main(*self.args())
 
     def command_import_from_hosted(self):
-        '''Import projects from wrapdb into github'''
+        """Import projects from wrapdb into github"""
         import_from_hosted.main(*self.args())

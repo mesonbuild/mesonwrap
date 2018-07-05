@@ -26,11 +26,11 @@ class GitFile:
 
 
 def get_revision(repo: git.Repo, commit=None):
-    '''Get revision from repo and commit.
+    """Get revision from repo and commit.
 
     Revision is a number of commits between specified commit
     and first commit with upstream.wrap or commit tagged with [wrap version]
-    in message.'''
+    in message."""
     # BFS over acyclic graph
     # revision is number of commits we visit
     # we cut off BFS by '[wrap revision]' and 'upstream.wrap'

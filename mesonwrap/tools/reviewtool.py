@@ -31,15 +31,15 @@ class CheckError(Exception):
     pass
 
 
-def print_status(msg, check, fatal=True, quiet=False):
-    '''Prints msg with success indicator based on check parameter.
+def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
+    """Prints msg with success indicator based on check parameter.
     Args:
         msg: str, status message to print
-        check: bool, success of the check
-        fatal: bool, if exception should be raised
-        quiet: bool, if message should be printed on success
+        check: success of the check
+        fatal: if exception should be raised
+        quiet: if message should be printed on success
     Raises: CheckError(msg) if not check and fatal
-    '''
+    """
     OK_CHR = '\u2611'
     FAIL_CHR = '\u2612'
     status = OK_CHR if check else FAIL_CHR
