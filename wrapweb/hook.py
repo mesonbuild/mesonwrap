@@ -17,18 +17,11 @@ import flask
 import hashlib
 import hmac
 
+from mesonwrap import inventory
 from mesonwrap import wrapupdater
 from wrapweb import flaskutil
 from wrapweb import jsonstatus
 from wrapweb.app import APP
-
-
-RESTRICTED_PROJECTS = [
-    'mesonbuild/meson',
-    'mesonbuild/meson-ci',
-    'mesonbuild/mesonwrap',
-    'mesonbuild/wrapweb',
-]
 
 
 @flaskutil.local
@@ -55,11 +48,8 @@ def update_project(project, repo_url, branch):
 
 
 def check_allowed_project(full_repo_name):
-    if not full_repo_name.startswith('mesonbuild/'):
-        raise jsonstatus.WrapWebError(406, 'Not a mesonbuild project')
-    if full_repo_name in RESTRICTED_PROJECTS:
-        raise jsonstatus.WrapWebError(406, "We don't run hook for "
-                                           "restricted project names")
+    if not inventory.is_wrap_full_project_name(full_repo_name):
+        raise jsonstatus.WrapWebError(406, 'Not a mesonwrap project')
 
 
 def github_pull_request():
