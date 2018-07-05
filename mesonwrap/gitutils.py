@@ -25,7 +25,7 @@ class GitFile:
         return f
 
 
-def get_revision(repo: git.Repo, commit=None):
+def get_revision(repo: git.Repo, commit: git.Commit = None):
     """Get revision from repo and commit.
 
     Revision is a number of commits between specified commit
