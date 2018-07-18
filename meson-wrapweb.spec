@@ -28,7 +28,6 @@ Requires:      uwsgi-plugin-python3
 
 %install
 %py3_install
-mv %{buildroot}%{_bindir}/mesonwrap{.py,}
 
 mkdir -p %{buildroot}%{_datadir}/%{name}/
 mkdir -p %{buildroot}%{_sharedstatedir}/%{name}/
