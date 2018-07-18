@@ -1,4 +1,5 @@
 %global __python %{__python3}
+%{?python_enable_dependency_generator}
 
 Name:          meson-wrapweb
 Version:       0.0.5
@@ -11,9 +12,6 @@ Source0:       %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
 BuildArch:     noarch
 BuildRequires: python3-devel
-Requires:      python3-flask
-Requires:      python3-GitPython
-Requires:      python3-PyGithub
 Requires:      nginx
 Requires:      uwsgi
 Requires:      uwsgi-plugin-python3
