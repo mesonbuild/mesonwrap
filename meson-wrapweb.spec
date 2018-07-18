@@ -2,7 +2,7 @@
 %{?python_enable_dependency_generator}
 
 Name:          meson-wrapweb
-Version:       0.0.5
+Version:       0.0.6
 Release:       1%{?dist}
 Summary:       Web service providing downloadable Wraps
 
