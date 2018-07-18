@@ -12,6 +12,7 @@ Source0:       %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
 BuildArch:     noarch
 BuildRequires: python3-devel
+BuildRequires: python3-setuptools
 Requires:      nginx
 Requires:      uwsgi
 Requires:      uwsgi-plugin-python3
