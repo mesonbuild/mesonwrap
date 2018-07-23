@@ -15,8 +15,8 @@
 # limitations under the License.
 
 from distutils import version
-import sqlite3
 import os
+import sqlite3
 
 
 class WrapDatabase:
@@ -52,19 +52,22 @@ class WrapDatabase:
         c.execute(query, (text + '%',))
         return [x[0] for x in c.fetchall()]
 
+    @staticmethod
+    def _version_key(version_tuple):
+        """version_tuple: typing.Tuple[str, int])"""
+        # FIXME figure out why importing typing causes RecursionError
+        return (version.LooseVersion(version_tuple[0]), version_tuple[1])
+
     def get_versions(self, project, latest=False):
         c = self.conn.cursor()
         query = '''SELECT branch, revision FROM wraps
-                   WHERE project == ?
-                   ORDER BY branch DESC, revision DESC;'''
+                   WHERE project == ?;'''
         c.execute(query, (project,))
         if latest:
             # TODO consider computing this during import
-            latest_ver = max((version.LooseVersion(r[0]), r[1])
-                             for r in c.fetchall())
-            return [(str(latest_ver[0]), latest_ver[1])]
+            return [max(c.fetchall(), key=self._version_key)]
         else:
-            return c.fetchall()
+            return sorted(c.fetchall(), key=self._version_key, reverse=True)
 
     def get_wrap(self, project, branch, revision):
         c = self.conn.cursor()
