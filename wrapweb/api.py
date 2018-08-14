@@ -44,7 +44,7 @@ def name_query(project):
 def get_latest(project):
     matches = _database().get_versions(project, latest=True)
     if len(matches) == 0:
-        return jsonstatus.error(500, 'No such project')
+        return jsonstatus.error(404, 'No such project')
     latest = matches[0]
     return jsonstatus.ok(branch=latest[0], revision=latest[1])
 
@@ -56,7 +56,7 @@ def get_project_info(project):
         return get_projectlist()
     matches = _database().get_versions(project)
     if len(matches) == 0:
-        return jsonstatus.error(500, 'No such project')
+        return jsonstatus.error(404, 'No such project')
     versions = [{'branch': i[0], 'revision': i[1]} for i in matches]
     return jsonstatus.ok(versions=versions)
 
@@ -65,7 +65,7 @@ def get_project_info(project):
 def get_wrap(project, branch, revision):
     result = _database().get_wrap(project, branch, revision)
     if result is None:
-        return jsonstatus.error(500, 'No such entry')
+        return jsonstatus.error(404, 'No such entry')
     resp = flask.make_response(result)
     resp.mimetype = 'text/plain'
     return resp
@@ -75,7 +75,7 @@ def get_wrap(project, branch, revision):
 def get_zip(project, branch, revision):
     result = _database().get_zip(project, branch, revision)
     if result is None:
-        return jsonstatus.error(500, 'No such entry')
+        return jsonstatus.error(404, 'No such entry')
     resp = flask.make_response(result)
     resp.mimetype = 'application/zip'
     resp.headers['Content-Disposition'] = (

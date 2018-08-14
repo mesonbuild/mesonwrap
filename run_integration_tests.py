@@ -207,6 +207,10 @@ class QueryTest(IntegrationTestBase):
             self.wrapupdater(f.name, f.url, version)
         self.assertLatest(f.name, '17a', 1)
 
+    def test_latest_does_not_exist(self):
+        with self.assertRaisesRegex(webapi.APIError, 'No such project'):
+            self.server.api._api.query_v1_get_latest('non-existent-project')
+
     def test_by_name_prefix(self):
         baz = FakeProject('baz', self.tmpdir)
         baz.create_version('1.0.0')

@@ -10,6 +10,10 @@ class ServerError(Exception):
     pass
 
 
+class APIError(ServerError):
+    pass
+
+
 class _APIClient:
 
     def __init__(self, url):
@@ -39,18 +43,30 @@ class _APIClient:
             return r.read()
 
     def fetch_json(self, url):
-        return self.parse_json(self.fetch(url))
+        try:
+            data = self.fetch(url)
+        except urllib.request.HTTPError as e:
+            if e.code != 404:
+                raise ServerError('Server error: unknown error code',
+                                  e.code, e.reason)
+            data = e.read()
+        return self.parse_json(data)
 
     def parse_json(self, data):
         if isinstance(data, bytes):
             data = data.decode('utf8')
         j = json.loads(data)
-        if j['output'] == 'ok':
+        if 'output' not in j:
+            raise ValueError('Invalid server response: no output field')
+        elif j['output'] == 'ok':
             return j
         elif j['output'] == 'notok':
-            raise ServerError('Server error')
+            if 'error' not in j:
+                raise ValueError('Invalid server response: no error field')
+            raise APIError(j['error'])
         else:
-            raise ValueError('Invalid server response')
+            raise ValueError('Invalid server response: unknown output value',
+                             j['output'])
 
     def query_v1_byname(self, project: str):
         return self.fetch_json('/v1/query/byname/' + project)
