@@ -59,15 +59,19 @@ class WrapDatabase:
         return (version.LooseVersion(version_tuple[0]), version_tuple[1])
 
     def get_versions(self, project, latest=False):
+        """Returns empty list if project does not exist."""
         c = self.conn.cursor()
         query = '''SELECT branch, revision FROM wraps
                    WHERE project == ?;'''
         c.execute(query, (project,))
+        results = c.fetchall()
+        if not results:
+            return []
         if latest:
             # TODO consider computing this during import
-            return [max(c.fetchall(), key=self._version_key)]
+            return [max(results, key=self._version_key)]
         else:
-            return sorted(c.fetchall(), key=self._version_key, reverse=True)
+            return sorted(results, key=self._version_key, reverse=True)
 
     def get_wrap(self, project, branch, revision):
         c = self.conn.cursor()
