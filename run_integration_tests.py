@@ -34,17 +34,6 @@ class Project:
                 (self.name, self.version, self.revision))
 
 
-# revision is not exact match, it should be at least that number,
-# but might be higher
-projects = [
-    Project(name='protobuf', version='3.5.1', revision=2),
-    Project(name='protobuf', version='3.5.0', revision=2),
-    Project(name='zlib', version='1.2.8', revision=8),
-    Project(name='zlib', version='1.2.11', revision=1),
-    Project(name='json', version='2.1.1', revision=1),
-]
-
-
 class Server(subprocess.Popen):
 
     def __init__(self):
@@ -114,7 +103,7 @@ class IntegrationTestBase(unittest.TestCase):
             project.revision,
             projects[project.name].versions[project.version].latest.revision)
 
-    def assertUploaded(self, project):
+    def assertUploaded(self, project: Project):
         projects = self.server.api.projects()
         self.assertIn(project.name, projects)
         self.assertIn(project.version, projects[project.name].versions)
@@ -248,11 +237,22 @@ class GithubHookTest(IntegrationTestBase):
 class WrapUpdaterTest(IntegrationTestBase):
 
     def test_existing_wrapupdater(self):
+        location = 'https://github.com/mesonbuild/{}.git'
+        # revision is not exact match, it should be at least that number,
+        # but might be higher
+        projects = [
+            Project(name='protobuf', version='3.5.1', revision=2),
+            Project(name='protobuf', version='3.5.0', revision=2),
+            Project(name='zlib', version='1.2.8', revision=8),
+            Project(name='zlib', version='1.2.11', revision=1),
+            Project(name='json', version='2.1.1', revision=1),
+        ]
         for project in projects:
-            url = 'https://github.com/mesonbuild/{}.git'.format(project.name)
-            self.wrapupdater(project.name, url, project.version)
-            self.assertIn(project.name, self.server.api.projects())
-            self.assertLooseUploaded(project)
+            with self.subTest(project=project.name):
+                url = location.format(project.name)
+                self.wrapupdater(project.name, url, project.version)
+                self.assertIn(project.name, self.server.api.projects())
+                self.assertLooseUploaded(project)
 
     def test_wrapupdater(self):
         f = FakeProject('test1', self.tmpdir)
