@@ -15,8 +15,10 @@
 # limitations under the License.
 
 import argparse
+from collections import namedtuple
 import git
 import hashlib
+import io
 import os
 from pathlib import PurePath
 import shutil
@@ -42,72 +44,66 @@ _IGNORED_DIRS = [
 ]
 
 
-class WrapCreator:
+Wrap = namedtuple(
+    'Wrap',
+    ['wrap', 'zip', 'revision', 'wrap_name', 'zip_name']
+)
 
-    def __init__(self, name, repo_url, branch, out_dir='.',
-                 out_url_base=_OUT_URL_BASE_DEFAULT):
-        self.name = name
-        self.repo_url = repo_url
-        self.branch = branch
-        self.out_dir = out_dir
-        self.out_url_base = out_url_base
 
-    def create(self):
-        with tempfile.TemporaryDirectory() as workdir:
-            return self.create_internal(workdir)
+def make_wrap(name, repo_url, branch, out_url_base=_OUT_URL_BASE_DEFAULT):
+    with tempfile.TemporaryDirectory() as workdir:
+        return _make_wrap(workdir, name, repo_url, branch, out_url_base)
 
-    @staticmethod
-    def _get_revision(repo):
-        return gitutils.get_revision(repo, repo.head.commit)
 
-    @staticmethod
-    def check_definition(definition):
-        for i in ['directory', 'source_url', 'source_filename', 'source_hash']:
-            if not getattr(definition, 'has_' + i):
-                raise RuntimeError('Missing {!r} in upstream.wrap.'.format(i))
+def _check_definition(definition):
+    for i in ['directory', 'source_url', 'source_filename', 'source_hash']:
+        if not getattr(definition, 'has_' + i):
+            raise RuntimeError('Missing {!r} in upstream.wrap.'.format(i))
 
-    def make_zip(self, zippath, workdir):
-        with zipfile.ZipFile(zippath, 'w',
-                             compression=zipfile.ZIP_DEFLATED) as zip:
-            for root, dirs, files in os.walk(workdir):
-                relroot = PurePath(root).relative_to(workdir)
-                dirs[:] = [p for p in dirs
-                           if str(relroot / p) not in _IGNORED_DIRS]
-                for f in files:
-                    abspath = PurePath(root) / f
-                    relpath = abspath.relative_to(workdir)
-                    if str(relpath) in _IGNORED_FILES:
-                        continue
-                    zip.write(abspath, self.definition.directory / relpath)
 
-    def create_internal(self, workdir):
-        repo = git.Repo.clone_from(self.repo_url, workdir, branch=self.branch)
-        upstream_file = os.path.join(workdir, 'upstream.wrap')
-        revision_id = self._get_revision(repo)
-        self.upstream_file = os.path.join(workdir, 'upstream.wrap')
-        self.definition = upstream.UpstreamWrap.from_file(self.upstream_file)
-        self.check_definition(self.definition)
-        base_name = (self.name + '-' +
-                     self.branch + '-' +
-                     str(revision_id) + '-wrap')
-        zip_name = base_name + '.zip'
-        wrap_name = base_name + '.wrap'
-        zip_full = os.path.join(self.out_dir, zip_name)
-        wrap_full = os.path.join(self.out_dir, wrap_name)
-        self.make_zip(zip_full, workdir)
-        source_hash = hashlib.sha256(open(zip_full, 'rb').read()).hexdigest()
-        with open(wrap_full, 'w') as wrapfile:
-            url = self.out_url_base % (self.name, self.branch, revision_id)
-            with open(upstream_file) as basewrap:
-                # preserve whatever formatting user has provided
-                wrapfile.write(basewrap.read())
-            wrapfile.write('\n')
-            wrapfile.write('patch_url = %s\n' % url)
-            wrapfile.write('patch_filename = %s\n' % zip_name)
-            wrapfile.write('patch_hash = %s\n' % source_hash)
-        wrap_contents = open(wrap_full, 'r').read()
-        zip_contents = open(zip_full, 'rb').read()
-        return (wrap_contents, zip_contents, revision_id)
+def _make_zip(file, workdir, dirprefix):
+    with zipfile.ZipFile(file, 'w',
+                         compression=zipfile.ZIP_DEFLATED) as zip:
+        for root, dirs, files in os.walk(workdir):
+            relroot = PurePath(root).relative_to(workdir)
+            dirs[:] = [p for p in dirs
+                       if str(relroot / p) not in _IGNORED_DIRS]
+            for f in files:
+                abspath = PurePath(root) / f
+                relpath = abspath.relative_to(workdir)
+                if str(relpath) in _IGNORED_FILES:
+                    continue
+                zip.write(abspath, dirprefix / relpath)
+
+
+def _make_wrap(workdir, name, repo_url, branch, out_url_base):
+    repo = git.Repo.clone_from(repo_url, workdir, branch=branch)
+    upstream_file = os.path.join(workdir, 'upstream.wrap')
+    revision_id = gitutils.get_revision(repo, repo.head.commit)
+    upstream_file = os.path.join(workdir, 'upstream.wrap')
+    definition = upstream.UpstreamWrap.from_file(upstream_file)
+    _check_definition(definition)
+    base_name = (name + '-' +
+                 branch + '-' +
+                 str(revision_id) + '-wrap')
+    zip_name = base_name + '.zip'
+    wrap_name = base_name + '.wrap'
+    with io.BytesIO() as zipf:
+        _make_zip(zipf, workdir, definition.directory)
+        zip_contents = zipf.getvalue()
+    source_hash = hashlib.sha256(zip_contents).hexdigest()
+    with io.StringIO() as wrapfile:
+        url = out_url_base % (name, branch, revision_id)
+        with open(upstream_file) as basewrap:
+            # preserve whatever formatting user has provided
+            wrapfile.write(basewrap.read())
+        wrapfile.write('\n')
+        wrapfile.write('patch_url = %s\n' % url)
+        wrapfile.write('patch_filename = %s\n' % zip_name)
+        wrapfile.write('patch_hash = %s\n' % source_hash)
+        wrap_contents = wrapfile.getvalue()
+    return Wrap(wrap=wrap_contents, zip=zip_contents, revision=revision_id,
+                wrap_name=wrap_name, zip_name=zip_name)
 
 
 def main(prog, args):
@@ -116,5 +112,8 @@ def main(prog, args):
     parser.add_argument('data_repo_url')
     parser.add_argument('branch')
     args = parser.parse_args(args)
-    x = WrapCreator(args.project_name, args.data_repo_url, args.branch)
-    x.create()
+    wrap = make_wrap(args.project_name, args.data_repo_url, args.branch)
+    with open(wrap.wrap_name, 'w') as w:
+        w.write(wrap.wrap)
+    with open(wrap.zip_name, 'wb') as z:
+        z.write(wrap.zip)
