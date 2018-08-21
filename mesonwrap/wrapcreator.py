@@ -79,7 +79,6 @@ def _make_zip(file, workdir, dirprefix):
 
 def _make_wrap(workdir, name, repo_url, branch, out_url_base):
     repo = git.Repo.clone_from(repo_url, workdir, branch=branch)
-    upstream_file = os.path.join(workdir, 'upstream.wrap')
     revision_id = gitutils.get_revision(repo, repo.head.commit)
     upstream_file = os.path.join(workdir, 'upstream.wrap')
     definition = upstream.UpstreamWrap.from_file(upstream_file)
