@@ -73,7 +73,8 @@ def _make_zip(file, workdir, dirprefix):
                 relpath = abspath.relative_to(workdir)
                 if str(relpath) in _IGNORED_FILES:
                     continue
-                zip.write(abspath, dirprefix / relpath)
+                # Python 3.5 zipfile does not support pathlib
+                zip.write(str(abspath), str(dirprefix / relpath))
 
 
 def _make_wrap(workdir, name, repo_url, branch, out_url_base):
