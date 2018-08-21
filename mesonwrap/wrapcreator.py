@@ -18,6 +18,7 @@ import argparse
 import git
 import hashlib
 import os
+from pathlib import PurePath
 import shutil
 import tempfile
 import zipfile
@@ -28,6 +29,17 @@ from mesonwrap import upstream
 
 _OUT_URL_BASE_DEFAULT = (
     'https://wrapdb.mesonbuild.com/v1/projects/%s/%s/%d/get_zip')
+
+# relative fully qualified paths
+_IGNORED_FILES = [
+    '.gitignore',
+    'readme.txt',
+    'upstream.wrap',
+]
+
+_IGNORED_DIRS = [
+    '.git',
+]
 
 
 class WrapCreator:
@@ -54,21 +66,27 @@ class WrapCreator:
             if not getattr(definition, 'has_' + i):
                 raise RuntimeError('Missing {!r} in upstream.wrap.'.format(i))
 
+    def make_zip(self, zippath, workdir):
+        with zipfile.ZipFile(zippath, 'w',
+                             compression=zipfile.ZIP_DEFLATED) as zip:
+            for root, dirs, files in os.walk(workdir):
+                relroot = PurePath(root).relative_to(workdir)
+                dirs[:] = [p for p in dirs
+                           if str(relroot / p) not in _IGNORED_DIRS]
+                for f in files:
+                    abspath = PurePath(root) / f
+                    relpath = abspath.relative_to(workdir)
+                    if str(relpath) in _IGNORED_FILES:
+                        continue
+                    zip.write(abspath, self.definition.directory / relpath)
+
     def create_internal(self, workdir):
         repo = git.Repo.clone_from(self.repo_url, workdir, branch=self.branch)
         upstream_file = os.path.join(workdir, 'upstream.wrap')
-        upstream_content = open(upstream_file).read()
         revision_id = self._get_revision(repo)
         self.upstream_file = os.path.join(workdir, 'upstream.wrap')
         self.definition = upstream.UpstreamWrap.from_file(self.upstream_file)
         self.check_definition(self.definition)
-        shutil.rmtree(os.path.join(workdir, '.git'))
-        os.unlink(os.path.join(workdir, 'readme.txt'))
-        os.unlink(upstream_file)
-        try:
-            os.unlink(os.path.join(workdir, '.gitignore'))
-        except OSError:
-            pass
         base_name = (self.name + '-' +
                      self.branch + '-' +
                      str(revision_id) + '-wrap')
@@ -76,19 +94,13 @@ class WrapCreator:
         wrap_name = base_name + '.wrap'
         zip_full = os.path.join(self.out_dir, zip_name)
         wrap_full = os.path.join(self.out_dir, wrap_name)
-        with zipfile.ZipFile(zip_full, 'w',
-                             compression=zipfile.ZIP_DEFLATED) as zip:
-            for root, dirs, files in os.walk(workdir):
-                for f in files:
-                    abspath = os.path.join(root, f)
-                    relpath = abspath[len(workdir) + 1:]
-                    zip.write(abspath, os.path.join(self.definition.directory,
-                                                    relpath))
-
+        self.make_zip(zip_full, workdir)
         source_hash = hashlib.sha256(open(zip_full, 'rb').read()).hexdigest()
         with open(wrap_full, 'w') as wrapfile:
             url = self.out_url_base % (self.name, self.branch, revision_id)
-            wrapfile.write(upstream_content)
+            with open(upstream_file) as basewrap:
+                # preserve whatever formatting user has provided
+                wrapfile.write(basewrap.read())
             wrapfile.write('\n')
             wrapfile.write('patch_url = %s\n' % url)
             wrapfile.write('patch_filename = %s\n' % zip_name)
