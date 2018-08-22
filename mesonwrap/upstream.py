@@ -22,6 +22,12 @@ class UpstreamWrap:
             setattr(self, k, v)
 
     @classmethod
+    def from_string(cls, value):
+        upst = cls()
+        upst.read_string(value)
+        return upst
+
+    @classmethod
     def from_file(cls, filename):
         upst = cls()
         upst.read_file(filename)
