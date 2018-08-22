@@ -21,7 +21,6 @@ import hashlib
 import io
 import os
 from pathlib import PurePath
-import shutil
 import tempfile
 import zipfile
 
