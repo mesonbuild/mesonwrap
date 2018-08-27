@@ -3,6 +3,7 @@ _RESTRICTED_PROJECTS = [
     'meson',
     'meson-ci',
     'mesonwrap',
+    'wrapdevtools',
     'wrapweb',
 ]
 _RESTRICTED_ORG_PROJECTS = [
