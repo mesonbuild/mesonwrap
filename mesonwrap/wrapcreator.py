@@ -28,6 +28,7 @@ from mesonwrap import gitutils
 from mesonwrap import upstream
 
 
+# Replace this with proper parameterized callback if this need to be extended.
 _OUT_URL_BASE_DEFAULT = (
     'https://wrapdb.mesonbuild.com/v1/projects/%s/%s/%d/get_zip')
 
@@ -49,9 +50,9 @@ Wrap = namedtuple(
 )
 
 
-def make_wrap(name, repo_url, branch, out_url_base=_OUT_URL_BASE_DEFAULT):
+def make_wrap(name, repo_url, branch):
     with tempfile.TemporaryDirectory() as workdir:
-        return _make_wrap(workdir, name, repo_url, branch, out_url_base)
+        return _make_wrap(workdir, name, repo_url, branch)
 
 
 def _check_definition(definition):
@@ -76,7 +77,7 @@ def _make_zip(file, workdir, dirprefix):
                 zip.write(str(abspath), str(dirprefix / relpath))
 
 
-def _make_wrap(workdir, name, repo_url, branch, out_url_base):
+def _make_wrap(workdir, name, repo_url, branch):
     repo = git.Repo.clone_from(repo_url, workdir, branch=branch)
     revision_id = gitutils.get_revision(repo, repo.head.commit)
     upstream_file = os.path.join(workdir, 'upstream.wrap')
@@ -92,7 +93,7 @@ def _make_wrap(workdir, name, repo_url, branch, out_url_base):
         zip_contents = zipf.getvalue()
     source_hash = hashlib.sha256(zip_contents).hexdigest()
     with io.StringIO() as wrapfile:
-        url = out_url_base % (name, branch, revision_id)
+        url = _OUT_URL_BASE_DEFAULT % (name, branch, revision_id)
         with open(upstream_file) as basewrap:
             # preserve whatever formatting user has provided
             wrapfile.write(basewrap.read())
