@@ -82,7 +82,7 @@ class WrapDatabase:
                                revision == ?;''',
                       (project, branch, revision))
             return c.fetchone()[0]
-        except Exception as e:
+        except Exception:
             return None
 
     def get_zip(self, project, branch, revision):
@@ -94,7 +94,7 @@ class WrapDatabase:
                                revision == ?;''',
                       (project, branch, revision))
             return c.fetchone()[0]
-        except Exception as e:
+        except Exception:
             return None
 
     @staticmethod
