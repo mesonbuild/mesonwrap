@@ -21,10 +21,10 @@ import hashlib
 import io
 import os
 from pathlib import PurePath
-import tempfile
 import zipfile
 
 from mesonwrap import gitutils
+from mesonwrap import tempfile
 from mesonwrap import upstream
 
 

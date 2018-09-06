@@ -19,11 +19,11 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 import urllib.request
 
 import git
 
+from mesonwrap import tempfile
 from mesonwrap import upstream
 from mesonwrap.tools import environment
 

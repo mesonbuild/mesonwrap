@@ -3,11 +3,11 @@ import hashlib
 import io
 import os
 import os.path
-import tempfile
 import unittest
 import zipfile
 
 from mesonwrap import gitutils
+from mesonwrap import tempfile
 from mesonwrap import upstream
 from mesonwrap import wrapcreator
 
