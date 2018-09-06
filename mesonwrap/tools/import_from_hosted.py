@@ -2,9 +2,9 @@ import argparse
 import git
 import github
 import os.path
-import tempfile
 
 from mesonwrap import gitutils
+from mesonwrap import tempfile
 from mesonwrap import webapi
 from mesonwrap.tools import environment
 

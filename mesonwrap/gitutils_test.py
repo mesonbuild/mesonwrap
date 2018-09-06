@@ -1,8 +1,8 @@
 import git
-import tempfile
 import unittest
 
 from mesonwrap import gitutils
+from mesonwrap import tempfile
 
 
 class GetRevisionTest(unittest.TestCase):
