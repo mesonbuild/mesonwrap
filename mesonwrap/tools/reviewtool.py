@@ -156,8 +156,6 @@ class Reviewer:
                      self.isfile(head_dir, 'LICENSE.build'))
         print_status('Has upstream.wrap',
                      self.isfile(head_dir, 'upstream.wrap'))
-        print_status('Has toplevel meson.build',
-                     self.isfile(head_dir, 'meson.build'))
 
     @staticmethod
     def _fetch(url):
