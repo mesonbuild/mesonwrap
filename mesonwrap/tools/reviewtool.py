@@ -173,7 +173,7 @@ class Reviewer:
     def check_download(self, tmpdir, upwrap):
         source_data, download_exc = self._fetch(upwrap.source_url)
         try:
-            print_status('Download url works', download_exc is None)
+            print_status('Download URL works', download_exc is None)
         except CheckError:
             print(' error:', str(download_exc))
             raise
