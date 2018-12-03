@@ -210,11 +210,15 @@ class Reviewer:
         return True
 
     def check_extract(self, tmpdir, upwrap):
-        # TODO lead_directory_missing
         srcdir = os.path.join(tmpdir, 'src')
+        srcarchive = os.path.join(tmpdir, upwrap.source_filename)
         os.mkdir(srcdir)
-        shutil.unpack_archive(os.path.join(tmpdir, upwrap.source_filename),
-                              srcdir)
+        if upwrap.has_lead_directory_missing:
+            os.mkdir(os.path.join(srcdir, upwrap.directory))
+            shutil.unpack_archive(srcarchive,
+                                  os.path.join(srcdir, upwrap.directory))
+        else:
+            shutil.unpack_archive(srcarchive, srcdir)
         srcdir = os.path.join(srcdir, upwrap.directory)
         print_status('upstream.wrap directory {!r} exists'.format(
                          upwrap.directory),
@@ -223,7 +227,6 @@ class Reviewer:
                      self.mergetree(os.path.join(tmpdir, 'head'), srcdir))
 
     def check_build(self, tmpdir, upwrap):
-        # TODO lead_directory_missing
         srcdir = os.path.join(tmpdir, 'src', upwrap.directory)
         bindir = os.path.join(tmpdir, 'bin')
         setup_result = subprocess.call(['meson', 'setup', srcdir, bindir])

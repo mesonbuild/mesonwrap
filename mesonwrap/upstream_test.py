@@ -14,6 +14,7 @@ class UpstreamWrapTest(unittest.TestCase):
     def test_attr(self):
         w = upstream.UpstreamWrap()
         for attr in ('directory',
+                     'lead_directory_missing',
                      'source_url',
                      'source_filename',
                      'source_hash',

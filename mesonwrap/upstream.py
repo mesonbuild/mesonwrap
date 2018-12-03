@@ -7,6 +7,7 @@ class UpstreamWrap:
     __section = 'wrap-file'
     __attrs = (
         'directory',
+        'lead_directory_missing',
         'source_url',
         'source_filename',
         'source_hash',
