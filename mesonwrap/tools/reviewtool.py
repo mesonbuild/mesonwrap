@@ -79,6 +79,7 @@ class Reviewer:
         self._branch = branch
         self._source_branch = source_branch or branch
         self.strict_fileset = True
+        self.strict_version_in_url = True
 
     def review(self, export_sources=None):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -97,6 +98,7 @@ class Reviewer:
             upwrap = upstream.UpstreamWrap.from_file(
                 os.path.join(head_dir, 'upstream.wrap'))
             self.check_wrapformat(upwrap)
+            self.check_url(upwrap)
             self.check_download(tmpdir, upwrap)
             self.check_extract(tmpdir, upwrap)
             self.check_build(tmpdir, upwrap)
@@ -119,6 +121,11 @@ class Reviewer:
         self.check_has_no_path_separators('upstream.wrap source_filename',
                                           upwrap.source_filename)
         print_status('upstream.wrap has source_hash', upwrap.has_source_hash)
+
+    def check_url(self, upwrap):
+        print_status('upstream.wrap has source_url with version substring',
+                     self._branch in upwrap.source_url,
+                     fatal=self.strict_version_in_url)
 
     def check_files(self, head_dir):
         found = False
@@ -242,6 +249,7 @@ def main(prog, args):
     parser.add_argument('--branch')
     parser.add_argument('--clone_url')
     parser.add_argument('--allow_other_files', action='store_true')
+    parser.add_argument('--allow_url_without_version', action='store_true')
     parser.add_argument('--export_sources')
     args = parser.parse_args(args)
     if args.pull_request:
@@ -255,5 +263,6 @@ def main(prog, args):
     else:
         sys.exit('Either --pull_request or --branch must be set')
     r.strict_fileset = not args.allow_other_files
+    r.strict_version_in_url = not args.allow_url_without_version
     if not r.review(args.export_sources):
         sys.exit(1)
