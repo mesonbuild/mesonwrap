@@ -63,20 +63,25 @@ class WrapDatabase:
         # FIXME figure out why importing typing causes RecursionError
         return (version.LooseVersion(version_tuple[0]), version_tuple[1])
 
-    def get_versions(self, project, latest=False):
-        """Returns empty list if project does not exist."""
+    def _get_versions(self, project):
         c = self.conn.cursor()
         query = '''SELECT branch, revision FROM wraps
                    WHERE project == ?;'''
         c.execute(query, (project,))
-        results = c.fetchall()
+        return c.fetchall()
+
+    def get_versions(self, project):
+        """Returns empty list if project does not exist."""
+        results = self._get_versions(project)
+        return sorted(results, key=self._version_key, reverse=True)
+
+    def get_latest_version(self, project):
+        """Returns None if the project does not exist."""
+        results = self._get_versions(project)
         if not results:
-            return []
-        if latest:
-            # TODO consider computing this during import
-            return [max(results, key=self._version_key)]
-        else:
-            return sorted(results, key=self._version_key, reverse=True)
+            return None
+        # TODO consider computing this during import
+        return max(results, key=self._version_key)
 
     def get_wrap(self, project, branch, revision):
         c = self.conn.cursor()

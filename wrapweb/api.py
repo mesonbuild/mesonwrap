@@ -42,10 +42,9 @@ def name_query(project):
 
 @APP.route('/v1/query/get_latest/<project>', methods=['GET'])
 def get_latest(project):
-    matches = _database().get_versions(project, latest=True)
-    if len(matches) == 0:
+    latest = _database().get_latest_version(project)
+    if latest is None:
         return jsonstatus.error(404, 'No such project')
-    latest = matches[0]
     return jsonstatus.ok(branch=latest[0], revision=latest[1])
 
 
@@ -55,7 +54,7 @@ def get_project_info(project):
     if project is None:
         return get_projectlist()
     matches = _database().get_versions(project)
-    if len(matches) == 0:
+    if not matches:
         return jsonstatus.error(404, 'No such project')
     versions = [{'branch': i[0], 'revision': i[1]} for i in matches]
     return jsonstatus.ok(versions=versions)

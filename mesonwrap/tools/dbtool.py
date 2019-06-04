@@ -31,6 +31,8 @@ def main(prog, args):
         print(db.get_wrap(*rest))
     elif args.command == 'versions':
         print(db.get_versions(*rest))
+    elif args.command == 'latest':
+        print(db.get_latest_version(*rest))
     elif args.command == 'zip':
         print(db.get_zip(*rest))
     elif args.command == 'insert':
