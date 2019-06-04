@@ -1,8 +1,8 @@
-from distutils import version
 import github
 import urllib.request
 
 from mesonwrap import inventory
+from mesonwrap import version
 
 
 UPSTREAM_WRAP_LABEL = 'upstream.wrap'
@@ -51,14 +51,14 @@ class GithubDB:
             revision = int(release.tag_name[dash + 1:])
             yield (version, revision)
 
-    def get_versions(self, project, latest=False):
-        if latest:
-            # get_latest_release() is not following semantic versioning
-            latest_ver = max((version.LooseVersion(r[0]), r[1])
-                             for r in self._get_versions(project))
-            return [(str(latest_ver[0]), latest_ver[1])]
-        else:
-            return list(self._get_versions(project))
+    def get_versions(self, project):
+        results = self._get_versions(project)
+        return sorted(results, key=version.version_key, reverse=True)
+
+    def get_latest_version(self, project):
+        # get_latest_release() is not following semantic versioning
+        results = self._get_versions(project)
+        return max(results, key=version.version_key, default=None)
 
     def _get_asset(self, label, project, branch, revision) -> bytes:
         try:
