@@ -34,7 +34,12 @@ class WrapDatabase:
     def close(self):
         self.conn.close()
 
-    def insert(self, project, branch, revision, wrap, zip):
+    def insert(self,
+               project: str,
+               branch: str,
+               revision: int,
+               wrap: str,
+               zip: bytes):
         assert isinstance(wrap, str)
         assert isinstance(zip, bytes)
         assert isinstance(revision, int)
