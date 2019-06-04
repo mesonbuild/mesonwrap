@@ -28,6 +28,7 @@ if __name__ == '__main__':
             'Flask',
             'GitPython',
             'PyGithub',
+            'retrying',
         ],
         entry_points={
             'console_scripts': [
