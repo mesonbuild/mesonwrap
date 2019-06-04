@@ -1,9 +1,9 @@
 import unittest
 
-from mesonwrap import wrapdb
+from mesonwrap import version
 
 
-class WrapDatabaseTest(unittest.TestCase):
+class VersionTest(unittest.TestCase):
 
     def test_version_key(self):
         versions = [
@@ -14,7 +14,7 @@ class WrapDatabaseTest(unittest.TestCase):
             ('11.2.3', 11),
         ]
         sorted_versions = sorted(versions,
-                                 key=wrapdb.WrapDatabase._version_key)
+                                 key=version.version_key)
         self.assertEqual(versions, sorted_versions)
 
 

@@ -14,9 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from distutils import version
 import os
 import sqlite3
+
+from mesonwrap import version
 
 
 class WrapDatabase:
@@ -57,12 +58,6 @@ class WrapDatabase:
         c.execute(query, (text + '%',))
         return [x[0] for x in c.fetchall()]
 
-    @staticmethod
-    def _version_key(version_tuple):
-        """version_tuple: typing.Tuple[str, int])"""
-        # FIXME figure out why importing typing causes RecursionError
-        return (version.LooseVersion(version_tuple[0]), version_tuple[1])
-
     def _get_versions(self, project):
         c = self.conn.cursor()
         query = '''SELECT branch, revision FROM wraps
@@ -73,15 +68,13 @@ class WrapDatabase:
     def get_versions(self, project):
         """Returns empty list if project does not exist."""
         results = self._get_versions(project)
-        return sorted(results, key=self._version_key, reverse=True)
+        return sorted(results, key=version.version_key, reverse=True)
 
     def get_latest_version(self, project):
         """Returns None if the project does not exist."""
         results = self._get_versions(project)
-        if not results:
-            return None
         # TODO consider computing this during import
-        return max(results, key=self._version_key)
+        return max(results, key=version.version_key, default=None)
 
     def get_wrap(self, project, branch, revision):
         c = self.conn.cursor()
