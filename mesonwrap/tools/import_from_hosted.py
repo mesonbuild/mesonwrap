@@ -8,6 +8,8 @@ from mesonwrap import gitutils
 from mesonwrap import webapi
 from mesonwrap.tools import environment
 
+from retrying import retry
+
 
 class Importer:
 
@@ -59,6 +61,12 @@ class Importer:
             else:
                 raise ValueError('Impossible revision')
 
+    @staticmethod
+    def _is_github_error(exception):
+        return isinstance(exception, github.GithubException.GithubException)
+
+    @retry(stop_max_attempt_number=3,
+           retry_on_exception=_is_github_error)
     def import_revision(self, revision):
         print(revision.project.name,
               revision.version.version,
