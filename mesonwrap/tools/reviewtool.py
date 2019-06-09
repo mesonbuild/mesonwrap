@@ -251,6 +251,8 @@ def main(prog, args):
     parser.add_argument('--allow_other_files', action='store_true')
     parser.add_argument('--allow_url_without_version', action='store_true')
     parser.add_argument('--export_sources')
+    parser.add_argument('--admit', action='store_true',
+                        help='Admit revision into WrapDB')
     args = parser.parse_args(args)
     if args.pull_request:
         r = Reviewer.from_pull_request(args.name, args.pull_request)
@@ -266,3 +268,5 @@ def main(prog, args):
     r.strict_version_in_url = not args.allow_url_without_version
     if not r.review(args.export_sources):
         sys.exit(1)
+    if args.admit:
+        pass  # TODO
