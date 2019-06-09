@@ -20,6 +20,7 @@ import re
 import shutil
 import subprocess
 import sys
+from typing import Tuple
 import urllib.request
 
 import git
@@ -84,14 +85,14 @@ class Reviewer:
         self.strict_fileset = True
         self.strict_version_in_url = True
 
-    def review(self, export_sources=None):
+    def review(self, export_sources=None) -> Tuple[bool, str]:
         with tempfile.TemporaryDirectory() as tmpdir:
             r = self.review_int(tmpdir)
             if export_sources:
                 shutil.copytree(os.path.join(tmpdir, 'src'), export_sources)
             return r
 
-    def review_int(self, tmpdir):
+    def review_int(self, tmpdir) -> Tuple[bool, str]:
         head_dir = os.path.join(tmpdir, 'head')
         with contextlib.closing(
                 git.Repo.clone_from(self._clone_url, head_dir,
@@ -106,9 +107,9 @@ class Reviewer:
                 self.check_download(tmpdir, upwrap)
                 self.check_extract(tmpdir, upwrap)
                 self.check_build(tmpdir, upwrap)
-                return True
+                return (True, head_repo.head.object.hexsha)
             except CheckError:
-                return False
+                return (False, None)
 
     @staticmethod
     def check_has_no_path_separators(name, value):
@@ -246,10 +247,10 @@ class Reviewer:
         print_status('ninja test', test_result == 0)
 
     @classmethod
-    def merge(cls, name: str, pull_id: int):
+    def merge(cls, name: str, pull_id: int, sha: str):
         pull_request = cls._get_project(name).get_pull(pull_id)
         method = 'squash' if pull_request.commits > 1 else 'rebase'
-        pull_request.merge(merge_method=method)
+        pull_request.merge(merge_method=method, sha=sha)
 
 
 def main(prog, args):
@@ -276,9 +277,10 @@ def main(prog, args):
         sys.exit('Either --pull_request or --branch must be set')
     r.strict_fileset = not args.allow_other_files
     r.strict_version_in_url = not args.allow_url_without_version
-    if not r.review(args.export_sources):
+    review, sha = r.review(args.export_sources)
+    if not review:
         sys.exit(1)
     if args.approve:
         if args.pull_request is None:
             sys.exit('Must specify --approve and --pull_request together')
-        Reviewer.merge(args.name, args.pull_request)
+        Reviewer.merge(args.name, args.pull_request, sha)
