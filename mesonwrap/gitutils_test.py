@@ -12,6 +12,7 @@ class GetRevisionTest(unittest.TestCase):
         self.repo = git.Repo.init(self.tmp.name)
 
     def tearDown(self):
+        self.repo.close()
         self.tmp.cleanup()
 
     def open(self, path, mode='r'):
