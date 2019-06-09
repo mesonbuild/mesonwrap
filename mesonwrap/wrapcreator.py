@@ -15,18 +15,19 @@
 # limitations under the License.
 
 import argparse
-from collections import namedtuple
-import git
+import contextlib
 import hashlib
 import io
 import os
-from pathlib import PurePath
 import zipfile
+from collections import namedtuple
+from pathlib import PurePath
+
+import git
 
 from mesonwrap import gitutils
 from mesonwrap import tempfile
 from mesonwrap import upstream
-
 
 # Replace this with proper parameterized callback if this need to be extended.
 _OUT_URL_BASE_DEFAULT = (
@@ -50,9 +51,11 @@ Wrap = namedtuple(
 )
 
 
-def make_wrap(name, repo_url, branch):
+def make_wrap(name: str, repo_url: str, branch: str):
     with tempfile.TemporaryDirectory() as workdir:
-        return _make_wrap(workdir, name, repo_url, branch)
+        with contextlib.closing(
+                git.Repo.clone_from(repo_url, workdir, branch=branch)) as repo:
+            return _make_wrap(workdir, name, repo, branch)
 
 
 def _check_definition(definition):
@@ -77,8 +80,7 @@ def _make_zip(file, workdir, dirprefix):
                 zip.write(str(abspath), str(dirprefix / relpath))
 
 
-def _make_wrap(workdir, name, repo_url, branch):
-    repo = git.Repo.clone_from(repo_url, workdir, branch=branch)
+def _make_wrap(workdir, name: str, repo: git.Repo, branch: str):
     revision_id = gitutils.get_revision(repo, repo.head.commit)
     upstream_file = os.path.join(workdir, 'upstream.wrap')
     definition = upstream.UpstreamWrap.from_file(upstream_file)
