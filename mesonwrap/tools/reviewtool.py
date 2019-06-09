@@ -22,6 +22,7 @@ import sys
 import urllib.request
 
 import git
+import github
 
 from mesonwrap import tempfile
 from mesonwrap import upstream
@@ -53,7 +54,7 @@ def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
 class Reviewer:
 
     @staticmethod
-    def _get_project(project):
+    def _get_project(project) -> github.Repository.Repository:
         gh = environment.Github()
         org = gh.get_organization('mesonbuild')
         return org.get_repo(project)
@@ -242,6 +243,11 @@ class Reviewer:
         test_result = subprocess.call(['ninja', '-C', bindir, 'test'])
         print_status('ninja test', test_result == 0)
 
+    @classmethod
+    def merge(cls, name: str, pull_id: int):
+        pull_request = cls._get_project(name).get_pull(pull_id)
+        pull_request.merge(merge_method='squash')
+
 
 def main(prog, args):
     parser = argparse.ArgumentParser(prog)
@@ -252,8 +258,8 @@ def main(prog, args):
     parser.add_argument('--allow_other_files', action='store_true')
     parser.add_argument('--allow_url_without_version', action='store_true')
     parser.add_argument('--export_sources')
-    parser.add_argument('--admit', action='store_true',
-                        help='Admit revision into WrapDB')
+    parser.add_argument('--approve', action='store_true',
+                        help='Approve and admit revision into WrapDB')
     args = parser.parse_args(args)
     if args.pull_request:
         r = Reviewer.from_pull_request(args.name, args.pull_request)
@@ -269,5 +275,7 @@ def main(prog, args):
     r.strict_version_in_url = not args.allow_url_without_version
     if not r.review(args.export_sources):
         sys.exit(1)
-    if args.admit:
-        pass  # TODO
+    if args.approve:
+        if args.pull_request is None:
+            sys.exit('Must specify --approve and --pull_request together')
+        Reviewer.merge(args.name, args.pull_request)
