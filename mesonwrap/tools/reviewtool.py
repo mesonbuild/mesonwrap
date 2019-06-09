@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import argparse
+import contextlib
 import hashlib
 import os
 import re
@@ -92,21 +93,22 @@ class Reviewer:
 
     def review_int(self, tmpdir):
         head_dir = os.path.join(tmpdir, 'head')
-        head_repo = git.Repo.clone_from(self._clone_url, head_dir,
-                                        branch=self._source_branch)
-        try:
-            self.check_basics(head_repo)
-            self.check_files(head_dir)
-            upwrap = upstream.UpstreamWrap.from_file(
-                os.path.join(head_dir, 'upstream.wrap'))
-            self.check_wrapformat(upwrap)
-            self.check_url(upwrap)
-            self.check_download(tmpdir, upwrap)
-            self.check_extract(tmpdir, upwrap)
-            self.check_build(tmpdir, upwrap)
-            return True
-        except CheckError:
-            return False
+        with contextlib.closing(
+                git.Repo.clone_from(self._clone_url, head_dir,
+                                    branch=self._source_branch)) as head_repo:
+            try:
+                self.check_basics(head_repo)
+                self.check_files(head_dir)
+                upwrap = upstream.UpstreamWrap.from_file(
+                    os.path.join(head_dir, 'upstream.wrap'))
+                self.check_wrapformat(upwrap)
+                self.check_url(upwrap)
+                self.check_download(tmpdir, upwrap)
+                self.check_extract(tmpdir, upwrap)
+                self.check_build(tmpdir, upwrap)
+                return True
+            except CheckError:
+                return False
 
     @staticmethod
     def check_has_no_path_separators(name, value):
