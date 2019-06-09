@@ -246,7 +246,8 @@ class Reviewer:
     @classmethod
     def merge(cls, name: str, pull_id: int):
         pull_request = cls._get_project(name).get_pull(pull_id)
-        pull_request.merge(merge_method='squash')
+        method = 'squash' if pull_request.commits > 1 else 'rebase'
+        pull_request.merge(merge_method=method)
 
 
 def main(prog, args):
