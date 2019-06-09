@@ -63,7 +63,7 @@ class Importer:
 
     @staticmethod
     def _is_github_error(exception):
-        return isinstance(exception, github.GithubException.GithubException)
+        return isinstance(exception, github.GithubException)
 
     @retry(stop_max_attempt_number=3,
            retry_on_exception=_is_github_error)
