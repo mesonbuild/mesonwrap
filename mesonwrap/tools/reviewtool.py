@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import argparse
-import git
 import hashlib
 import os
 import re
@@ -22,6 +21,8 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
+
+import git
 
 from mesonwrap import upstream
 from mesonwrap.tools import environment
