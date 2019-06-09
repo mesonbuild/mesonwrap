@@ -60,7 +60,7 @@ class UpstreamWrap:
 
     def __getattr__(self, name):
         if name in self.__slots__:
-            return super(UpstreamWrap, self).__getattr__(name)
+            return super().__getattr__(name)
         if name.startswith('has_'):
             name = name[4:]
             self.__checkattr(name)
@@ -75,7 +75,7 @@ class UpstreamWrap:
 
     def __setattr__(self, name, value):
         if name in self.__slots__:
-            return super(UpstreamWrap, self).__setattr__(name, value)
+            return super().__setattr__(name, value)
         self.__checkattr(name)
         if not self._cfg.has_section(self.__section):
             self._cfg.add_section(self.__section)

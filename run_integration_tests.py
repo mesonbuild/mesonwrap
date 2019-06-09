@@ -37,7 +37,7 @@ class Project:
 class Server(subprocess.Popen):
 
     def __init__(self):
-        super(Server, self).__init__(args=SERVER)
+        super().__init__(args=SERVER)
         self.api = webapi.WebAPI('http://localhost:5000')
         self._wait_server_ready()
 

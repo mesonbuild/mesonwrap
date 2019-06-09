@@ -5,8 +5,8 @@ from wrapweb.app import APP
 
 class WrapWebError(Exception):
 
-    def __init__(self, code, message):
-        super(WrapWebError, self).__init__()
+    def __init__(self, code: int, message: str):
+        super().__init__()
         assert isinstance(code, int)
         assert isinstance(message, str)
         self.status_code = code
@@ -17,7 +17,7 @@ class WrapWebError(Exception):
 
 
 @APP.errorhandler(WrapWebError)
-def handle_wrap_web_error(error):
+def handle_wrap_web_error(error: WrapWebError):
     jsonout = flask.jsonify(error.to_dict())
     jsonout.status_code = error.status_code
     return jsonout
