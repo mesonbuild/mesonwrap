@@ -51,7 +51,7 @@ Wrap = namedtuple(
 )
 
 
-def make_wrap(name: str, repo_url: str, branch: str):
+def make_wrap(name: str, repo_url: str, branch: str) -> Wrap:
     with tempfile.TemporaryDirectory() as workdir:
         with contextlib.closing(
                 git.Repo.clone_from(repo_url, workdir, branch=branch)) as repo:
@@ -80,7 +80,7 @@ def _make_zip(file, workdir, dirprefix):
                 zip.write(str(abspath), str(dirprefix / relpath))
 
 
-def _make_wrap(workdir, name: str, repo: git.Repo, branch: str):
+def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> Wrap:
     revision_id = gitutils.get_revision(repo, repo.head.commit)
     upstream_file = os.path.join(workdir, 'upstream.wrap')
     definition = upstream.UpstreamWrap.from_file(upstream_file)
