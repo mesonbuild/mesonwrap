@@ -56,21 +56,22 @@ def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
 class Reviewer:
 
     @staticmethod
-    def _get_project(project: str) -> github.Repository.Repository:
+    def _get_project(organization: str, project: str
+                    ) -> github.Repository.Repository:
         gh = environment.Github()
         org = gh.get_organization('mesonbuild')
         return org.get_repo(project)
 
     @classmethod
-    def from_pull_request(cls, project, pull_id):
-        pull = cls._get_project(project).get_pull(pull_id)
+    def from_pull_request(cls, organization: str, project: str, pull_id: int):
+        pull = cls._get_project(organization, project).get_pull(pull_id)
         return cls(project=project, clone_url=pull.head.repo.clone_url,
                    branch=pull.base.ref, source_branch=pull.head.ref)
 
     @classmethod
-    def from_committed(cls, project, branch):
+    def from_committed(cls, organization: str, project: str, branch: str):
         return cls(project=project,
-                   clone_url=cls._get_project(project).clone_url,
+                   clone_url=cls._get_project(organization, project).clone_url,
                    branch=branch)
 
     @classmethod
@@ -247,8 +248,8 @@ class Reviewer:
         print_status('ninja test', test_result == 0)
 
     @classmethod
-    def merge(cls, name: str, pull_id: int, sha: str):
-        pull_request = cls._get_project(name).get_pull(pull_id)
+    def merge(cls, organization: str, project: str, pull_id: int, sha: str):
+        pull_request = cls._get_project(organization, project).get_pull(pull_id)
         method = 'squash' if pull_request.commits > 1 else 'rebase'
         pull_request.merge(merge_method=method, sha=sha)
 
@@ -264,15 +265,20 @@ def main(prog, args):
     parser.add_argument('--export_sources')
     parser.add_argument('--approve', action='store_true',
                         help='Approve and admit revision into WrapDB')
+    parser.add_argument('--test', action='store_const', const='mesonbuild-test',
+                        dest='organization', default='mesonbuild',
+                        help='Use mesonbuild-test organization')
     args = parser.parse_args(args)
     if args.pull_request:
-        r = Reviewer.from_pull_request(args.name, args.pull_request)
+        r = Reviewer.from_pull_request(args.organization,
+                                       args.name, args.pull_request)
     elif args.branch:
         if args.clone_url:
             r = Reviewer.from_repository(args.name, args.clone_url,
                                          args.branch)
         else:
-            r = Reviewer.from_committed(args.name, args.branch)
+            r = Reviewer.from_committed(args.organization,
+                                        args.name, args.branch)
     else:
         sys.exit('Either --pull_request or --branch must be set')
     r.strict_fileset = not args.allow_other_files
@@ -283,4 +289,4 @@ def main(prog, args):
     if args.approve:
         if args.pull_request is None:
             sys.exit('Must specify --approve and --pull_request together')
-        Reviewer.merge(args.name, args.pull_request, sha)
+        Reviewer.merge(args.organization, args.name, args.pull_request, sha)
