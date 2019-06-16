@@ -28,6 +28,7 @@ import github
 
 from mesonwrap import tempfile
 from mesonwrap import upstream
+from mesonwrap import wrapcreator
 from mesonwrap.tools import environment
 
 
@@ -248,10 +249,21 @@ class Reviewer:
         print_status('ninja test', test_result == 0)
 
     @classmethod
-    def merge(cls, organization: str, project: str, pull_id: int, sha: str):
+    def merge(cls, organization: str, project: str, pull_id: int, sha: str
+             ) -> str:
         pull_request = cls._get_project(organization, project).get_pull(pull_id)
         method = 'squash' if pull_request.commits > 1 else 'rebase'
+        branch = pull_request.base.ref
         pull_request.merge(merge_method=method, sha=sha)
+        return branch
+
+    @classmethod
+    def publish(cls, organization: str, project: str, branch: str):
+        gh_project = cls._get_project(organization, project)
+        url = gh_project.clone_url
+        wrap = wrapcreator.make_wrap(project, url, branch)
+        # TODO actually publish
+        raise NotImplementedError('does not publish yet')
 
 
 def main(prog, args):
@@ -265,6 +277,8 @@ def main(prog, args):
     parser.add_argument('--export_sources')
     parser.add_argument('--approve', action='store_true',
                         help='Approve and admit revision into WrapDB')
+    parser.add_argument('--publish', action='store_true',
+                        help='Publish wrap to Github')
     parser.add_argument('--test', action='store_const', const='mesonbuild-test',
                         dest='organization', default='mesonbuild',
                         help='Use mesonbuild-test organization')
@@ -289,4 +303,7 @@ def main(prog, args):
     if args.approve:
         if args.pull_request is None:
             sys.exit('Must specify --approve and --pull_request together')
-        Reviewer.merge(args.organization, args.name, args.pull_request, sha)
+        version = Reviewer.merge(args.organization, args.name,
+                                 args.pull_request, sha)
+        if args.publish:
+            Reviewer.publish(args.organization, args.name, version)
