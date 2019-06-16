@@ -20,7 +20,7 @@ import re
 import shutil
 import subprocess
 import sys
-from typing import Tuple
+from typing import Optional, Tuple
 import urllib.request
 
 import git
@@ -56,7 +56,7 @@ def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
 class Reviewer:
 
     @staticmethod
-    def _get_project(project) -> github.Repository.Repository:
+    def _get_project(project: str) -> github.Repository.Repository:
         gh = environment.Github()
         org = gh.get_organization('mesonbuild')
         return org.get_repo(project)
@@ -85,14 +85,14 @@ class Reviewer:
         self.strict_fileset = True
         self.strict_version_in_url = True
 
-    def review(self, export_sources=None) -> Tuple[bool, str]:
+    def review(self, export_sources=None) -> Tuple[bool, Optional[str]]:
         with tempfile.TemporaryDirectory() as tmpdir:
             r = self.review_int(tmpdir)
             if export_sources:
                 shutil.copytree(os.path.join(tmpdir, 'src'), export_sources)
             return r
 
-    def review_int(self, tmpdir) -> Tuple[bool, str]:
+    def review_int(self, tmpdir) -> Tuple[bool, Optional[str]]:
         head_dir = os.path.join(tmpdir, 'head')
         with contextlib.closing(
                 git.Repo.clone_from(self._clone_url, head_dir,
