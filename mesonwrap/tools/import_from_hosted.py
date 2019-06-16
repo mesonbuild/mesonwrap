@@ -6,6 +6,7 @@ import os.path
 from mesonwrap import gitutils
 from mesonwrap import tempfile
 from mesonwrap import webapi
+from mesonwrap import wrap
 from mesonwrap.tools import environment
 
 from retrying import retry
@@ -67,22 +68,17 @@ class Importer:
 
     @retry(stop_max_attempt_number=3,
            retry_on_exception=_is_github_error)
-    def import_revision(self, revision):
-        print(revision.project.name,
-              revision.version.version,
-              revision.revision)
-        project = revision.project.name
-        version = revision.version.version
-        wrappath = os.path.join(self._tmp.name, project + '.wrap')
-        zippath = os.path.join(self._tmp.name, project + '.zip')
-        repo = self._clone(project)
+    def import_wrap(self, wrap: wrap.Wrap):
+        wrappath = os.path.join(self._tmp.name, wrap.name + '.wrap')
+        zippath = os.path.join(self._tmp.name, wrap.name + '.zip')
+        repo = self._clone(wrap.name)
         with open(wrappath, 'wb') as f:
-            f.write(revision.wrap)
+            f.write(wrap.wrap)
         with open(zippath, 'wb') as f:
-            f.write(revision.zip)
-        commit = self._get_commit(repo, version, revision.revision)
-        ghrepo = self._org.get_repo(project)
-        tagname = '{}-{}'.format(version, revision.revision)
+            f.write(wrap.zip)
+        commit = self._get_commit(repo, wrap.version, wrap.revision)
+        ghrepo = self._org.get_repo(wrap.name)
+        tagname = '{}-{}'.format(wrap.version, wrap.revision)
         try:
             rel = ghrepo.get_release(tagname)
             print('Release found')
@@ -112,6 +108,13 @@ class Importer:
         if not patch_found:
             rel.upload_asset(zippath, label=patch_label,
                              content_type='application/zip')
+
+    def import_revision(self, revision):
+        wrap = revision.combined_wrap
+        print(wrap.name,
+              wrap.version,
+              wrap.revision)
+        self.import_wrap(wrap)
         print('Done')
 
 
