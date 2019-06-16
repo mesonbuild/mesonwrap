@@ -5,6 +5,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from mesonwrap import wrap
+
 
 class ServerError(Exception):
     pass
@@ -90,7 +92,7 @@ class _APIClient:
                                      version=version,
                                      revision=revision))
 
-    def fetch_v1_project_zip(self, project: str, version: str, revision: str):
+    def fetch_v1_project_zip(self, project: str, version: str, revision: int):
         self._check_project(project)
         self._check_version(version)
         self._check_revision(revision)
@@ -139,6 +141,14 @@ class Revision:
                                                         self.version.version,
                                                         self.revision)
         return self.__zip
+
+    @property
+    def combined_wrap(self):
+        return wrap.Wrap(name=self.version.project.name,
+                         version=self.version.version,
+                         revision=self.revision,
+                         wrap=self.wrap,
+                         zip=self.zip)
 
 
 class Version:
