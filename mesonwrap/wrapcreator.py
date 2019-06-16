@@ -20,7 +20,6 @@ import hashlib
 import io
 import os
 import zipfile
-from collections import namedtuple
 from pathlib import PurePath
 
 import git
@@ -28,6 +27,7 @@ import git
 from mesonwrap import gitutils
 from mesonwrap import tempfile
 from mesonwrap import upstream
+from mesonwrap import wrap
 
 # Replace this with proper parameterized callback if this need to be extended.
 _OUT_URL_BASE_DEFAULT = (
@@ -45,13 +45,7 @@ _IGNORED_DIRS = [
 ]
 
 
-Wrap = namedtuple(
-    'Wrap',
-    ['wrap', 'zip', 'revision', 'wrap_name', 'zip_name']
-)
-
-
-def make_wrap(name: str, repo_url: str, branch: str) -> Wrap:
+def make_wrap(name: str, repo_url: str, branch: str) -> wrap.Wrap:
     with tempfile.TemporaryDirectory() as workdir:
         with contextlib.closing(
                 git.Repo.clone_from(repo_url, workdir, branch=branch)) as repo:
@@ -80,7 +74,7 @@ def _make_zip(file, workdir, dirprefix):
                 zip.write(str(abspath), str(dirprefix / relpath))
 
 
-def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> Wrap:
+def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
     revision_id = gitutils.get_revision(repo, repo.head.commit)
     upstream_file = os.path.join(workdir, 'upstream.wrap')
     definition = upstream.UpstreamWrap.from_file(upstream_file)
@@ -104,8 +98,8 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> Wrap:
         wrapfile.write('patch_filename = %s\n' % zip_name)
         wrapfile.write('patch_hash = %s\n' % source_hash)
         wrap_contents = wrapfile.getvalue()
-    return Wrap(wrap=wrap_contents, zip=zip_contents, revision=revision_id,
-                wrap_name=wrap_name, zip_name=zip_name)
+    return wrap.Wrap(wrap=wrap_contents, zip=zip_contents, revision=revision_id,
+                     wrap_name=wrap_name, zip_name=zip_name)
 
 
 def main(prog, args):
