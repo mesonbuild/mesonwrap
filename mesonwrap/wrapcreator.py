@@ -79,11 +79,6 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
     upstream_file = os.path.join(workdir, 'upstream.wrap')
     definition = upstream.UpstreamWrap.from_file(upstream_file)
     _check_definition(definition)
-    base_name = (name + '-' +
-                 branch + '-' +
-                 str(revision_id) + '-wrap')
-    zip_name = base_name + '.zip'
-    wrap_name = base_name + '.wrap'
     with io.BytesIO() as zipf:
         _make_zip(zipf, workdir, definition.directory)
         zip_contents = zipf.getvalue()
@@ -95,11 +90,12 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
             wrapfile.write(basewrap.read())
         wrapfile.write('\n')
         wrapfile.write('patch_url = %s\n' % url)
+        zip_name = wrap.zip_name(name, branch, revision_id)
         wrapfile.write('patch_filename = %s\n' % zip_name)
         wrapfile.write('patch_hash = %s\n' % source_hash)
         wrap_contents = wrapfile.getvalue()
-    return wrap.Wrap(wrap=wrap_contents, zip=zip_contents, revision=revision_id,
-                     wrap_name=wrap_name, zip_name=zip_name)
+    return wrap.Wrap(name=name, version=branch, revision=revision_id,
+                     wrap=wrap_contents, zip=zip_contents)
 
 
 def main(prog, args):
