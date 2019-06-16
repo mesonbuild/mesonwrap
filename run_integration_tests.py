@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import io
+import os
 import os.path
 import shutil
 import subprocess
@@ -52,6 +53,9 @@ class FakeProject:
         self.name = name
         self.builder = RepoBuilder(name, os.path.join(tmpdir, name))
 
+    def close(self):
+        self.builder.close()
+
     def create_version(self, version, base='master', message='Add files'):
         self.builder.create_version(
             version=version,
@@ -88,12 +92,21 @@ class IntegrationTestBase(unittest.TestCase):
         except FileNotFoundError:
             pass
         self.server = Server()
+        self.fake_projects = []
         self.tmpdir = tempfile.mkdtemp()
 
     def tearDown(self):
         self.server.terminate()
         self.server.wait()
+        for fake_project in self.fake_projects:
+            fake_project.close()
         shutil.rmtree(self.tmpdir)
+
+    def fake_project(self, name) -> FakeProject:
+        """Automatically closes FakeProject on test tearDown."""
+        fake_project = FakeProject(name, self.tmpdir)
+        self.fake_projects.append(fake_project)
+        return fake_project
 
     def assertLooseUploaded(self, project):
         projects = self.server.api.projects()
@@ -152,7 +165,7 @@ class ConsistentVersioningTest(IntegrationTestBase):
 class QueryTest(IntegrationTestBase):
 
     def test_latest(self):
-        f = FakeProject('test1', self.tmpdir)
+        f = self.fake_project('test1')
         for version in ['1.0.0', '0.1.2', '1.2.1']:
             f.create_version(version)
             self.wrapupdater(f.name, f.url, version)
@@ -167,7 +180,7 @@ class QueryTest(IntegrationTestBase):
 
     def test_latest_semantic_version_comparison(self):
         """Lexicographical comparison leads to the opposite results."""
-        f = FakeProject('test', self.tmpdir)
+        f = self.fake_project('test')
         for version in ['1.2.8', '1.2.11']:
             f.create_version(version)
             self.wrapupdater(f.name, f.url, version)
@@ -175,7 +188,7 @@ class QueryTest(IntegrationTestBase):
 
     def test_latest_non_semantic_version_no_minor(self):
         """Not every project supports semantic versioning, test fallback."""
-        f = FakeProject('test', self.tmpdir)
+        f = self.fake_project('test')
         for version in ['1.2', '1.3', '1.7']:
             f.create_version(version)
             self.wrapupdater(f.name, f.url, version)
@@ -183,14 +196,14 @@ class QueryTest(IntegrationTestBase):
 
     def test_latest_non_semantic_version_single_number(self):
         """If it is not a semantic version just sort lexicographically."""
-        f = FakeProject('test', self.tmpdir)
+        f = self.fake_project('test')
         for version in ['212345', '123456']:
             f.create_version(version)
             self.wrapupdater(f.name, f.url, version)
         self.assertLatest(f.name, '212345', 1)
 
     def test_latest_non_semantic_version_letters(self):
-        f = FakeProject('test', self.tmpdir)
+        f = self.fake_project('test')
         for version in ['17a', '2b']:
             f.create_version(version)
             self.wrapupdater(f.name, f.url, version)
@@ -201,10 +214,10 @@ class QueryTest(IntegrationTestBase):
             self.server.api._api.query_v1_get_latest('non-existent-project')
 
     def test_by_name_prefix(self):
-        baz = FakeProject('baz', self.tmpdir)
+        baz = self.fake_project('baz')
         baz.create_version('1.0.0')
         self.wrapupdater(baz.name, baz.url, '1.0.0')
-        bar = FakeProject('bar', self.tmpdir)
+        bar = self.fake_project('bar')
         bar.create_version('2.1.1')
         self.wrapupdater(bar.name, bar.url, '2.1.1')
         projects = self.server.api.projects()
@@ -219,14 +232,14 @@ class QueryTest(IntegrationTestBase):
 class GithubHookTest(IntegrationTestBase):
 
     def test_import(self):
-        foo = FakeProject('foobar', self.tmpdir)
+        foo = self.fake_project('foobar')
         foo.create_version('1.2.3')
         self.server.api.pull_request_hook('mesonbuild', 'foobar', '1.2.3',
                                           foo.url)
         self.assertUploaded(Project(foo.name, '1.2.3', 1))
 
     def test_restricted_project(self):
-        foo = FakeProject('meson', self.tmpdir)
+        foo = self.fake_project('meson')
         foo.create_version('1.2.3')
         with self.assertRaises(urllib.error.HTTPError) as cm:
             self.server.api.pull_request_hook('mesonbuild', 'meson', '1.2.3',
@@ -255,7 +268,7 @@ class WrapUpdaterTest(IntegrationTestBase):
                 self.assertLooseUploaded(project)
 
     def test_wrapupdater(self):
-        f = FakeProject('test1', self.tmpdir)
+        f = self.fake_project('test1')
         f.create_version('1.0.0')
         f.create_version('1.0.1')
         self.wrapupdater(f.name, f.url, '1.0.0')
@@ -265,7 +278,7 @@ class WrapUpdaterTest(IntegrationTestBase):
         self.assertUploaded(Project(f.name, '1.0.1', 1))
 
     def test_wrapupdater_revisions(self):
-        f = FakeProject('test2', self.tmpdir)
+        f = self.fake_project('test2')
         f.create_version('1.0.0')
         self.wrapupdater(f.name, f.url, '1.0.0')
         f.commit('update')
@@ -274,7 +287,7 @@ class WrapUpdaterTest(IntegrationTestBase):
         self.assertUploaded(Project(f.name, '1.0.0', 2))
 
     def test_wrapupdater_branched_revisions(self):
-        f = FakeProject('test3', self.tmpdir)
+        f = self.fake_project('test3')
         f.create_version('1.0.0')
         self.wrapupdater(f.name, f.url, '1.0.0')
         f.create_version('1.0.1', base='1.0.0', message='New [wrap version]')
@@ -286,7 +299,7 @@ class WrapUpdaterTest(IntegrationTestBase):
         self.assertUploaded(Project(f.name, '1.0.1', 2))
 
     def test_wrapupdater_merged_revisions(self):
-        f = FakeProject('test', self.tmpdir)
+        f = self.fake_project('test')
         f.create_version('1.0.0')
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 1))
@@ -307,7 +320,7 @@ class WrapUpdaterTest(IntegrationTestBase):
         self.assertUploaded(Project(f.name, '1.0.0', 6))
 
     def test_wrapupdater_latest_revision_only(self):
-        f = FakeProject('test3', self.tmpdir)
+        f = self.fake_project('test3')
         f.create_version('1.0.0')
         f.commit('revision 2')
         f.create_version('1.0.1', base='1.0.0', message='New [wrap version]')
@@ -320,7 +333,7 @@ class WrapUpdaterTest(IntegrationTestBase):
         self.assertUploaded(Project(f.name, '1.0.1', 4))
 
     def test_bad_upstream_wrap(self):
-        f = FakeProject('test', self.tmpdir)
+        f = self.fake_project('test')
         f.create_version('1.0.0')
         with f.builder.open('upstream.wrap', 'w') as up:
             up.write('[wrap-file]\nhello = world\n')

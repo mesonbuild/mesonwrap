@@ -77,6 +77,9 @@ class RepoBuilder:
             else:
                 self.init_github(path, organization, homepage)
 
+    def close(self):
+        self.repo.close()
+
     def init(self, path, origin=None):
         """Push if origin is not None."""
         self.repo = git.Repo.init(path)
