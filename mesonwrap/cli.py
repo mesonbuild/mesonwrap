@@ -8,6 +8,7 @@ from mesonwrap import wrapcreator
 from mesonwrap import wrapupdater
 from mesonwrap.tools import repoinit, reviewtool, dbtool
 from mesonwrap.tools import import_from_hosted
+from mesonwrap.tools import watching
 
 
 class Command:
@@ -86,3 +87,11 @@ class Command:
     def command_import_from_hosted(self):
         """Import projects from wrapdb into github"""
         import_from_hosted.main(*self.args())
+
+    def command_watch(self):
+        """Watch mesonwrap repositories"""
+        watching.watch(*self.args())
+
+    def command_unwatch(self):
+        """Unwatch mesonwrap repositories"""
+        watching.unwatch(*self.args())
