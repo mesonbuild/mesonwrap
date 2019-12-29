@@ -167,7 +167,8 @@ class Reviewer:
         print_status('Target branch is not master', self._branch != 'master')
         print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt'))
         print_status('Has LICENSE.build',
-                     self.isfile(head_dir, 'LICENSE.build'))
+                     self.isfile(head_dir, 'LICENSE.build'),
+                     fatal=self.strict_license_check)
         print_status('Has upstream.wrap',
                      self.isfile(head_dir, 'upstream.wrap'))
 
@@ -274,6 +275,7 @@ def main(prog, args):
     parser.add_argument('--clone_url')
     parser.add_argument('--allow_other_files', action='store_true')
     parser.add_argument('--allow_url_without_version', action='store_true')
+    parser.add_argument('--allow_no_license', action='store_true')
     parser.add_argument('--export_sources')
     parser.add_argument('--approve', action='store_true',
                         help='Approve and admit revision into WrapDB')
@@ -297,6 +299,7 @@ def main(prog, args):
         sys.exit('Either --pull_request or --branch must be set')
     r.strict_fileset = not args.allow_other_files
     r.strict_version_in_url = not args.allow_url_without_version
+    r.strict_license_check = not args.allow_no_license
     review, sha = r.review(args.export_sources)
     if not review:
         sys.exit(1)
