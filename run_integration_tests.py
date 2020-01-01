@@ -135,7 +135,7 @@ class IntegrationTestBase(unittest.TestCase):
 
 class ConsistentVersioningTest(IntegrationTestBase):
 
-    def _testProjectVersion(self, project, ver_id, version):
+    def _test_project_version(self, project, ver_id, version):
         git_url = 'https://github.com/mesonbuild/{}.git'.format(project.name)
         self.wrapupdater(project.name, git_url, ver_id)
         self.assertUploaded(Project(project.name, ver_id,
@@ -153,13 +153,13 @@ class ConsistentVersioningTest(IntegrationTestBase):
         with zipfile.ZipFile(io.BytesIO(rev.zip)) as zipf:
             self.assertGreater(len(zipf.namelist()), 0)
 
-    def testRevisions(self):
+    def test_revisions(self):
         prod = webapi.WebAPI('https://wrapdb.mesonbuild.com')
         projects = prod.projects()
         for project in projects:
             with self.subTest(project=project.name):
                 for ver_id, version in project.versions.items():
-                    self._testProjectVersion(project, ver_id, version)
+                    self._test_project_version(project, ver_id, version)
 
 
 class QueryTest(IntegrationTestBase):
