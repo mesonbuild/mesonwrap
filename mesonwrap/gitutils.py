@@ -1,5 +1,6 @@
-import git
 import os.path
+
+import git
 
 
 class GitFile:

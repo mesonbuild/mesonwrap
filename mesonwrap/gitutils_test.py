@@ -1,5 +1,6 @@
-import git
 import unittest
+
+import git
 
 from mesonwrap import gitutils
 from mesonwrap import tempfile

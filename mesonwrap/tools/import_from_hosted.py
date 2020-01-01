@@ -1,15 +1,15 @@
 import argparse
+import os.path
+
 import git
 import github
-import os.path
+from retrying import retry
 
 from mesonwrap import gitutils
 from mesonwrap import tempfile
 from mesonwrap import webapi
 from mesonwrap import wrap
 from mesonwrap.tools import environment
-
-from retrying import retry
 
 
 class Importer:

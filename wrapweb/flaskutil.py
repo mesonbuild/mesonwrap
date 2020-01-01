@@ -1,5 +1,6 @@
-import flask
 import typing
+
+import flask
 
 from wrapweb.app import APP
 

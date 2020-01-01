@@ -1,10 +1,11 @@
-import git
 import hashlib
 import io
 import os
 import os.path
 import unittest
 import zipfile
+
+import git
 
 from mesonwrap import gitutils
 from mesonwrap import tempfile

@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import os
+
 import sqlite3
 
 from mesonwrap import version

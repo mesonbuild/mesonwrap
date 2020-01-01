@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flask
 import os
 
+import flask
 
 # Create the application.
 APP = flask.Flask(__name__)

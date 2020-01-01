@@ -57,8 +57,9 @@ def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
 class Reviewer:
 
     @staticmethod
-    def _get_project(organization: str, project: str
-                    ) -> github.Repository.Repository:
+    def _get_project(
+        organization: str, project: str
+    ) -> github.Repository.Repository:
         gh = environment.Github()
         org = gh.get_organization('mesonbuild')
         return org.get_repo(project)
@@ -250,9 +251,12 @@ class Reviewer:
         print_status('ninja test', test_result == 0)
 
     @classmethod
-    def merge(cls, organization: str, project: str, pull_id: int, sha: str
-             ) -> str:
-        pull_request = cls._get_project(organization, project).get_pull(pull_id)
+    def merge(
+        cls, organization: str, project: str, pull_id: int, sha: str
+    ) -> str:
+        pull_request = (
+            cls._get_project(organization, project).get_pull(pull_id)
+        )
         method = 'squash' if pull_request.commits > 1 else 'rebase'
         branch = pull_request.base.ref
         pull_request.merge(merge_method=method, sha=sha)
@@ -281,7 +285,8 @@ def main(prog, args):
                         help='Approve and admit revision into WrapDB')
     parser.add_argument('--publish', action='store_true',
                         help='Publish wrap to Github')
-    parser.add_argument('--test', action='store_const', const='mesonbuild-test',
+    parser.add_argument('--test',
+                        action='store_const', const='mesonbuild-test',
                         dest='organization', default='mesonbuild',
                         help='Use mesonbuild-test organization')
     args = parser.parse_args(args)

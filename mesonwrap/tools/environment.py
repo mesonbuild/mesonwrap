@@ -1,7 +1,8 @@
 import configparser
-import github
 import os
 import os.path
+
+import github
 
 
 class Config:

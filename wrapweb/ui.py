@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 from flask import render_template
 
 from wrapweb import api, jsonstatus
 from wrapweb.app import APP
 
-import json
-
 
 def response_to_json(resp):
-    return json.loads(resp.get_data().decode("utf-8"))
+    return json.loads(resp.get_data().decode('utf-8'))
 
 
 @APP.route('/', methods=['GET'])

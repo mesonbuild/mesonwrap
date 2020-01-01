@@ -1,5 +1,6 @@
-import github
 import urllib.request
+
+import github
 
 from mesonwrap import inventory
 from mesonwrap import version

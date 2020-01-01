@@ -18,9 +18,10 @@ upstream.wrap."""
 
 import argparse
 import datetime
-import git
 import hashlib
 import urllib.request
+
+import git
 
 from mesonwrap import gitutils, upstream
 from mesonwrap.tools import environment
