@@ -160,11 +160,15 @@ class _APIClient:
             'X-Hub-Signature': 'sha1=' + signature,
             'X-Github-Event': 'pull_request',
         }
-        return self.parse_json(self._http.post(
-            '/github-hook',
-            content_type='application/json',
-            headers=headers,
-            data=data))
+        try:
+            response = self._http.post(
+                '/github-hook',
+                content_type='application/json',
+                headers=headers,
+                data=data)
+        except urllib.request.HTTPError as e:
+            response = e.read()
+        return self.parse_json(response)
 
 
 class Revision:

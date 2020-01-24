@@ -215,10 +215,9 @@ class GithubHookTest(IntegrationTestBase):
     def test_restricted_project(self):
         foo = self.fake_project('meson')
         foo.create_version('1.2.3')
-        with self.assertRaises(urllib.error.HTTPError) as cm:
+        with self.assertRaisesRegex(webapi.APIError, 'Not a mesonwrap project'):
             self.server.api.pull_request_hook('mesonbuild', 'meson', '1.2.3',
                                               foo.url)
-        self.assertEqual(cm.exception.getcode(), 406)
 
 
 class WrapUpdaterTest(IntegrationTestBase):
