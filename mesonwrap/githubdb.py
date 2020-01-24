@@ -1,3 +1,4 @@
+from typing import List, Optional
 import urllib.request
 
 import github
@@ -10,10 +11,7 @@ UPSTREAM_WRAP_LABEL = 'upstream.wrap'
 PATCH_ZIP_LABEL = 'patch.zip'
 
 
-# TODO implement caching
-# https://developer.github.com/v3/#conditional-requests
-# or just some cache with timeouts
-class GithubDB:
+class Organization:
 
     def __init__(self, pygithub: github.Github,
                  organization: str = 'mesonbuild'):
@@ -22,12 +20,21 @@ class GithubDB:
         self._gh = pygithub
         self._org = organization
 
+    def __call__(self):
+        return self._gh.get_organization(self._org)
+
+
+# TODO implement caching
+# https://developer.github.com/v3/#conditional-requests
+# or just some cache with timeouts
+class GithubDB:
+
+    def __init__(self, pygithub: github.Github,
+                 organization: str = 'mesonbuild'):
+        self._org = Organization(pygithub, organization)
+
     def close(self):
         pass
-
-    @property
-    def _organization(self):
-        return self._gh.get_organization(self._org)
 
     def insert(self,
                project: str,
@@ -38,12 +45,12 @@ class GithubDB:
         raise NotImplementedError('Only read only access is supported')
 
     def name_search(self, text):
-        return sorted([repo.name for repo in self._organization.get_repos()
+        return sorted([repo.name for repo in self._org().get_repos()
                        if (inventory.is_wrap_project_name(repo.name) and
                            repo.name.startswith(text))])
 
     def _get_versions(self, project):
-        repo = self._organization.get_repo(project)
+        repo = self._org().get_repo(project)
         for release in repo.get_releases():
             dash = release.tag_name.rfind('-')
             if dash == -1:
@@ -63,7 +70,7 @@ class GithubDB:
 
     def _get_asset(self, label, project, branch, revision) -> bytes:
         try:
-            repo = self._organization.get_repo(project)
+            repo = self._org().get_repo(project)
             release = repo.get_release('{}-{}'.format(branch, revision))
             for asset in release.get_assets():
                 if asset.label == label:
