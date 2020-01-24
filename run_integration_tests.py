@@ -133,35 +133,6 @@ class IntegrationTestBase(unittest.TestCase):
         subprocess.check_call(args=WRAPUPDATER + [name, url, version])
 
 
-class ConsistentVersioningTest(IntegrationTestBase):
-
-    def _test_project_version(self, project, ver_id, version):
-        git_url = 'https://github.com/mesonbuild/{}.git'.format(project.name)
-        self.wrapupdater(project.name, git_url, ver_id)
-        self.assertUploaded(Project(project.name, ver_id,
-                                    version.latest.revision))
-        rev = self.server.api.projects()[project.name].versions[ver_id].latest
-        self.assertEqual(version.latest.revision, rev.revision)
-        self.assertIn(b'[wrap-file]', rev.wrap)
-        self.assertIn(b'directory', rev.wrap)
-        self.assertIn(b'source_url', rev.wrap)
-        self.assertIn(b'source_filename', rev.wrap)
-        self.assertIn(b'source_hash', rev.wrap)
-        self.assertIn(b'patch_url', rev.wrap)
-        self.assertIn(b'patch_filename', rev.wrap)
-        self.assertIn(b'patch_hash', rev.wrap)
-        with zipfile.ZipFile(io.BytesIO(rev.zip)) as zipf:
-            self.assertGreater(len(zipf.namelist()), 0)
-
-    def test_revisions(self):
-        prod = webapi.WebAPI('https://wrapdb.mesonbuild.com')
-        projects = prod.projects()
-        for project in projects:
-            with self.subTest(project=project.name):
-                for ver_id, version in project.versions.items():
-                    self._test_project_version(project, ver_id, version)
-
-
 class QueryTest(IntegrationTestBase):
 
     def test_latest(self):
