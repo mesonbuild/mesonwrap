@@ -1,11 +1,16 @@
+import abc
 import hashlib
 import hmac
 import json
+from typing import Any, Dict
 import urllib.error
 import urllib.parse
 import urllib.request
 
 from mesonwrap import wrap
+
+
+JSON = Dict[Any, Any]
 
 
 class ServerError(Exception):
@@ -16,10 +21,42 @@ class APIError(ServerError):
     pass
 
 
+class AbstractHTTPClient(metaclass=abc.ABCMeta):
+
+    @abc.abstractmethod
+    def fetch(self, url: str) -> bytes:
+        pass
+
+    @abc.abstractmethod
+    def post(
+        self, url: str, content_type: str, headers: Dict[str, str], data: bytes
+    ) -> bytes:
+        pass
+
+
+class _HTTPClient(AbstractHTTPClient):
+
+    def __init__(self, url: str):
+        self.url = url
+
+    def fetch(self, url: str) -> bytes:
+        with urllib.request.urlopen(self.url + url) as r:
+            return r.read()
+
+    def post(
+        self, url: str, content_type: str, headers: Dict[str, str], data: bytes
+    ) -> bytes:
+        headers = headers.copy()
+        headers['Content-Type'] = content_type
+        req = urllib.request.Request(self.url + '/github-hook', data, headers)
+        with urllib.request.urlopen(req) as r:
+            return r.read()
+
+
 class _APIClient:
 
-    def __init__(self, url):
-        self.url = url
+    def __init__(self, http_client: AbstractHTTPClient):
+        self._http = http_client
 
     @staticmethod
     def _check_part(part, name):
@@ -40,11 +77,10 @@ class _APIClient:
             raise ValueError('Invalid revision, '
                              'expected int, got {}'.format(type(revision)))
 
-    def fetch(self, url):
-        with urllib.request.urlopen(self.url + url) as r:
-            return r.read()
+    def fetch(self, url: str) -> bytes:
+        return self._http.fetch(url)
 
-    def fetch_json(self, url):
+    def fetch_json(self, url: str) -> JSON:
         try:
             data = self.fetch(url)
         except urllib.request.HTTPError as e:
@@ -54,7 +90,18 @@ class _APIClient:
             data = e.read()
         return self.parse_json(data)
 
-    def parse_json(self, data):
+    def post_json(
+        self, url: str, content_type: str, headers: Dict[str, str], data: bytes
+    ) -> JSON:
+        try:
+            data = self._http.post(
+                url=url, content_type=content_type,
+                headers=headers, data=data)
+        except urllib.request.HTTPError as e:
+            data = e.read()
+        return self.parse_json(data)
+
+    def parse_json(self, data) -> JSON:
         if isinstance(data, bytes):
             data = data.decode('utf8')
         j = json.loads(data)
@@ -70,20 +117,22 @@ class _APIClient:
             raise ValueError('Invalid server response: unknown output value',
                              j['output'])
 
-    def query_v1_byname(self, project: str):
+    def query_v1_byname(self, project: str) -> JSON:
         return self.fetch_json('/v1/query/byname/' + project)
 
-    def query_v1_get_latest(self, project: str):
+    def query_v1_get_latest(self, project: str) -> JSON:
         return self.fetch_json('/v1/query/get_latest/' + project)
 
-    def fetch_v1_projects(self):
+    def fetch_v1_projects(self) -> JSON:
         return self.fetch_json('/v1/projects')
 
-    def fetch_v1_project(self, project: str):
+    def fetch_v1_project(self, project: str) -> JSON:
         self._check_part(project, 'project name')
         return self.fetch_json('/v1/projects/' + project)
 
-    def fetch_v1_project_wrap(self, project: str, version: str, revision: int):
+    def fetch_v1_project_wrap(
+        self, project: str, version: str, revision: int
+    ) -> bytes:
         self._check_project(project)
         self._check_version(version)
         self._check_revision(revision)
@@ -92,7 +141,9 @@ class _APIClient:
                                      version=version,
                                      revision=revision))
 
-    def fetch_v1_project_zip(self, project: str, version: str, revision: int):
+    def fetch_v1_project_zip(
+        self, project: str, version: str, revision: int
+    ) -> bytes:
         self._check_project(project)
         self._check_version(version)
         self._check_revision(revision)
@@ -101,18 +152,19 @@ class _APIClient:
                                      version=version,
                                      revision=revision))
 
-    def pull_request_hook(self, js, secret):
+    def pull_request_hook(self, js: JSON, secret: bytes) -> JSON:
         data = json.dumps(js).encode('utf8')
         signature = hmac.new(secret, data, hashlib.sha1).hexdigest()
         headers = {
-            'Content-Type': 'application/json',
             'User-Agent': 'GitHub-Hookshot/MesonWrap-Client',
             'X-Hub-Signature': 'sha1=' + signature,
             'X-Github-Event': 'pull_request',
         }
-        req = urllib.request.Request(self.url + '/github-hook', data, headers)
-        with urllib.request.urlopen(req) as r:
-            return self.parse_json(r.read())
+        return self.parse_json(self._http.post(
+            '/github-hook',
+            content_type='application/json',
+            headers=headers,
+            data=data))
 
 
 class Revision:
@@ -280,8 +332,23 @@ class ProjectSet:
 
 class WebAPI:
 
-    def __init__(self, url):
-        self._api = _APIClient(url)
+    def __init__(
+        self, url: str = None, http_client: AbstractHTTPClient = None
+    ):
+        """Initialize WebAPI.
+
+        Args:
+            url: base URL of the server.
+            http_client: optional http_client object to be used
+                         instead of the URL. url parameter is ignored.
+                         Must implement AbstractHTTPClient.
+        """
+        if http_client is not None:
+            self._api = _APIClient(http_client)
+        elif url:
+            self._api = _APIClient(_HTTPClient(url))
+        else:
+            raise ValueError('Must set url or http_client')
 
     def _get_project_names(self):
         return self._api.fetch_v1_projects()['projects']
