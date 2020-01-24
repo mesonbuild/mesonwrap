@@ -46,6 +46,10 @@ class Server(subprocess.Popen):
         while not self.api.ping():
             time.sleep(0.1)
 
+    def close(self):
+        self.terminate()
+        self.wait()
+
 
 class FakeProject:
 
@@ -96,8 +100,7 @@ class IntegrationTestBase(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp()
 
     def tearDown(self):
-        self.server.terminate()
-        self.server.wait()
+        self.server.close()
         for fake_project in self.fake_projects:
             fake_project.close()
         shutil.rmtree(self.tmpdir)
