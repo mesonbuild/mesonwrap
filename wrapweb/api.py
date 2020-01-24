@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import flask
+import github
 
+from mesonwrap import githubdb
 from mesonwrap import wrapdb
 from wrapweb.app import APP
 from wrapweb import flaskutil
@@ -22,8 +24,15 @@ from wrapweb import jsonstatus
 
 @flaskutil.local
 def _database():
-    dbdir = APP.config['DB_DIRECTORY']
-    return wrapdb.WrapDatabase(dbdir)
+    mode = APP.config['MODE']
+    if mode == 'cache':
+        gh = github.Github(APP.config['GITHUB_TOKEN'])
+        return githubdb.GithubDB(gh)
+    elif mode == 'standalone':
+        dbdir = APP.config['DB_DIRECTORY']
+        return wrapdb.WrapDatabase(dbdir)
+    else:
+        raise ValueError('Unknown mode', mode)
 
 
 @_database.teardown
