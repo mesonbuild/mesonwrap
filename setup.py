@@ -28,6 +28,7 @@ if __name__ == '__main__':
             'Flask',
             'GitPython',
             'PyGithub',
+            'cachetools',
             'retrying',
         ],
         entry_points={
