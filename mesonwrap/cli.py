@@ -6,8 +6,9 @@ import typing
 from wrapweb import APP
 from mesonwrap import wrapcreator
 from mesonwrap import wrapupdater
-from mesonwrap.tools import repoinit, reviewtool, dbtool
 from mesonwrap.tools import import_from_hosted
+from mesonwrap.tools import publisher
+from mesonwrap.tools import repoinit, reviewtool, dbtool
 from mesonwrap.tools import watching
 
 
@@ -59,6 +60,10 @@ class Command:
     def command_review(self):
         """Review wrap PR"""
         reviewtool.main(*self.args())
+
+    def command_publish(self):
+        """Publish release from a repository"""
+        publisher.main(*self.args())
 
     def command_new_repo(self):
         """Create and push new wrap repository"""

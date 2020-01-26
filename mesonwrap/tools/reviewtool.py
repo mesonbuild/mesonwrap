@@ -28,8 +28,8 @@ import github
 
 from mesonwrap import tempfile
 from mesonwrap import upstream
-from mesonwrap import wrapcreator
 from mesonwrap.tools import environment
+from mesonwrap.tools import publisher
 
 
 class CheckError(Exception):
@@ -262,14 +262,6 @@ class Reviewer:
         pull_request.merge(merge_method=method, sha=sha)
         return branch
 
-    @classmethod
-    def publish(cls, organization: str, project: str, branch: str):
-        gh_project = cls._get_project(organization, project)
-        url = gh_project.clone_url
-        wrap = wrapcreator.make_wrap(project, url, branch)
-        # TODO actually publish
-        raise NotImplementedError('does not publish yet')
-
 
 def main(prog, args):
     parser = argparse.ArgumentParser(prog)
@@ -283,8 +275,6 @@ def main(prog, args):
     parser.add_argument('--export_sources')
     parser.add_argument('--approve', action='store_true',
                         help='Approve and admit revision into WrapDB')
-    parser.add_argument('--publish', action='store_true',
-                        help='Publish wrap to Github')
     parser.add_argument('--test',
                         action='store_const', const='mesonbuild-test',
                         dest='organization', default='mesonbuild',
@@ -313,5 +303,4 @@ def main(prog, args):
             sys.exit('Must specify --approve and --pull_request together')
         version = Reviewer.merge(args.organization, args.name,
                                  args.pull_request, sha)
-        if args.publish:
-            Reviewer.publish(args.organization, args.name, version)
+        publisher.publish(args.organization, args.name, version)
