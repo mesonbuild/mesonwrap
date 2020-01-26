@@ -16,7 +16,7 @@ def zip_name(name: str, version: str, revision: int) -> str:
 
 _Wrap = namedtuple(
     'Wrap',
-    ['name', 'version', 'revision', 'wrap', 'zip'],
+    ['name', 'version', 'revision', 'wrap', 'zip', 'commit_sha'],
 )
 
 

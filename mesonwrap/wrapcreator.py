@@ -75,6 +75,7 @@ def _make_zip(file, workdir, dirprefix):
 
 
 def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
+    revision_commit_sha = repo.head.commit.hexsha
     revision_id = gitutils.get_revision(repo, repo.head.commit)
     upstream_file = os.path.join(workdir, 'upstream.wrap')
     definition = upstream.UpstreamWrap.from_file(upstream_file)
@@ -95,7 +96,8 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
         wrapfile.write('patch_hash = %s\n' % source_hash)
         wrap_contents = wrapfile.getvalue()
     return wrap.Wrap(name=name, version=branch, revision=revision_id,
-                     wrap=wrap_contents, zip=zip_contents)
+                     wrap=wrap_contents, zip=zip_contents,
+                     commit_sha=revision_commit_sha)
 
 
 def main(prog, args):
