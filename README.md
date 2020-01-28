@@ -1,5 +1,5 @@
 #### Status
-[![Build Status](https://travis-ci.org/mesonbuild/wrapweb.svg?branch=master)](https://travis-ci.org/mesonbuild/wrapweb)
+[![Build Status](https://travis-ci.org/mesonbuild/mesonwrap.svg?branch=master)](https://travis-ci.org/mesonbuild/mesonwrap)
 
 # How to run
 
