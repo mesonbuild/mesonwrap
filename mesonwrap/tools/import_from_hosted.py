@@ -120,7 +120,7 @@ class Importer:
 
 def main(prog, args):
     parser = argparse.ArgumentParser(prog)
-    parser.add_argument('--wrapdb_url', default='http://wrapdb.mesonbuild.com')
+    parser.add_argument('--wrapdb-url', default='http://wrapdb.mesonbuild.com')
     parser.add_argument('--project')
     parser.add_argument('--version', help='Does not work without --project')
     parser.add_argument('--revision', help='Does not work without --version')

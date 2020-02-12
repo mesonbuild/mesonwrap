@@ -266,13 +266,13 @@ class Reviewer:
 def main(prog, args):
     parser = argparse.ArgumentParser(prog)
     parser.add_argument('name')
-    parser.add_argument('--pull_request', type=int)
+    parser.add_argument('--pull-request', type=int)
     parser.add_argument('--branch')
-    parser.add_argument('--clone_url')
-    parser.add_argument('--allow_other_files', action='store_true')
-    parser.add_argument('--allow_url_without_version', action='store_true')
-    parser.add_argument('--allow_no_license', action='store_true')
-    parser.add_argument('--export_sources')
+    parser.add_argument('--clone-url')
+    parser.add_argument('--allow-other-files', action='store_true')
+    parser.add_argument('--allow-url-without-version', action='store_true')
+    parser.add_argument('--allow-no-license', action='store_true')
+    parser.add_argument('--export-sources')
     parser.add_argument('--approve', action='store_true',
                         help='Approve and admit revision into WrapDB')
     parser.add_argument('--test',
@@ -291,7 +291,7 @@ def main(prog, args):
             r = Reviewer.from_committed(args.organization,
                                         args.name, args.branch)
     else:
-        sys.exit('Either --pull_request or --branch must be set')
+        sys.exit('Either --pull-request or --branch must be set')
     r.strict_fileset = not args.allow_other_files
     r.strict_version_in_url = not args.allow_url_without_version
     r.strict_license_check = not args.allow_no_license
@@ -300,7 +300,7 @@ def main(prog, args):
         sys.exit(1)
     if args.approve:
         if args.pull_request is None:
-            sys.exit('Must specify --approve and --pull_request together')
+            sys.exit('Must specify --approve and --pull-request together')
         version = Reviewer.merge(args.organization, args.name,
                                  args.pull_request, sha)
         publisher.publish(args.organization, args.name, version)
