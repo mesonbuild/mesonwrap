@@ -5,6 +5,7 @@ import typing
 
 from mesonwrap import wrapcreator
 from mesonwrap import wrapupdater
+from mesonwrap.tools import check_source
 from mesonwrap.tools import dbtool
 from mesonwrap.tools import publisher
 from mesonwrap.tools import repoinit
@@ -96,3 +97,7 @@ class Command:
     def command_unwatch(self):
         """Unwatch mesonwrap repositories"""
         watching.unwatch(*self.args())
+
+    def command_check_source(self):
+        """Check source archive"""
+        check_source.main(*self.args())
