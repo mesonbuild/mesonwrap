@@ -7,7 +7,6 @@ from wrapweb import APP
 from mesonwrap import wrapcreator
 from mesonwrap import wrapupdater
 from mesonwrap.tools import dbtool
-from mesonwrap.tools import import_from_hosted
 from mesonwrap.tools import publisher
 from mesonwrap.tools import repoinit
 from mesonwrap.tools import reviewtool
@@ -90,10 +89,6 @@ class Command:
     def command_dbtool(self):
         """This is a simple tool to do queries and inserts"""
         dbtool.main(*self.args())
-
-    def command_import_from_hosted(self):
-        """Import projects from wrapdb into github"""
-        import_from_hosted.main(*self.args())
 
     def command_watch(self):
         """Watch mesonwrap repositories"""
