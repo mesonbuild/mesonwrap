@@ -8,6 +8,7 @@ import urllib.parse
 import urllib.request
 
 from mesonwrap import wrap
+from mesonwrap import upstream
 
 
 JSON = Dict[Any, Any]
@@ -183,15 +184,20 @@ class Revision:
         self.__zip = None
 
     @property
-    def wrap(self):
+    def wrap_str(self) -> str:
         if self.__wrap is None:
-            self.__wrap = self._api.fetch_v1_project_wrap(self.project.name,
-                                                          self.version.version,
-                                                          self.revision)
+            data = self._api.fetch_v1_project_wrap(self.project.name,
+                                                   self.version.version,
+                                                   self.revision)
+            self.__wrap = data.decode('utf-8')
         return self.__wrap
 
     @property
-    def zip(self):
+    def wrap(self) -> upstream.UpstreamWrap:
+        return upstream.UpstreamWrap.from_string(self.wrap_str)
+
+    @property
+    def zip(self) -> bytes:
         if self.__zip is None:
             self.__zip = self._api.fetch_v1_project_zip(self.project.name,
                                                         self.version.version,
@@ -203,7 +209,7 @@ class Revision:
         return wrap.Wrap(name=self.version.project.name,
                          version=self.version.version,
                          revision=self.revision,
-                         wrap=self.wrap,
+                         wrap=self.wrap_str,
                          zip=self.zip)
 
 
