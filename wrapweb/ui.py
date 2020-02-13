@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import json
 
 from flask import render_template
@@ -40,6 +41,53 @@ def project_info(project):
         title='%s - Wrap DB' % project,
         project=project,
         resp=j)
+
+
+Ticket = collections.namedtuple('Ticket', (
+    'title',
+    'project',
+    'project_link',
+    'issue_link',
+    'type',  # wrapdb_issue, pull_request, wrap_issue
+    'author',
+    'author_link',
+    'timestamp',
+))
+
+
+@APP.route('/tickets', methods=['GET'])
+def tickets():
+    # TODO(legeana): implement this
+    tickets = [
+        Ticket(title='New wrap blah',
+               project='wrapdb',
+               project_link='https://github.com/mesonbuild/wrapdb',
+               issue_link='http://example.com',
+               type='wrapdb_issue',
+               author='someuser',
+               author_link='https://github.com/legeana',
+               timestamp='yesterday'),
+        Ticket(title='New version',
+               project='somewrap',
+               project_link='https://github.com/mesonbuild/somewrap',
+               issue_link='http://example.com',
+               type='pull_request',
+               author='otheruser',
+               author_link='https://github.com/legeana',
+               timestamp='19:00 17-06-2013'),
+        Ticket(title="It doesn't work T_T",
+               project='otherwrap-and-its-looong',
+               project_link='https://github.com/mesonbuild/otherwrap',
+               issue_link='http://example.com',
+               type='wrap_issue',
+               author='saduser',
+               author_link='https://github.com/legeana',
+               timestamp='some time ago'),
+    ]
+    return render_template(
+        'tickets.html',
+        title='Tickets - Wrap DB',
+        tickets=tickets)
 
 
 # This is called when user opens get_wrap handler and CSS override is not

@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tickets.css') }}">
+{% endblock %}
+
+{% block body %}
+<h1>Tickets</h1>
+<div class="container">
+  {% for t in tickets %}
+    {% if t.type == "wrapdb_issue" %}
+      {% set panel_style = "panel-danger" %}
+    {% elif t.type == "pull_request" %}
+      {% set panel_style = "panel-warning" %}
+    {% elif t.type == "wrap_issue" %}
+      {% set panel_style = "panel-info" %}
+    {% else %}
+      {% set panel_style = "panel-default" %}
+    {% endif %}
+    <div class="panel {{ panel_style }}">
+      <div class="panel-heading">
+        <a class="ticket-project" href="{{ t.project_link }}">{{ t.project }}</a>
+        <a class="panel-title" href="{{ t.issue_link }}">{{ t.title }}</a>
+      </div>
+      <div class="panel-body">
+        Opened on {{ t.timestamp }} by <a href="{{ t.author_link }}">{{ t.author }}</a>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

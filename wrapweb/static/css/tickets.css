@@ -1,0 +1,14 @@
+.ticket-project {
+  display: inline-block;
+  /* to combine with the 4px from #text to equal
+   * left padding from panel-heading */
+  margin-right: 11px;
+  text-decoration: none;
+  color: grey;
+}
+
+/* to make panel-body appear to be a footer */
+.panel-body {
+  color: grey;
+  padding: 5px 5px 5px 15px;  /* reduce from 15px */
+}
