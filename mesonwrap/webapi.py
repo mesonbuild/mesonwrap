@@ -49,7 +49,7 @@ class _HTTPClient(AbstractHTTPClient):
     ) -> bytes:
         headers = headers.copy()
         headers['Content-Type'] = content_type
-        req = urllib.request.Request(self.url + '/github-hook', data, headers)
+        req = urllib.request.Request(self.url + url, data, headers)
         with urllib.request.urlopen(req) as r:
             return r.read()
 
