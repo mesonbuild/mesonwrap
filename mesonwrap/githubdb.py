@@ -1,10 +1,10 @@
 import logging
 import threading
 from typing import Iterable, List, Optional, Tuple
-import urllib.request
 
 import cachetools
 import github
+import requests
 
 from mesonwrap import inventory
 from mesonwrap import version
@@ -83,9 +83,9 @@ def _asset(org: Organization,
     release = repo.get_release('{}-{}'.format(branch, revision))
     for asset in release.get_assets():
         if asset.label == label:
-            url = asset.browser_download_url
-            with urllib.request.urlopen(url) as a:
-                return a.read()
+            with requests.get(asset.browser_download_url) as rv:
+                rv.raise_for_status()
+                return rv.content
     _log.error('Asset not found project=%s branch=%s revision=%d label=%s',
                project, branch, revision, label)
     raise KeyError('Asset not found', project, branch, revision, label)
