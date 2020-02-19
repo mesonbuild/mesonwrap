@@ -2,7 +2,9 @@ _ORGANIZATION = 'mesonbuild'
 _RESTRICTED_PROJECTS = [
     'meson',
     'meson-ci',
+    'mesonbuild.github.io',
     'mesonwrap',
+    'wrapdb',
     'wrapdevtools',
     'wrapweb',
 ]
