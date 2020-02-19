@@ -24,12 +24,12 @@ from wrapweb import jsonstatus
 
 @flaskutil.local
 def _database():
-    mode = APP.config['MODE']
+    mode = flask.current_app.config['MODE']
     if mode == 'cache':
-        gh = github.Github(APP.config['GITHUB_TOKEN'])
+        gh = github.Github(flask.current_app.config['GITHUB_TOKEN'])
         return githubdb.GithubDB(gh)
     elif mode == 'standalone':
-        dbdir = APP.config['DB_DIRECTORY']
+        dbdir = flask.current_app.config['DB_DIRECTORY']
         return wrapdb.WrapDatabase(dbdir)
     else:
         raise ValueError('Unknown mode', mode)

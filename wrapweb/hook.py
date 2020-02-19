@@ -26,7 +26,7 @@ from wrapweb.app import APP
 
 @flaskutil.local
 def _wrapupdater():
-    dbdir = APP.config['DB_DIRECTORY']
+    dbdir = flask.current_app.config['DB_DIRECTORY']
     return wrapupdater.WrapUpdater(dbdir)
 
 
@@ -70,9 +70,9 @@ def github_hook():
     headers = flask.request.headers
     if not headers.get('User-Agent').startswith('GitHub-Hookshot/'):
         return jsonstatus.error(401, 'Not a GitHub hook')
-    signature = ('sha1=%s' %
-                 hmac.new(APP.config['SECRET_KEY'].encode('utf-8'),
-                          flask.request.data, hashlib.sha1).hexdigest())
+    secret_key = flask.current_app.config['SECRET_KEY'].encode('utf-8')
+    digest = hmac.new(secret_key, flask.request.data, hashlib.sha1).hexdigest()
+    signature = 'sha1=%s' % digest
     if headers.get('X-Hub-Signature') != signature:
         return jsonstatus.error(401, 'Not a valid secret key')
     if headers.get('X-Github-Event') == 'pull_request':
