@@ -1,5 +1,6 @@
 _ORGANIZATION = 'mesonbuild'
 _RESTRICTED_PROJECTS = [
+    'dubtestproject',
     'meson',
     'meson-ci',
     'mesonbuild.github.io',
