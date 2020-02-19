@@ -15,7 +15,7 @@
 import collections
 import json
 
-from flask import render_template
+import flask
 
 from wrapweb import api, jsonstatus
 from wrapweb.app import APP
@@ -28,7 +28,7 @@ def response_to_json(resp):
 @APP.route('/', methods=['GET'])
 def index():
     j = response_to_json(api.get_projectlist())
-    return render_template(
+    return flask.render_template(
         'projects.html',
         projects=j['projects'])
 
@@ -36,7 +36,7 @@ def index():
 @APP.route('/<project>', methods=['GET'])
 def project_info(project):
     j = response_to_json(api.get_project_info(project))
-    return render_template(
+    return flask.render_template(
         'project.html',
         title='%s - Wrap DB' % project,
         project=project,
@@ -84,7 +84,7 @@ def tickets():
                author_link='https://github.com/legeana',
                timestamp='some time ago'),
     ]
-    return render_template(
+    return flask.render_template(
         'tickets.html',
         title='Tickets - Wrap DB',
         tickets=tickets)
