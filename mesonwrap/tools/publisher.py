@@ -35,7 +35,7 @@ class Publisher:
         with open(zippath, 'wb') as f:
             f.write(wrap.zip)
         ghrepo = cls._get_project(organization, wrap.name)
-        tagname =  '{}-{}'.format(wrap.version, wrap.revision)
+        tagname = '{}-{}'.format(wrap.version, wrap.revision)
         try:
             rel = ghrepo.get_release(tagname)
             print('Release {!r} already exists'.format(tagname))

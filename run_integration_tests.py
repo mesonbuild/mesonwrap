@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import io
 import os
 import os.path
 import shutil
@@ -9,8 +8,6 @@ import sys
 import tempfile
 import time
 import unittest
-import urllib.error
-import zipfile
 
 from mesonwrap import webapi
 from mesonwrap.tools.repoinit import RepoBuilder
@@ -215,7 +212,8 @@ class GithubHookTest(IntegrationTestBase):
     def test_restricted_project(self):
         foo = self.fake_project('meson')
         foo.create_version('1.2.3')
-        with self.assertRaisesRegex(webapi.APIError, 'Not a mesonwrap project'):
+        with self.assertRaisesRegex(webapi.APIError,
+                                    'Not a mesonwrap project'):
             self.server.api.pull_request_hook('mesonbuild', 'meson', '1.2.3',
                                               foo.url)
 

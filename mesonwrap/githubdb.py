@@ -57,7 +57,6 @@ def _repository_list(org: Organization):
                    if inventory.is_wrap_project_name(repo.name)])
 
 
-
 def _get_versions(org: Organization, project: str) -> Iterable[Version]:
     repo = org().get_repo(project)
     for release in repo.get_releases():
@@ -105,7 +104,7 @@ def _get_zip(org: Organization,
              project: str, branch: str, revision: int) -> Optional[bytes]:
     try:
         return _asset(org, project, branch, revision, PATCH_ZIP_LABEL)
-    except Exception:
+    except Exception as e:
         _log.error('get_zip(%s, %s, %d): %s', project, branch, revision, e)
         return None
 
