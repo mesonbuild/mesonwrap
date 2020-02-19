@@ -1,5 +1,6 @@
 import argparse
 
+from mesonwrap.tools import environment
 from wrapweb import APP
 
 
@@ -11,10 +12,13 @@ def main(prog, args):
     parser.add_argument('--db-directory')
     parser.add_argument('--mode', help='cache or standalone')
     parser.add_argument('--github-token')
+    parser.add_argument('--github-token-env', action='store_true')
     args = parser.parse_args(args)
     for opt in ['secret_key', 'db_directory', 'mode', 'github_token']:
         if getattr(args, opt):
             APP.config[opt.upper()] = getattr(args, opt)
+    if args.github_token_env:
+        APP.config['GITHUB_TOKEN'] = environment.Config().github_token
     APP.run(host=args.host,
             port=args.port,
             debug=True)
