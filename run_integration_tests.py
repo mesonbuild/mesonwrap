@@ -17,7 +17,6 @@ ROOT = os.path.dirname(sys.argv[0])
 SERVER = [sys.executable, os.path.join(ROOT, 'mesonwrap.py'), 'serve']
 WRAPUPDATER = [sys.executable, os.path.join(ROOT, 'mesonwrap.py'),
                'wrapupdate']
-DBFILE = os.path.join(ROOT, 'wrapdb.sqlite')
 
 
 class Project:
@@ -35,7 +34,8 @@ class Project:
 class Server(subprocess.Popen):
 
     def __init__(self):
-        super().__init__(args=SERVER)
+        self._tmpdir = tempfile.TemporaryDirectory()
+        super().__init__(args=SERVER + ['--db-directory=' + self._tmpdir.name])
         self.api = webapi.WebAPI('http://localhost:5000')
         self._wait_server_ready()
 
@@ -43,9 +43,14 @@ class Server(subprocess.Popen):
         while not self.api.ping():
             time.sleep(0.1)
 
+    @property
+    def dbdir(self):
+        return self._tmpdir.name
+
     def close(self):
         self.terminate()
         self.wait()
+        self._tmpdir.cleanup()
 
 
 class FakeProject:
@@ -88,10 +93,6 @@ class FakeProject:
 class IntegrationTestBase(unittest.TestCase):
 
     def setUp(self):
-        try:
-            os.unlink(DBFILE)
-        except FileNotFoundError:
-            pass
         self.server = Server()
         self.fake_projects = []
         self.tmpdir = tempfile.TemporaryDirectory()
@@ -130,7 +131,9 @@ class IntegrationTestBase(unittest.TestCase):
         self.assertEqual(latest.revision, revision)
 
     def wrapupdater(self, name, url, version):
-        subprocess.check_call(args=WRAPUPDATER + [name, url, version])
+        subprocess.check_call(args=WRAPUPDATER + [
+            '--dbdir=' + self.server.dbdir,
+            name, url, version])
 
 
 class QueryTest(IntegrationTestBase):
