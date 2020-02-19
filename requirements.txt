@@ -3,3 +3,4 @@ GitPython
 PyGithub
 cachetools
 retrying
+requests

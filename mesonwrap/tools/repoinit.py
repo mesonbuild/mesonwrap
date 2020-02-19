@@ -19,9 +19,9 @@ upstream.wrap."""
 import argparse
 import datetime
 import hashlib
-import urllib.request
 
 import git
+import requests
 
 from mesonwrap import gitutils, upstream
 from mesonwrap.tools import environment
@@ -114,10 +114,10 @@ class RepoBuilder:
 
     @staticmethod
     def _get_hash(url):
-        with urllib.request.urlopen(url) as r:
-            data = r.read()
         h = hashlib.sha256()
-        h.update(data)
+        with requests.get(url) as rv:
+            rv.raise_for_status()
+            h.update(rv.content)
         return h.hexdigest()
 
     def init_version(self, version):

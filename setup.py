@@ -30,6 +30,7 @@ if __name__ == '__main__':
             'PyGithub',
             'cachetools',
             'retrying',
+            'requests',
         ],
         entry_points={
             'console_scripts': [

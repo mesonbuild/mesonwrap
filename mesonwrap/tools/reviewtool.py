@@ -21,10 +21,10 @@ import shutil
 import subprocess
 import sys
 from typing import Optional, Tuple
-import urllib.request
 
 import git
 import github
+import requests
 
 from mesonwrap import tempfile
 from mesonwrap import upstream
@@ -178,8 +178,9 @@ class Reviewer:
         data = None
         exc = None
         try:
-            with urllib.request.urlopen(url) as u:
-                data = u.read()
+            with requests.get(url) as rv:
+                rv.raise_for_status()
+                data = rv.content
         except Exception as e:
             exc = e
         return (data, exc)

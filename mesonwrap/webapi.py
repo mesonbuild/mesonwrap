@@ -3,9 +3,8 @@ import hashlib
 import hmac
 import json
 from typing import Any, Dict
-import urllib.error
-import urllib.parse
-import urllib.request
+
+import requests
 
 from mesonwrap import wrap
 from mesonwrap import upstream
@@ -22,16 +21,40 @@ class APIError(ServerError):
     pass
 
 
+class AbstractResponse(metaclass=abc.ABCMeta):
+
+    @abc.abstractproperty
+    def status_code(self) -> bool: ...
+
+    @abc.abstractproperty
+    def reason(self) -> str: ...
+
+    @abc.abstractmethod
+    def __bool__(self) -> bool: ...
+
+    @abc.abstractproperty
+    def content(self) -> bytes: ...
+
+    @abc.abstractproperty
+    def text(self) -> str: ...
+
+    @abc.abstractmethod
+    def json(self, **kwargs) -> JSON: ...
+
+
+AbstractResponse.register(requests.Response)
+
+
 class AbstractHTTPClient(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
-    def fetch(self, url: str) -> bytes:
+    def get(self, url: str) -> AbstractResponse:
         pass
 
     @abc.abstractmethod
     def post(
         self, url: str, content_type: str, headers: Dict[str, str], data: bytes
-    ) -> bytes:
+    ) -> AbstractResponse:
         pass
 
 
@@ -40,18 +63,19 @@ class _HTTPClient(AbstractHTTPClient):
     def __init__(self, url: str):
         self.url = url
 
-    def fetch(self, url: str) -> bytes:
-        with urllib.request.urlopen(self.url + url) as r:
-            return r.read()
+    def get(self, url: str) -> AbstractResponse:
+        with requests.get(self.url + url) as rv:
+            rv.content  # read the content before the connection is closed
+            return rv
 
     def post(
         self, url: str, content_type: str, headers: Dict[str, str], data: bytes
-    ) -> bytes:
+    ) -> AbstractResponse:
         headers = headers.copy()
         headers['Content-Type'] = content_type
-        req = urllib.request.Request(self.url + url, data, headers)
-        with urllib.request.urlopen(req) as r:
-            return r.read()
+        with requests.post(self.url + url, data=data, headers=headers) as rv:
+            rv.content  # read the content before the connection is closed
+            return rv
 
 
 class _APIClient:
@@ -79,33 +103,20 @@ class _APIClient:
                              'expected int, got {}'.format(type(revision)))
 
     def fetch(self, url: str) -> bytes:
-        return self._http.fetch(url)
+        rv = self._http.get(url)
+        if not rv:
+            if rv.status_code >= 500:
+                raise ServerError('Server error', rv.status_code, rv.reason)
+            raise APIError(rv.status_code, rv.reason)
+        return rv.content
 
     def fetch_json(self, url: str) -> JSON:
-        try:
-            data = self.fetch(url)
-        except urllib.request.HTTPError as e:
-            if e.code != 404:
-                raise ServerError('Server error: unknown error code',
-                                  e.code, e.reason)
-            data = e.read()
-        return self.parse_json(data)
+        return self.interpret(self._http.get(url))
 
-    def post_json(
-        self, url: str, content_type: str, headers: Dict[str, str], data: bytes
-    ) -> JSON:
-        try:
-            data = self._http.post(
-                url=url, content_type=content_type,
-                headers=headers, data=data)
-        except urllib.request.HTTPError as e:
-            data = e.read()
-        return self.parse_json(data)
-
-    def parse_json(self, data) -> JSON:
-        if isinstance(data, bytes):
-            data = data.decode('utf8')
-        j = json.loads(data)
+    def interpret(self, rv: AbstractResponse) -> JSON:
+        if not rv and rv.status_code >= 500:
+            raise ServerError('Server error', rv.status_code, rv.reason)
+        j = rv.json()
         if 'output' not in j:
             raise ValueError('Invalid server response: no output field')
         elif j['output'] == 'ok':
@@ -161,15 +172,12 @@ class _APIClient:
             'X-Hub-Signature': 'sha1=' + signature,
             'X-Github-Event': 'pull_request',
         }
-        try:
-            response = self._http.post(
-                '/github-hook',
-                content_type='application/json',
-                headers=headers,
-                data=data)
-        except urllib.request.HTTPError as e:
-            response = e.read()
-        return self.parse_json(response)
+        rv = self._http.post(
+            '/github-hook',
+            content_type='application/json',
+            headers=headers,
+            data=data)
+        return self.interpret(rv)
 
 
 class Revision:
@@ -370,15 +378,16 @@ class WebAPI:
         """
         return ProjectSet(self._api)
 
-    def ping(self):
+    def ping(self) -> bool:
         """Returns True if able to connect."""
         try:
-            self._api.fetch('/')
-            return True
-        except urllib.error.URLError:
+            return bool(self._api.fetch('/'))
+        except OSError:
             return False
 
-    def pull_request_hook(self, organization, project, branch, clone_url):
+    def pull_request_hook(
+        self, organization, project, branch, clone_url
+    ) -> JSON:
         repo = dict(full_name='{}/{}'.format(organization, project),
                     name=project,
                     clone_url=clone_url)
