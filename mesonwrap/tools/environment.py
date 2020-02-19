@@ -8,13 +8,13 @@ import github
 class Config:
 
     def __init__(self):
-        configpath = os.path.join(os.getenv('HOME'), '.config', 'wrapweb.ini')
+        configpath = os.path.join(os.getenv('HOME'), '.config', 'mesonwrap.ini')
         self._config = configparser.ConfigParser()
         self._config.read(configpath)
 
     @property
     def github_token(self):
-        return self._config.get('wrapweb', 'github_token', fallback=None)
+        return self._config.get('mesonwrap', 'github_token', fallback=None)
 
 
 def Github():
