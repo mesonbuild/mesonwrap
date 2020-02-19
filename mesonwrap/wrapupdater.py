@@ -35,9 +35,10 @@ class WrapUpdater:
 
 def main(prog, args):
     parser = argparse.ArgumentParser(prog)
+    parser.add_argument('--dbdir', default='.')
     parser.add_argument('project')
     parser.add_argument('repo_url')
     parser.add_argument('branch')
     args = parser.parse_args(args)
-    m = WrapUpdater()
+    m = WrapUpdater(dbdir=args.dbdir)
     m.update_db(args.project, args.repo_url, args.branch)
