@@ -3,13 +3,13 @@ import inspect
 import sys
 import typing
 
-from wrapweb import APP
 from mesonwrap import wrapcreator
 from mesonwrap import wrapupdater
 from mesonwrap.tools import dbtool
 from mesonwrap.tools import publisher
 from mesonwrap.tools import repoinit
 from mesonwrap.tools import reviewtool
+from mesonwrap.tools import serve
 from mesonwrap.tools import watching
 
 
@@ -55,8 +55,7 @@ class Command:
 
     def command_serve(self):
         """Run server"""
-        APP.debug = True
-        APP.run(host='0.0.0.0')
+        serve.main(*self.args())
 
     def command_review(self):
         """Review wrap PR"""
