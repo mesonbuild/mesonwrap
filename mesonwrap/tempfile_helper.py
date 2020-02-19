@@ -25,7 +25,7 @@ def windows_proof_rmtree(f):
     # be scanning files you are trying to delete. The only
     # way to fix this is to try again and again.
     delays = [0.1, 0.1, 0.2, 0.2, 0.2, 0.5, 0.5, 1, 1, 1, 1, 2]
-    # Start by making the tree wriable.
+    # Start by making the tree writable.
     _make_tree_writable(f)
     for d in delays:
         try:
