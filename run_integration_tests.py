@@ -94,17 +94,17 @@ class IntegrationTestBase(unittest.TestCase):
             pass
         self.server = Server()
         self.fake_projects = []
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.TemporaryDirectory()
 
     def tearDown(self):
         self.server.close()
         for fake_project in self.fake_projects:
             fake_project.close()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
     def fake_project(self, name) -> FakeProject:
         """Automatically closes FakeProject on test tearDown."""
-        fake_project = FakeProject(name, self.tmpdir)
+        fake_project = FakeProject(name, self.tmpdir.name)
         self.fake_projects.append(fake_project)
         return fake_project
 
