@@ -2,7 +2,6 @@
 
 import os
 import os.path
-import shutil
 import subprocess
 import sys
 import tempfile
