@@ -1,4 +1,4 @@
-import typing
+from typing import Any, Callable
 
 import flask
 
@@ -8,7 +8,7 @@ from wrapweb.app import APP
 class LocalVariable:
     """Wrapper for flask.g cached variables pattern."""
 
-    def __init__(self, name: str, init: typing.Callable[[], typing.Any]):
+    def __init__(self, name: str, init: Callable[[], Any]):
         self._name = name
         self._init = init
 
