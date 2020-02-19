@@ -17,12 +17,13 @@ import github
 
 from mesonwrap import githubdb
 from mesonwrap import wrapdb
-from wrapweb.app import APP
 from wrapweb import flaskutil
 from wrapweb import jsonstatus
 
+BP = flask.Blueprint('api', __name__)
 
-@flaskutil.appcontext_var(APP)
+
+@flaskutil.appcontext_var(BP)
 def _database():
     mode = flask.current_app.config['MODE']
     if mode == 'cache':
@@ -44,12 +45,12 @@ def get_projectlist():
     return jsonstatus.ok(projects=_database().name_search(''))
 
 
-@APP.route('/v1/query/byname/<project>', methods=['GET'])
+@BP.route('/v1/query/byname/<project>', methods=['GET'])
 def name_query(project):
     return jsonstatus.ok(projects=_database().name_search(project))
 
 
-@APP.route('/v1/query/get_latest/<project>', methods=['GET'])
+@BP.route('/v1/query/get_latest/<project>', methods=['GET'])
 def get_latest(project):
     latest = _database().get_latest_version(project)
     if latest is None:
@@ -57,8 +58,8 @@ def get_latest(project):
     return jsonstatus.ok(branch=latest[0], revision=latest[1])
 
 
-@APP.route('/v1/projects', defaults={'project': None})
-@APP.route('/v1/projects/<project>')
+@BP.route('/v1/projects', defaults={'project': None})
+@BP.route('/v1/projects/<project>')
 def get_project_info(project):
     if project is None:
         return get_projectlist()
@@ -69,7 +70,7 @@ def get_project_info(project):
     return jsonstatus.ok(versions=versions)
 
 
-@APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_wrap')
+@BP.route('/v1/projects/<project>/<branch>/<int:revision>/get_wrap')
 def get_wrap(project, branch, revision):
     result = _database().get_wrap(project, branch, revision)
     if result is None:
@@ -79,7 +80,7 @@ def get_wrap(project, branch, revision):
     return resp
 
 
-@APP.route('/v1/projects/<project>/<branch>/<int:revision>/get_zip')
+@BP.route('/v1/projects/<project>/<branch>/<int:revision>/get_zip')
 def get_zip(project, branch, revision):
     result = _database().get_zip(project, branch, revision)
     if result is None:

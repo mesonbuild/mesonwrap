@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# flake8: noqa
 from wrapweb.app import APP
-import wrapweb.api
-import wrapweb.hook
-import wrapweb.ui
+
+__all__ = ['APP']

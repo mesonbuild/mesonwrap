@@ -21,10 +21,11 @@ from mesonwrap import inventory
 from mesonwrap import wrapupdater
 from wrapweb import flaskutil
 from wrapweb import jsonstatus
-from wrapweb.app import APP
+
+BP = flask.Blueprint('hook', __name__)
 
 
-@flaskutil.appcontext_var(APP)
+@flaskutil.appcontext_var(BP)
 def _wrapupdater():
     dbdir = flask.current_app.config['DB_DIRECTORY']
     return wrapupdater.WrapUpdater(dbdir)
@@ -57,7 +58,7 @@ def github_pull_request():
     base = d['pull_request']['base']
     check_allowed_project(base['repo']['full_name'])
     if d['action'] != 'closed' or not d['pull_request']['merged']:
-        APP.logger.warning(flask.request.data)
+        flask.current_app.logger.warning(flask.request.data)
         return jsonstatus.error(
             417, 'We got hook which is not merged pull request')
     return update_project(project=base['repo']['name'],
@@ -65,7 +66,7 @@ def github_pull_request():
                           branch=base['ref'])
 
 
-@APP.route('/github-hook', methods=['POST'])
+@BP.route('/github-hook', methods=['POST'])
 def github_hook():
     headers = flask.request.headers
     if not headers.get('User-Agent').startswith('GitHub-Hookshot/'):

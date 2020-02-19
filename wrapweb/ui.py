@@ -18,14 +18,15 @@ import json
 import flask
 
 from wrapweb import api, jsonstatus
-from wrapweb.app import APP
+
+BP = flask.Blueprint('ui', __name__)
 
 
 def response_to_json(resp):
     return json.loads(resp.get_data().decode('utf-8'))
 
 
-@APP.route('/', methods=['GET'])
+@BP.route('/', methods=['GET'])
 def index():
     j = response_to_json(api.get_projectlist())
     return flask.render_template(
@@ -33,7 +34,7 @@ def index():
         projects=j['projects'])
 
 
-@APP.route('/<project>', methods=['GET'])
+@BP.route('/<project>', methods=['GET'])
 def project_info(project):
     j = response_to_json(api.get_project_info(project))
     return flask.render_template(
@@ -55,7 +56,7 @@ Ticket = collections.namedtuple('Ticket', (
 ))
 
 
-@APP.route('/tickets', methods=['GET'])
+@BP.route('/tickets', methods=['GET'])
 def tickets():
     # TODO(legeana): implement this
     tickets = [
@@ -92,6 +93,6 @@ def tickets():
 
 # This is called when user opens get_wrap handler and CSS override is not
 # present.
-@APP.route('/favicon.ico')
+@BP.route('/favicon.ico')
 def favicon():
     return jsonstatus.error(404, 'Favicon not found')

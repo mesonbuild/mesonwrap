@@ -13,7 +13,7 @@
     <tr>
       <td>{{ p["branch"] }}</td>
       <td>{{ p["revision"] }}</td>
-      <td><a href={{ url_for("get_wrap", project=project, branch=p["branch"], revision=p["revision"]).replace("get_zip", "get_wrap") }}>Download</a></td>
+      <td><a href={{ url_for("api.get_wrap", project=project, branch=p["branch"], revision=p["revision"]).replace("get_zip", "get_wrap") }}>Download</a></td>
     </tr>
     {% endfor %}
   </table>
