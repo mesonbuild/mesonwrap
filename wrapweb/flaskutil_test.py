@@ -43,7 +43,7 @@ class TestAppcontextVar(unittest.TestCase):
     @mock.patch(__name__ + '.creator_proxy')
     def test_call_app(self, proxy):
         with TEST_APP.app_context():
-            appvar()
+            self.assertIs(appvar(), proxy.return_value)
             proxy.assert_called_once_with()
         proxy.return_value.close.assert_called_once_with()
 
@@ -59,7 +59,7 @@ class TestAppcontextVar(unittest.TestCase):
     @mock.patch(__name__ + '.creator_proxy')
     def test_call_bp(self, proxy):
         with TEST_APP.app_context():
-            bpvar()
+            self.assertIs(bpvar(), proxy.return_value)
             proxy.assert_called_once_with()
         proxy.return_value.close.assert_called_once_with()
 
