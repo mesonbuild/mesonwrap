@@ -22,7 +22,7 @@ from wrapweb import flaskutil
 from wrapweb import jsonstatus
 
 
-@flaskutil.local(APP)
+@flaskutil.appcontext_var(APP)
 def _database():
     mode = flask.current_app.config['MODE']
     if mode == 'cache':

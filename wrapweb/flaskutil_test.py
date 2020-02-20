@@ -12,7 +12,7 @@ def creator_proxy():
     pass
 
 
-@flaskutil.local(TEST_APP)
+@flaskutil.appcontext_var(TEST_APP)
 def foobar():
     return creator_proxy()
 
@@ -22,10 +22,10 @@ def close(obj):
     obj.close()
 
 
-class TestLocalVariable(unittest.TestCase):
+class TestAppcontextVar(unittest.TestCase):
 
     @mock.patch(__name__ + '.creator_proxy')
-    def test_local(self, proxy):
+    def test_call(self, proxy):
         with TEST_APP.app_context():
             foobar()
             proxy.assert_called_once_with()

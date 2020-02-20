@@ -2,11 +2,10 @@ from typing import Any, Callable
 
 import flask
 
-
 Initializer = Callable[[], Any]
 
 
-class LocalVariable:
+class _AppcontextVariable:
     """Wrapper for flask.g cached variables pattern."""
 
     def __init__(self, app: flask.Flask, name: str, init: Initializer):
@@ -31,7 +30,7 @@ class LocalVariable:
         return value
 
     def teardown(self, closer):
-        """Calls closer(value) on context destruction if value was created."""
+        """Calls closer(value) on context destruction if the value was created."""
         def actual_closer(exception):
             value = self._value
             if value is not None:
@@ -39,11 +38,13 @@ class LocalVariable:
         self._app.teardown_appcontext(actual_closer)
 
 
-def local(app: flask.Flask) -> Callable[[Initializer], LocalVariable]:
-    """Wraps local variable initializer with LocalVariable.
+def appcontext_var(
+    app: flask.Flask
+) -> Callable[[Initializer], _AppcontextVariable]:
+    """Wraps appcontext variable initializer.
 
     Example:
-    @flaskutil.local(app)
+    @flaskutil.appcontext_var(app)
     def mydb():
         return MyDB()
 
@@ -51,6 +52,6 @@ def local(app: flask.Flask) -> Callable[[Initializer], LocalVariable]:
     def closedb(db):
         db.close()
     """
-    def decorator(initializer: Initializer) -> LocalVariable:
-        return LocalVariable(app, initializer.__name__, initializer)
+    def decorator(initializer: Initializer) -> _AppcontextVariable:
+        return _AppcontextVariable(app, initializer.__name__, initializer)
     return decorator
