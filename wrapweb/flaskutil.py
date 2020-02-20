@@ -1,14 +1,16 @@
-from typing import Any, Callable
+from typing import Any, Callable, Union
 
 import flask
+from flask import blueprints
 
+AppOrBlueprint = Union[flask.Flask, blueprints.Blueprint]
 Initializer = Callable[[], Any]
 
 
 class _AppcontextVariable:
     """Wrapper for flask.g cached variables pattern."""
 
-    def __init__(self, app: flask.Flask, name: str, init: Initializer):
+    def __init__(self, app: AppOrBlueprint, name: str, init: Initializer):
         self._app = app
         self._name = name
         self._init = init
@@ -35,7 +37,15 @@ class _AppcontextVariable:
             value = self._value
             if value is not None:
                 closer(value)
-        self._app.teardown_appcontext(actual_closer)
+        def register_closer(setup: blueprints.BlueprintSetupState):
+            setup.app.teardown_appcontext(actual_closer)
+        if hasattr(self._app, 'record'):
+            self._app.record(register_closer)
+        elif hasattr(self._app, 'teardown_appcontext'):
+            self._app.teardown_appcontext(actual_closer)
+        else:
+            raise AttributeError(
+                'teardown is not supported by', type(self._app))
 
 
 def appcontext_var(
