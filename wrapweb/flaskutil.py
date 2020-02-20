@@ -2,13 +2,15 @@ from typing import Any, Callable
 
 import flask
 
-from wrapweb.app import APP
+
+Initializer = Callable[[], Any]
 
 
 class LocalVariable:
     """Wrapper for flask.g cached variables pattern."""
 
-    def __init__(self, name: str, init: Callable[[], Any]):
+    def __init__(self, app: flask.Flask, name: str, init: Initializer):
+        self._app = app
         self._name = name
         self._init = init
 
@@ -34,14 +36,14 @@ class LocalVariable:
             value = self._value
             if value is not None:
                 closer(value)
-        APP.teardown_appcontext(actual_closer)
+        self._app.teardown_appcontext(actual_closer)
 
 
-def local(initializer):
+def local(app: flask.Flask) -> Callable[[Initializer], LocalVariable]:
     """Wraps local variable initializer with LocalVariable.
 
     Example:
-    @flaskutil.local
+    @flaskutil.local(app)
     def mydb():
         return MyDB()
 
@@ -49,4 +51,6 @@ def local(initializer):
     def closedb(db):
         db.close()
     """
-    return LocalVariable(initializer.__name__, initializer)
+    def decorator(initializer: Initializer) -> LocalVariable:
+        return LocalVariable(app, initializer.__name__, initializer)
+    return decorator

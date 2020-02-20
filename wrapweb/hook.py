@@ -24,7 +24,7 @@ from wrapweb import jsonstatus
 from wrapweb.app import APP
 
 
-@flaskutil.local
+@flaskutil.local(APP)
 def _wrapupdater():
     dbdir = flask.current_app.config['DB_DIRECTORY']
     return wrapupdater.WrapUpdater(dbdir)
