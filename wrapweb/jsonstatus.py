@@ -1,6 +1,10 @@
+from typing import Union
+
 import flask
 
-from wrapweb.app import APP
+
+def init_app(app: Union[flask.Blueprint, flask.Flask]) -> None:
+    app.register_error_handler(WrapWebError, handle_wrap_web_error)
 
 
 class WrapWebError(Exception):
@@ -16,7 +20,6 @@ class WrapWebError(Exception):
         return dict(output='notok', error=self.message)
 
 
-@APP.errorhandler(WrapWebError)
 def handle_wrap_web_error(error: WrapWebError):
     jsonout = flask.jsonify(error.to_dict())
     jsonout.status_code = error.status_code

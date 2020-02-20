@@ -16,9 +16,14 @@ import os
 
 import flask
 
+from wrapweb import jsonstatus
+
+
 # Create the application.
 APP = flask.Flask(__name__)
 
 APP.config.from_object('wrapweb.default_config.Config')
 if 'WRAPDB_CONFIG' in os.environ:
     APP.config.from_envvar('WRAPDB_CONFIG')
+
+jsonstatus.init_app(APP)
