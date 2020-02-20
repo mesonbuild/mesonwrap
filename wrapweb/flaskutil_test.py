@@ -32,11 +32,12 @@ class TestLocalVariable(unittest.TestCase):
         proxy.return_value.close.assert_called_once_with()
 
     @mock.patch(__name__ + '.creator_proxy')
-    def test_no_teardown(self, proxy):
+    def test_no_teardown_on_error(self, proxy):
         proxy.side_effect = ValueError()
         with TEST_APP.app_context():
-            pass
-        proxy.assert_not_called()
+            with self.assertRaises(ValueError):
+                foobar()
+            proxy.assert_called_once_with()
         proxy.return_value.close.assert_not_called()
 
 
