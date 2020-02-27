@@ -2,7 +2,7 @@ import abc
 import hashlib
 import hmac
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import requests
 
@@ -346,6 +346,12 @@ class ProjectSet:
     def query_by_name_prefix(self, prefix: str) -> List[Project]:
         js = self._api.query_v1_byname(prefix)
         return [self._get_project(name) for name in js['projects']]
+
+    def query_by_name(self, name: str) -> Optional[Project]:
+        js = self._api.query_v1_byname(name)  # FIXME this can be optimized
+        if name not in js['projects']:
+            return None
+        return self._get_project(name)
 
 
 class WebAPI:
