@@ -25,9 +25,9 @@ from typing import Optional, Tuple
 import git
 import github
 
+from mesonwrap import requests
 from mesonwrap import tempfile
 from mesonwrap import upstream
-from mesonwrap import requests
 from mesonwrap.tools import environment
 from mesonwrap.tools import publisher
 

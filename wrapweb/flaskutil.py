@@ -32,11 +32,15 @@ class _AppcontextVariable:
         return value
 
     def teardown(self, closer):
-        """Calls closer(value) on context destruction if the value was created."""
+        """Registers closer.
+
+        Calls closer(value) on context destruction if the value was created.
+        """
         def actual_closer(exception):
             value = self._value
             if value is not None:
                 closer(value)
+
         def register_closer(setup: blueprints.BlueprintSetupState):
             setup.app.teardown_appcontext(actual_closer)
         if hasattr(self._app, 'record'):
