@@ -25,11 +25,15 @@ from typing import Optional, Tuple
 import git
 import github
 import requests
+import requests_ftp
 
 from mesonwrap import tempfile
 from mesonwrap import upstream
 from mesonwrap.tools import environment
 from mesonwrap.tools import publisher
+
+requests_ftp.monkeypatch_session()
+requests.sessions.Session = requests_ftp.ftp.FTPSession
 
 
 class CheckError(Exception):

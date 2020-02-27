@@ -31,6 +31,7 @@ if __name__ == '__main__':
             'cachetools',
             'retrying',
             'requests',
+            'requests-ftp',
         ],
         entry_points={
             'console_scripts': [

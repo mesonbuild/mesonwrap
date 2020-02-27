@@ -4,3 +4,4 @@ PyGithub
 cachetools
 retrying
 requests
+requests-ftp
