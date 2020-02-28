@@ -227,19 +227,23 @@ class Reviewer:
         return True
 
     def check_extract(self, tmpdir, upwrap):
-        srcdir = os.path.join(tmpdir, 'src')
+        srcdir_base = os.path.join(tmpdir, 'src')
         srcarchive = os.path.join(tmpdir, upwrap.source_filename)
-        os.mkdir(srcdir)
+        os.mkdir(srcdir_base)
         if upwrap.has_lead_directory_missing:
-            os.mkdir(os.path.join(srcdir, upwrap.directory))
+            os.mkdir(os.path.join(srcdir_base, upwrap.directory))
             shutil.unpack_archive(srcarchive,
-                                  os.path.join(srcdir, upwrap.directory))
+                                  os.path.join(srcdir_base, upwrap.directory))
         else:
-            shutil.unpack_archive(srcarchive, srcdir)
-        srcdir = os.path.join(srcdir, upwrap.directory)
-        print_status('upstream.wrap directory {!r} exists'.format(
-                         upwrap.directory),
-                     os.path.exists(srcdir))
+            shutil.unpack_archive(srcarchive, srcdir_base)
+        srcdir = os.path.join(srcdir_base, upwrap.directory)
+        try:
+            print_status('upstream.wrap directory {!r} exists'.format(
+                             upwrap.directory),
+                         os.path.exists(srcdir))
+        except CheckError:
+            print('  available directories:', os.listdir(srcdir_base))
+            raise
         print_status('Patch merges with source',
                      self.mergetree(os.path.join(tmpdir, 'head'), srcdir))
 
