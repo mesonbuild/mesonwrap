@@ -142,7 +142,7 @@ def _tickets(org: Organization):
     query.extend(
         '-repo:{}'.format(project)
         for project in inventory._RESTRICTED_ORG_PROJECTS
-        if project != 'wrapdb'
+        if project != 'mesonbuild/wrapdb'
     )
     result = []
     for issue in org.github.search_issues(' '.join(query)):
