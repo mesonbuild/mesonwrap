@@ -19,4 +19,5 @@ class Ticket(Reference):
     project: Reference
     type: TicketType
     author: Reference
-    timestamp: str  # TODO expand
+    created_at: str
+    updated_at: str

@@ -134,7 +134,8 @@ def ticket_from_issue(issue: github.Issue) -> ticket.Ticket:
         type=ticket_type,
         author=ticket.Reference(title=issue.user.login,
                                 url=issue.user.html_url),
-        timestamp=str(issue.updated_at))
+        created_at=str(issue.created_at),
+        updated_at=str(issue.updated_at))
 
 
 @_ticket(key=_cache_key)
