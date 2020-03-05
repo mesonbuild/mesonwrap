@@ -134,14 +134,18 @@ def _get_zip(org: Organization,
 
 @_ticket(key=_cache_key)
 def _tickets(org: Organization):
-    restricted = ' '.join(
+    query = [
+        'org:mesonbuild',
+        'is:open',
+        'is:public',
+    ]
+    query.extend(
         '-repo:{}'.format(project)
         for project in inventory._RESTRICTED_ORG_PROJECTS
         if project != 'wrapdb'
     )
-    query = 'org:mesonbuild is:open ' + restricted
     result = []
-    for issue in org.github.search_issues(query):
+    for issue in org.github.search_issues(' '.join(query)):
         if issue.repository.name == 'wrapdb':
             ticket_type = 'wrapdb_issue'
         elif issue.pull_request:
