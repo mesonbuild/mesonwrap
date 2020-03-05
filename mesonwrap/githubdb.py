@@ -38,6 +38,9 @@ class LockedCache:
         self.lock = threading.Lock()
         self.cache = cache
 
+    def __call__(self, **kwargs):
+        return cachetools.cached(cache=self.cache, lock=self.lock, **kwargs)
+
 
 # global cache instances
 _repo = LockedCache(cachetools.TTLCache(maxsize=1, ttl=CACHE_TTL))
@@ -51,7 +54,7 @@ def _cache_key(organization, *args, **kwargs):
     return cachetools.keys.hashkey(*args, **kwargs)
 
 
-@cachetools.cached(cache=_repo.cache, lock=_repo.lock, key=_cache_key)
+@_repo(key=_cache_key)
 def _repository_list(org: Organization):
     return sorted([repo.name for repo in org().get_repos()
                    if inventory.is_wrap_project_name(repo.name)])
@@ -68,14 +71,14 @@ def _get_versions(org: Organization, project: str) -> Iterable[Version]:
         yield (version, revision)
 
 
-@cachetools.cached(cache=_release.cache, lock=_release.lock, key=_cache_key)
+@_release(key=_cache_key)
 def _release_list(org: Organization, project: str) -> List[Version]:
     assert isinstance(project, str)
     iterator = _get_versions(org, project)
     return sorted(iterator, key=version.version_key, reverse=True)
 
 
-@cachetools.cached(cache=_asset.cache, lock=_asset.lock, key=_cache_key)
+@_asset(key=_cache_key)
 def _asset(org: Organization,
            project: str, branch: str, revision: int, label: str) -> bytes:
     repo = org().get_repo(project)
