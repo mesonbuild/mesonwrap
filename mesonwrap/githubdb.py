@@ -37,6 +37,10 @@ class Organization:
     def github(self):
         return self._gh
 
+    @property
+    def inventory(self):
+        return inventory.Inventory(self._org)
+
 
 class LockedCache:
 
@@ -120,7 +124,7 @@ def _get_zip(org: Organization,
 
 
 def ticket_from_issue(issue: github.Issue) -> ticket.Ticket:
-    if issue.repository.name == 'wrapdb':
+    if issue.repository.name == inventory.ISSUE_TRACKER:
         ticket_type = ticket.TicketType.WRAPDB_ISSUE
     elif issue.pull_request:
         ticket_type = ticket.TicketType.PULL_REQUEST
@@ -140,15 +144,16 @@ def ticket_from_issue(issue: github.Issue) -> ticket.Ticket:
 
 @_ticket(key=_cache_key)
 def _tickets(org: Organization) -> List[ticket.Ticket]:
+    inv = org.inventory
     query = [
-        'org:mesonbuild',
+        'org:' + inv.organization,
         'is:open',
         'is:public',
     ]
     query.extend(
         '-repo:{}'.format(project)
-        for project in inventory._RESTRICTED_ORG_PROJECTS
-        if project != 'mesonbuild/wrapdb'
+        for project in inv.restricted_projects
+        if project != inv.issue_tracker
     )
     result = (ticket_from_issue(issue)
               for issue in org.github.search_issues(' '.join(query)))
