@@ -1,3 +1,4 @@
+import collections
 import logging
 import threading
 from typing import Iterable, List, Optional, Tuple
@@ -14,6 +15,7 @@ UPSTREAM_WRAP_LABEL = 'upstream.wrap'
 PATCH_ZIP_LABEL = 'patch.zip'
 CACHE_SIZE = 1000
 CACHE_TTL = 30 * 60  # 30 minutes
+TICKETS_TTL = 5 * 60 # 5 minutes
 
 
 Version = Tuple[str, int]
@@ -31,6 +33,10 @@ class Organization:
     def __call__(self):
         return self._gh.get_organization(self._org)
 
+    @property
+    def github(self):
+        return self._gh
+
 
 class LockedCache:
 
@@ -42,10 +48,24 @@ class LockedCache:
         return cachetools.cached(cache=self.cache, lock=self.lock, **kwargs)
 
 
+# TODO type must be enum
+Ticket = collections.namedtuple('Ticket', (
+    'title',
+    'project',
+    'project_url',
+    'issue_url',
+    'type',  # wrapdb_issue, pull_request, wrap_issue
+    'author',
+    'author_url',
+    'timestamp',
+))
+
+
 # global cache instances
 _repo = LockedCache(cachetools.TTLCache(maxsize=1, ttl=CACHE_TTL))
 _release = LockedCache(cachetools.TTLCache(maxsize=CACHE_SIZE, ttl=CACHE_TTL))
 _asset = LockedCache(cachetools.LRUCache(maxsize=CACHE_SIZE))
+_ticket = LockedCache(cachetools.TTLCache(maxsize=1, ttl=TICKETS_TTL))
 _log = logging.getLogger(__name__)
 
 
@@ -112,6 +132,34 @@ def _get_zip(org: Organization,
         return None
 
 
+@_ticket(key=_cache_key)
+def _tickets(org: Organization):
+    restricted = ' '.join(
+        '-repo:{}'.format(project)
+        for project in inventory._RESTRICTED_ORG_PROJECTS
+        if project != 'wrapdb'
+    )
+    query = 'org:mesonbuild is:open ' + restricted
+    result = []
+    for issue in org.github.search_issues(query):
+        if issue.repository.name == 'wrapdb':
+            ticket_type = 'wrapdb_issue'
+        elif issue.pull_request:
+            ticket_type = 'pull_request'
+        else:
+            ticket_type = 'wrap_issue'
+        result.append(Ticket(
+            title=issue.title,
+            project=issue.repository.name,
+            project_url=issue.repository.html_url,
+            issue_url=issue.html_url,
+            type=ticket_type,
+            author=issue.user.login,
+            author_url=issue.user.html_url,
+            timestamp=str(issue.updated_at)))
+    return sorted(result, key=lambda r: (r.project, r.issue_url))
+
+
 # TODO implement caching
 # https://developer.github.com/v3/#conditional-requests
 # or just some cache with timeouts
@@ -153,3 +201,6 @@ class GithubDB:
     # TODO consider redirect
     def get_zip(self, project, branch, revision) -> Optional[bytes]:
         return _get_zip(self._org, project, branch, revision)
+
+    def get_tickets(self) -> List[Ticket]:
+        return _tickets(self._org)
