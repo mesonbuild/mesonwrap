@@ -19,11 +19,11 @@
     {% endif %}
     <div class="panel {{ panel_style }}">
       <div class="panel-heading">
-        <a class="ticket-project" href="{{ t.project_link }}">{{ t.project }}</a>
-        <a class="panel-title" href="{{ t.issue_link }}">{{ t.title }}</a>
+        <a class="ticket-project" href="{{ t.project_url }}">{{ t.project }}</a>
+        <a class="panel-title" href="{{ t.issue_url }}">{{ t.title }}</a>
       </div>
       <div class="panel-body">
-        Opened on {{ t.timestamp }} by <a href="{{ t.author_link }}">{{ t.author }}</a>
+        Opened on {{ t.timestamp }} by <a href="{{ t.author_url }}">{{ t.author }}</a>
       </div>
     </div>
   {% endfor %}
