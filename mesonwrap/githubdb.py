@@ -1,4 +1,3 @@
-import collections
 import logging
 import threading
 from typing import Iterable, List, Optional, Tuple
@@ -8,6 +7,7 @@ import github
 import requests
 
 from mesonwrap import inventory
+from mesonwrap import ticket
 from mesonwrap import version
 
 
@@ -46,19 +46,6 @@ class LockedCache:
 
     def __call__(self, **kwargs):
         return cachetools.cached(cache=self.cache, lock=self.lock, **kwargs)
-
-
-# TODO type must be enum
-Ticket = collections.namedtuple('Ticket', (
-    'title',
-    'project',
-    'project_url',
-    'issue_url',
-    'type',  # wrapdb_issue, pull_request, wrap_issue
-    'author',
-    'author_url',
-    'timestamp',
-))
 
 
 # global cache instances
@@ -132,8 +119,26 @@ def _get_zip(org: Organization,
         return None
 
 
+def ticket_from_issue(issue: github.Issue) -> ticket.Ticket:
+    if issue.repository.name == 'wrapdb':
+        ticket_type = ticket.TicketType.WRAPDB_ISSUE
+    elif issue.pull_request:
+        ticket_type = ticket.TicketType.PULL_REQUEST
+    else:
+        ticket_type = ticket.TicketType.WRAP_ISSUE
+    return ticket.Ticket(
+        title=issue.title,
+        url=issue.html_url,
+        project=ticket.Reference(title=issue.repository.name,
+                                 url=issue.repository.html_url),
+        type=ticket_type,
+        author=ticket.Reference(title=issue.user.login,
+                                url=issue.user.html_url),
+        timestamp=str(issue.updated_at))
+
+
 @_ticket(key=_cache_key)
-def _tickets(org: Organization):
+def _tickets(org: Organization) -> List[ticket.Ticket]:
     query = [
         'org:mesonbuild',
         'is:open',
@@ -144,24 +149,9 @@ def _tickets(org: Organization):
         for project in inventory._RESTRICTED_ORG_PROJECTS
         if project != 'mesonbuild/wrapdb'
     )
-    result = []
-    for issue in org.github.search_issues(' '.join(query)):
-        if issue.repository.name == 'wrapdb':
-            ticket_type = 'wrapdb_issue'
-        elif issue.pull_request:
-            ticket_type = 'pull_request'
-        else:
-            ticket_type = 'wrap_issue'
-        result.append(Ticket(
-            title=issue.title,
-            project=issue.repository.name,
-            project_url=issue.repository.html_url,
-            issue_url=issue.html_url,
-            type=ticket_type,
-            author=issue.user.login,
-            author_url=issue.user.html_url,
-            timestamp=str(issue.updated_at)))
-    return sorted(result, key=lambda r: (r.project, r.issue_url))
+    result = (ticket_from_issue(issue)
+              for issue in org.github.search_issues(' '.join(query)))
+    return sorted(result, key=lambda r: (r.project.title, r.url))
 
 
 # TODO implement caching
@@ -206,5 +196,5 @@ class GithubDB:
     def get_zip(self, project, branch, revision) -> Optional[bytes]:
         return _get_zip(self._org, project, branch, revision)
 
-    def get_tickets(self) -> List[Ticket]:
+    def get_tickets(self) -> List[ticket.Ticket]:
         return _tickets(self._org)
