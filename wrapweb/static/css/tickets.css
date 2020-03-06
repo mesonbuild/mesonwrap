@@ -7,8 +7,33 @@
   color: grey;
 }
 
-/* to make panel-body appear to be a footer */
-.panel-body {
-  color: grey;
-  padding: 5px 5px 5px 15px;  /* reduce from 15px */
+.card-title {
+  color: inherit;
+}
+
+.wrapdb-issue {
+  border-color: #ebccd1;
+}
+.wrapdb-issue > .card-header {
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+}
+
+.pull-request {
+  border-color: #faebcc;
+}
+.pull-request > .card-header {
+  color: #8a6d3b;
+  background-color: #fcf8e3;
+  border-color: #faebcc;
+}
+
+.wrap-issue {
+  border-color: #bce8f1;
+}
+.wrap-issue > .card-header {
+  color: #31708f;
+  background-color: #d9edf7;
+  border-color: #bce8f1;
 }

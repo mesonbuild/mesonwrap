@@ -9,20 +9,20 @@
 <div class="container">
   {% for t in tickets %}
     {% if t.type.value == "wrapdb_issue" %}
-      {% set panel_style = "panel-danger" %}
+      {% set ticket_class = "wrapdb-issue" %}
     {% elif t.type.value == "pull_request" %}
-      {% set panel_style = "panel-warning" %}
+      {% set ticket_class = "pull-request" %}
     {% elif t.type.value == "wrap_issue" %}
-      {% set panel_style = "panel-info" %}
+      {% set ticket_class = "wrap-issue" %}
     {% else %}
-      {% set panel_style = "panel-default" %}
+      {% set ticket_class = "" %}
     {% endif %}
-    <div class="panel {{ panel_style }}">
-      <div class="panel-heading">
+    <div class="card m-3 {{ ticket_class }}">
+      <div class="card-header py-2">
         <a class="ticket-project" href="{{ t.project.url }}">{{ t.project.title }}</a>
-        <a class="panel-title" href="{{ t.url }}">{{ t.title }}</a>
+        <a class="card-title" href="{{ t.url }}">{{ t.title }}</a>
       </div>
-      <div class="panel-body">
+      <div class="card-body py-1 text-secondary">
         Created at {{ t.created_at }}
         by <a href="{{ t.author.url }}">{{ t.author.title }}</a>
       </div>
