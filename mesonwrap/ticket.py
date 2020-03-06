@@ -3,9 +3,10 @@ import enum
 
 
 class TicketType(enum.Enum):
-    WRAPDB_ISSUE = 'wrapdb_issue'
-    PULL_REQUEST = 'pull_request'
-    WRAP_ISSUE = 'wrap_issue'
+    # Must match tickets.css classes
+    WRAPDB_ISSUE = 'wrapdb-issue'
+    PULL_REQUEST = 'pull-request'
+    WRAP_ISSUE = 'wrap-issue'
 
 
 @dataclasses.dataclass

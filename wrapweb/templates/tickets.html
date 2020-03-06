@@ -8,16 +8,7 @@
 <h1>Tickets</h1>
 <div class="container">
   {% for t in tickets %}
-    {% if t.type.value == "wrapdb_issue" %}
-      {% set ticket_class = "wrapdb-issue" %}
-    {% elif t.type.value == "pull_request" %}
-      {% set ticket_class = "pull-request" %}
-    {% elif t.type.value == "wrap_issue" %}
-      {% set ticket_class = "wrap-issue" %}
-    {% else %}
-      {% set ticket_class = "" %}
-    {% endif %}
-    <div class="card m-3 {{ ticket_class }}">
+    <div class="card m-3 {{ t.type.value }}">
       <div class="card-header py-2">
         <a class="ticket-project" href="{{ t.project.url }}">{{ t.project.title }}</a>
         <a class="card-title" href="{{ t.url }}">{{ t.title }}</a>
