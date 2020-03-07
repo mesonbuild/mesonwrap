@@ -28,9 +28,14 @@ def response_to_json(resp):
 
 @BP.route('/', methods=['GET'])
 def index():
+    return flask.render_template('projects.html')
+
+
+@BP.route('/async/projects', methods=['GET'])
+def async_projects():
     j = response_to_json(api.get_projectlist())
     return flask.render_template(
-        'projects.html',
+        'async_projects.html',
         projects=j['projects'])
 
 

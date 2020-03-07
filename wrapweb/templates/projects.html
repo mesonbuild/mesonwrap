@@ -3,17 +3,15 @@
 
 {% block body %}
 <h1>Projects</h1>
-<div class="container">
-  {# row-cols-1: there is 1 column by default
-     row-cols-$screen-$columns: there are $columns columns on a $screen screen
-   #}
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
-    {% for p in projects %}
-    <div class="p-1">
-      <a href="{{ url_for('ui.project_info', project=p) }}"
-         class="d-flex btn btn-light border">{{ p }}</a>
-    </div>
-    {% endfor %}
-  </div>
+<div class="container" id="mesonwrap-projects">
+  Loading...
 </div>
+{% endblock %}
+
+{% block body_extra %}
+<script>
+  $(() => {
+    $('#mesonwrap-projects').load('{{ url_for('ui.async_projects') }}');
+  });
+</script>
 {% endblock %}
