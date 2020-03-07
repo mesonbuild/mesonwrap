@@ -39,16 +39,13 @@ def project_info(project):
     j = response_to_json(api.get_project_info(project))
     return flask.render_template(
         'project.html',
-        title='%s - Wrap DB' % project,
         project=project,
         resp=j)
 
 
 @BP.route('/tickets', methods=['GET'])
 def tickets():
-    return flask.render_template(
-        'tickets.html',
-        title='Tickets - Wrap DB')
+    return flask.render_template('tickets.html')
 
 
 @BP.route('/async/tickets', methods=['GET'])

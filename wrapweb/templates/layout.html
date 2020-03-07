@@ -14,11 +14,11 @@
 
     {% block head_extra %}{% endblock %}
 
-    {% if title %}
-    <title>{{ title }}</title>
-    {% else %}
-    <title>The Meson Build System - Wrap DB</title>
-    {% endif %}
+    <title>
+      {% block title %}
+      The Meson Build System - Wrap DB
+      {% endblock %}
+    </title>
   </head>
   <body>
     <nav class="navbar navbar-expand-sm navbar-light bg-light fixed-top">

@@ -1,4 +1,9 @@
 {% extends "layout.html" %}
+
+{% block title %}
+{{ project }} - Wrap DB
+{% endblock %}
+
 {% block body %}
 {% if resp["output"] == "ok" %}
   <h1>Available versions of {{ project }}</h1>
