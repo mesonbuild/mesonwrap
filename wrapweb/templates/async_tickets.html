@@ -1,0 +1,12 @@
+{% for t in tickets %}
+  <div class="card m-3 {{ t.type.value }}">
+    <div class="card-header py-2">
+      <a class="ticket-project" href="{{ t.project.url }}">{{ t.project.title }}</a>
+      <a class="card-title" href="{{ t.url }}">{{ t.title }}</a>
+    </div>
+    <div class="card-body py-1 text-secondary">
+      Created at {{ t.created_at }}
+      by <a href="{{ t.author.url }}">{{ t.author.title }}</a>
+    </div>
+  </div>
+{% endfor %}
