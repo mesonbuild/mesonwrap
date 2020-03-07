@@ -7,8 +7,10 @@
    #}
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
     {% for p in projects %}
-    <a href="{{ url_for('ui.project_info', project=p) }}"
-       class="btn btn-light border">{{ p }}</a>
+    <div class="p-1">
+      <a href="{{ url_for('ui.project_info', project=p) }}"
+         class="d-flex btn btn-light border">{{ p }}</a>
+    </div>
     {% endfor %}
   </div>
 </div>
