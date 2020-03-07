@@ -46,10 +46,16 @@ def project_info(project):
 
 @BP.route('/tickets', methods=['GET'])
 def tickets():
-    tickets = api._database().get_tickets()
     return flask.render_template(
         'tickets.html',
-        title='Tickets - Wrap DB',
+        title='Tickets - Wrap DB')
+
+
+@BP.route('/async/tickets', methods=['GET'])
+def async_tickets():
+    tickets = api._database().get_tickets()
+    return flask.render_template(
+        'async_tickets.html',
         tickets=tickets)
 
 
