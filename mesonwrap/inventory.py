@@ -1,4 +1,5 @@
 RESTRICTED_PROJECTS = [
+    'cidata',
     'dubtestproject',
     'meson',
     'meson-ci',
