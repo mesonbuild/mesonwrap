@@ -21,7 +21,6 @@
     {% endif %}
   </head>
   <body>
-    {% block navbar %}
     <nav class="navbar navbar-expand-sm navbar-light bg-light fixed-top">
       <div class="container">
         <a class="navbar-brand" href="/">Wrap DB</a>
@@ -33,8 +32,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
+            <li class="nav-item {% block navbar_projects %}{% endblock %}">
               <a class="nav-link" href="/">Projects</a>
+            </li>
+            <li class="nav-item {% block navbar_tickets %}{% endblock %}">
+              <a class="nav-link" href="/tickets">Tickets</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="http://mesonbuild.com">The Meson Build System</a>
@@ -43,7 +45,6 @@
         </div>
       </div>
     </nav>
-    {% endblock %}
     <div class="container">
       {% block body %}{% endblock %}
     </div>
