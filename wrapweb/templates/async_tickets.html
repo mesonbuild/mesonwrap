@@ -1,6 +1,7 @@
-{% for t in tickets %}
-  <div class="card my-3 {{ t.type.value }}">
-    <div class="card-header py-2">
+<div class="row row-cols-1">
+  {% for t in tickets %}
+  <div class="card my-1 {{ t.type.value }}">
+    <div class="card-header">
       <a class="ticket-project" href="{{ t.project.url }}">{{ t.project.title }}</a>
       <a class="card-title" href="{{ t.url }}">{{ t.title }}</a>
     </div>
@@ -9,4 +10,5 @@
       by <a href="{{ t.author.url }}">{{ t.author.title }}</a>
     </div>
   </div>
-{% endfor %}
+  {% endfor %}
+</div>
