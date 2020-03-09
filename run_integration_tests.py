@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import random
 import os
 import os.path
 import subprocess
@@ -16,6 +17,7 @@ ROOT = os.path.dirname(sys.argv[0])
 SERVER = [sys.executable, os.path.join(ROOT, 'mesonwrap.py'), 'serve']
 WRAPUPDATER = [sys.executable, os.path.join(ROOT, 'mesonwrap.py'),
                'wrapupdate']
+PORT = random.randint(10000, 49151)
 
 
 class Project:
@@ -34,8 +36,11 @@ class Server(subprocess.Popen):
 
     def __init__(self):
         self._tmpdir = tempfile.TemporaryDirectory()
-        super().__init__(args=SERVER + ['--db-directory=' + self._tmpdir.name])
-        self.api = webapi.WebAPI('http://localhost:5000')
+        super().__init__(args=SERVER + [
+            '--db-directory=' + self._tmpdir.name,
+            '--port={}'.format(PORT),
+        ])
+        self.api = webapi.WebAPI('http://localhost:{}'.format(PORT))
         self._wait_server_ready()
 
     def _wait_server_ready(self):
