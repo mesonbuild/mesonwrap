@@ -11,7 +11,7 @@
 {% block body_extra %}
 <script>
   $(() => {
-    $('#mesonwrap-projects').load('{{ url_for('ui.async_projects') }}');
+    $('#mesonwrap-projects').load('{{ url_for('.async_projects') }}');
   });
 </script>
 {% endblock %}

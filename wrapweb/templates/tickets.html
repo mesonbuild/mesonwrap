@@ -17,7 +17,7 @@
 {% block body_extra %}
 <script>
   $(() => {
-    $('#mesonwrap-tickets').load('{{ url_for('ui.async_tickets') }}');
+    $('#mesonwrap-tickets').load('{{ url_for('.async_tickets') }}');
   });
 </script>
 {% endblock %}
