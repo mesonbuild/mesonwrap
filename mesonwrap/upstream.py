@@ -15,7 +15,7 @@ class UpstreamWrap:
         'patch_filename',
         'patch_hash',
     )
-    __slots__ = ('_cfg')
+    __slots__ = ('_cfg',)
 
     def __init__(self, **kwargs):
         self._cfg = configparser.ConfigParser()
