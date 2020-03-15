@@ -9,7 +9,6 @@ import urllib.request
 from mesonwrap import requests
 from mesonwrap import upstream
 from mesonwrap import webapi
-from mesonwrap import wrap
 
 PYTHON_USERAGENT = urllib.request.URLopener.version
 
