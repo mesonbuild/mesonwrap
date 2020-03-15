@@ -59,8 +59,6 @@ class UpstreamWrap:
                 type(self), name))
 
     def __getattr__(self, name):
-        if name in self.__slots__:
-            return super().__getattr__(name)
         if name.startswith('has_'):
             name = name[4:]
             self.__checkattr(name)
