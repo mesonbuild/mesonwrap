@@ -76,7 +76,6 @@ def github_hook():
     signature = 'sha1=%s' % digest
     if headers.get('X-Hub-Signature') != signature:
         return jsonstatus.error(401, 'Not a valid secret key')
-    if headers.get('X-Github-Event') == 'pull_request':
-        return github_pull_request()
-    else:
+    if headers.get('X-Github-Event') != 'pull_request':
         return jsonstatus.error(405, 'Not a Pull Request hook')
+    return github_pull_request()
