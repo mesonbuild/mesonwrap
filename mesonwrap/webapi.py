@@ -188,21 +188,21 @@ class Revision:
         self.project = project
         self.version = version
         self.revision = revision
-        self.__wrap = None
+        self.__wrapfile_content = None
         self.__zip = None
 
     @property
-    def wrap_str(self) -> str:
-        if self.__wrap is None:
+    def wrapfile_content(self) -> str:
+        if self.__wrapfile_content is None:
             data = self._api.fetch_v1_project_wrap(self.project.name,
                                                    self.version.version,
                                                    self.revision)
-            self.__wrap = data.decode('utf-8')
-        return self.__wrap
+            self.__wrapfile_content = data.decode('utf-8')
+        return self.__wrapfile_content
 
     @property
-    def wrap(self) -> upstream.WrapFile:
-        return upstream.WrapFile.from_string(self.wrap_str)
+    def wrapfile(self) -> upstream.WrapFile:
+        return upstream.WrapFile.from_string(self.wrapfile_content)
 
     @property
     def zip(self) -> bytes:
@@ -217,7 +217,7 @@ class Revision:
         return wrap.Wrap(name=self.version.project.name,
                          version=self.version.version,
                          revision=self.revision,
-                         wrapfile_content=self.wrap_str,
+                         wrapfile_content=self.wrapfile_content,
                          zip=self.zip)
 
 
