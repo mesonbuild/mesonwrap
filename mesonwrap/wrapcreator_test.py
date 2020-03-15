@@ -49,18 +49,18 @@ class WrapCreatorTest(unittest.TestCase):
                 self.assertEqual(zip.read('myprefix/hello/world'),
                                  b'some contents')
 
-    def test_check_definition_empty(self):
+    def test_check_wrapfile_empty(self):
         with self.assertRaises(RuntimeError):
-            wrapcreator._check_definition(upstream.WrapFile())
+            wrapcreator._check_wrapfile(upstream.WrapFile())
 
-    def test_check_definition_okay(self):
+    def test_check_wrapfile_okay(self):
         up = upstream.WrapFile()
         up.directory = 'hello'
         up.source_url = 'https://example.com/file.tgz'
         up.source_filename = 'file.tgz'
         up.source_hash = 'hash-hash-hash'
         try:
-            wrapcreator._check_definition(up)
+            wrapcreator._check_wrapfile(up)
         except RuntimeError as e:
             self.fail('Unexpected RuntimeError {!r}'.format(e))
 

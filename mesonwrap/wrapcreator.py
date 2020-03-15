@@ -52,9 +52,9 @@ def make_wrap(name: str, repo_url: str, branch: str) -> wrap.Wrap:
             return _make_wrap(workdir, name, repo, branch)
 
 
-def _check_definition(definition):
+def _check_wrapfile(wrapfile):
     for i in ['directory', 'source_url', 'source_filename', 'source_hash']:
-        if not definition.has(i):
+        if not wrapfile.has(i):
             raise RuntimeError('Missing {!r} in upstream.wrap.'.format(i))
 
 
@@ -77,23 +77,23 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
     revision_commit_sha = repo.head.commit.hexsha
     revision_id = gitutils.get_revision(repo, repo.head.commit)
     upstream_file = os.path.join(workdir, 'upstream.wrap')
-    definition = upstream.WrapFile.from_file(upstream_file)
-    _check_definition(definition)
+    wrapfile = upstream.WrapFile.from_file(upstream_file)
+    _check_wrapfile(wrapfile)
     with io.BytesIO() as zipf:
-        _make_zip(zipf, workdir, definition.directory)
+        _make_zip(zipf, workdir, wrapfile.directory)
         zip_contents = zipf.getvalue()
     source_hash = hashlib.sha256(zip_contents).hexdigest()
-    with io.StringIO() as wrapfile:
+    with io.StringIO() as wf:
         url = _OUT_URL_BASE_DEFAULT % (name, branch, revision_id)
         with open(upstream_file) as basewrap:
             # preserve whatever formatting user has provided
-            wrapfile.write(basewrap.read())
-        wrapfile.write('\n')
-        wrapfile.write('patch_url = %s\n' % url)
+            wf.write(basewrap.read())
+        wf.write('\n')
+        wf.write('patch_url = %s\n' % url)
         zip_name = wrap.zip_name(name, branch, revision_id)
-        wrapfile.write('patch_filename = %s\n' % zip_name)
-        wrapfile.write('patch_hash = %s\n' % source_hash)
-        wrap_contents = wrapfile.getvalue()
+        wf.write('patch_filename = %s\n' % zip_name)
+        wf.write('patch_hash = %s\n' % source_hash)
+        wrap_contents = wf.getvalue()
     return wrap.Wrap(name=name, version=branch, revision=revision_id,
                      wrapfile_content=wrap_contents, zip=zip_contents,
                      commit_sha=revision_commit_sha)
