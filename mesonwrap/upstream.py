@@ -2,16 +2,44 @@ import configparser
 import io
 
 _SECTION = 'wrap-file'
-_ATTRS = (
-    'directory',
-    'lead_directory_missing',
-    'source_url',
-    'source_filename',
-    'source_hash',
-    'patch_url',
-    'patch_filename',
-    'patch_hash',
-)
+
+
+class _ConfigDescriptor:
+
+    def __set_name__(self, owner, name):
+        del owner  # unused
+        self._name = name
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            raise AttributeError('{}.{} is not supported'.format(
+                owner.__name__, self._name))
+        try:
+            return instance._cfg.get(_SECTION, self._name)
+        except (configparser.NoOptionError,
+                configparser.NoSectionError) as e:
+            raise ValueError('{!r} is not defined'.format(self._name)) from e
+
+    def __set__(self, instance, value):
+        if not instance._cfg.has_section(_SECTION):
+            instance._cfg.add_section(_SECTION)
+        instance._cfg.set(_SECTION, self._name, value)
+        return value
+
+
+class _ConfigHasDescriptor:
+
+    def __set_name__(self, owner, name):
+        del owner  # unused
+        assert name.startswith('has_')
+        self._name = name
+        self._sname = name[4:]
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            raise AttributeError('{}.{} is not supported'.format(
+                owner.__name__, self._name))
+        return instance._cfg.has_option(_SECTION, self._sname)
 
 
 class UpstreamWrap:
@@ -54,28 +82,26 @@ class UpstreamWrap:
         self._cfg.write(sio)
         return sio.getvalue()
 
-    def __checkattr(self, name):
-        if name not in _ATTRS:
-            raise AttributeError('{!r} has no attribute {!r}'.format(
-                type(self), name))
+    directory = _ConfigDescriptor()
+    has_directory = _ConfigHasDescriptor()
 
-    def __getattr__(self, name):
-        if name.startswith('has_'):
-            name = name[4:]
-            self.__checkattr(name)
-            return self._cfg.has_option(_SECTION, name)
-        self.__checkattr(name)
-        try:
-            return self._cfg.get(_SECTION, name)
-        except (configparser.NoOptionError,
-                configparser.NoSectionError) as exc:
-            raise ValueError('{!r} was not defined'.format(name)) from exc
+    lead_directory_missing = _ConfigDescriptor()
+    has_lead_directory_missing = _ConfigHasDescriptor()
 
-    def __setattr__(self, name, value):
-        if name in self.__slots__:
-            return super().__setattr__(name, value)
-        self.__checkattr(name)
-        if not self._cfg.has_section(_SECTION):
-            self._cfg.add_section(_SECTION)
-        self._cfg.set(_SECTION, name, value)
-        return value
+    source_url = _ConfigDescriptor()
+    has_source_url = _ConfigHasDescriptor()
+
+    source_filename = _ConfigDescriptor()
+    has_source_filename = _ConfigHasDescriptor()
+
+    source_hash = _ConfigDescriptor()
+    has_source_hash = _ConfigHasDescriptor()
+
+    patch_url = _ConfigDescriptor()
+    has_patch_url = _ConfigHasDescriptor()
+
+    patch_filename = _ConfigDescriptor()
+    has_patch_filename = _ConfigHasDescriptor()
+
+    patch_hash = _ConfigDescriptor()
+    has_patch_hash = _ConfigHasDescriptor()
