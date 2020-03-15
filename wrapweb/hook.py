@@ -44,7 +44,7 @@ def update_project(project, repo_url, branch):
     try:
         _wrapupdater().update_db(project, repo_url, branch)
         return jsonstatus.ok()
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         return jsonstatus.error(500, 'Wrap generation failed. %s' % e)
 
 
