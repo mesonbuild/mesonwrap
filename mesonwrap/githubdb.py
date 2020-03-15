@@ -90,8 +90,8 @@ def _release_list(org: Organization, project: str) -> List[Version]:
 
 
 @_asset(key=_cache_key)
-def _asset(org: Organization,
-           project: str, branch: str, revision: int, label: str) -> bytes:
+def _get_asset(org: Organization,
+               project: str, branch: str, revision: int, label: str) -> bytes:
     repo = org().get_repo(project)
     release = repo.get_release('{}-{}'.format(branch, revision))
     for asset in release.get_assets():
@@ -107,7 +107,7 @@ def _asset(org: Organization,
 def _get_wrap(org: Organization,
               project: str, branch: str, revision: int) -> Optional[str]:
     try:
-        data = _asset(org, project, branch, revision, UPSTREAM_WRAP_LABEL)
+        data = _get_asset(org, project, branch, revision, UPSTREAM_WRAP_LABEL)
         return data.decode('utf-8')
     except Exception as e:
         _log.error('get_wrap(%s, %s, %d): %s', project, branch, revision, e)
@@ -117,7 +117,7 @@ def _get_wrap(org: Organization,
 def _get_zip(org: Organization,
              project: str, branch: str, revision: int) -> Optional[bytes]:
     try:
-        return _asset(org, project, branch, revision, PATCH_ZIP_LABEL)
+        return _get_asset(org, project, branch, revision, PATCH_ZIP_LABEL)
     except Exception as e:
         _log.error('get_zip(%s, %s, %d): %s', project, branch, revision, e)
         return None
