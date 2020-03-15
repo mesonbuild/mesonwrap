@@ -1,20 +1,21 @@
 import configparser
 import io
 
+_SECTION = 'wrap-file'
+_ATTRS = (
+    'directory',
+    'lead_directory_missing',
+    'source_url',
+    'source_filename',
+    'source_hash',
+    'patch_url',
+    'patch_filename',
+    'patch_hash',
+)
+
 
 class UpstreamWrap:
 
-    __section = 'wrap-file'
-    __attrs = (
-        'directory',
-        'lead_directory_missing',
-        'source_url',
-        'source_filename',
-        'source_hash',
-        'patch_url',
-        'patch_filename',
-        'patch_hash',
-    )
     __slots__ = ('_cfg',)
 
     def __init__(self, **kwargs):
@@ -54,7 +55,7 @@ class UpstreamWrap:
         return sio.getvalue()
 
     def __checkattr(self, name):
-        if name not in self.__attrs:
+        if name not in _ATTRS:
             raise AttributeError('{!r} has no attribute {!r}'.format(
                 type(self), name))
 
@@ -62,10 +63,10 @@ class UpstreamWrap:
         if name.startswith('has_'):
             name = name[4:]
             self.__checkattr(name)
-            return self._cfg.has_option(self.__section, name)
+            return self._cfg.has_option(_SECTION, name)
         self.__checkattr(name)
         try:
-            return self._cfg.get(self.__section, name)
+            return self._cfg.get(_SECTION, name)
         except (configparser.NoOptionError,
                 configparser.NoSectionError) as exc:
             raise ValueError('{!r} was not defined'.format(name)) from exc
@@ -74,7 +75,7 @@ class UpstreamWrap:
         if name in self.__slots__:
             return super().__setattr__(name, value)
         self.__checkattr(name)
-        if not self._cfg.has_section(self.__section):
-            self._cfg.add_section(self.__section)
-        self._cfg.set(self.__section, name, value)
+        if not self._cfg.has_section(_SECTION):
+            self._cfg.add_section(_SECTION)
+        self._cfg.set(_SECTION, name, value)
         return value
