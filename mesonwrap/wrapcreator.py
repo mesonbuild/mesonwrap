@@ -93,9 +93,9 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
         zip_name = wrap.zip_name(name, branch, revision_id)
         wf.write('patch_filename = %s\n' % zip_name)
         wf.write('patch_hash = %s\n' % source_hash)
-        wrap_contents = wf.getvalue()
+        wrapfile_content = wf.getvalue()
     return wrap.Wrap(name=name, version=branch, revision=revision_id,
-                     wrapfile_content=wrap_contents, zip=zip_contents,
+                     wrapfile_content=wrapfile_content, zip=zip_contents,
                      commit_sha=revision_commit_sha)
 
 
