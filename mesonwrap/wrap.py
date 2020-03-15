@@ -1,4 +1,4 @@
-from collections import namedtuple
+import dataclasses
 
 
 def _base_name(name: str, version: str, revision: int) -> str:
@@ -14,13 +14,15 @@ def zip_name(name: str, version: str, revision: int) -> str:
     return _base_name(name, version, revision) + '.zip'
 
 
-_Wrap = namedtuple(
-    'Wrap',
-    ['name', 'version', 'revision', 'wrap', 'zip', 'commit_sha'],
-)
+@dataclasses.dataclass
+class Wrap:
 
-
-class Wrap(_Wrap):
+    name: str
+    version: str
+    revision: int
+    wrap: str
+    zip: bytes
+    commit_sha: str
 
     @property
     def wrap_name(self):
