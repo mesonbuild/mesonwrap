@@ -182,7 +182,7 @@ class Reviewer:
             with requests.get(url) as rv:
                 rv.raise_for_status()
                 data = rv.content
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             exc = e
         return (data, exc)
 
