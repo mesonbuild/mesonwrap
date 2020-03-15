@@ -106,6 +106,37 @@ class WrapCreatorTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'Missing .* in upstream.wrap'):
             wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
 
+    def test_merged_revisions(self):
+        repo = gitutils.GitProject(git.Repo.init(self.workdir))
+        repo.commit('initial commit')
+        repo.create_version('1.0.0')
+        with repo.open('upstream.wrap', 'w') as f:
+            upstream.WrapFile(
+                directory='hello',
+                source_url='https://example.com/file.tgz',
+                source_filename='file.tgz',
+                source_hash='hash-hash-hash').write(f)
+
+        repo.commit('commit 1')
+        wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.0.0')
+        self.assertEqual(wrap.revision, 1)
+
+        comm2 = repo.commit('commit 2')
+        wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.0.0')
+        self.assertEqual(wrap.revision, 2)
+
+        repo.commit('commit 3')
+        wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.0.0')
+        self.assertEqual(wrap.revision, 3)
+
+        repo.merge_commit('commit 4', parent=comm2)
+        wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.0.0')
+        self.assertEqual(wrap.revision, 4)
+
+        repo.merge_commit('commit 5', parent=comm2)
+        wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.0.0')
+        self.assertEqual(wrap.revision, 5)
+
 
 if __name__ == '__main__':
     unittest.main()
