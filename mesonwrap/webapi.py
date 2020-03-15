@@ -217,7 +217,7 @@ class Revision:
         return wrap.Wrap(name=self.version.project.name,
                          version=self.version.version,
                          revision=self.revision,
-                         wrap=self.wrap_str,
+                         wrapfile_content=self.wrap_str,
                          zip=self.zip)
 
 

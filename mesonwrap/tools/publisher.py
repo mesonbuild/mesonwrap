@@ -31,7 +31,7 @@ class Publisher:
         wrappath = os.path.join(tmp, wrap.name + '.wrap')
         zippath = os.path.join(tmp, wrap.name + '.zip')
         with open(wrappath, 'w') as f:
-            f.write(wrap.wrap)
+            f.write(wrap.wrapfile_content)
         with open(zippath, 'wb') as f:
             f.write(wrap.zip)
         ghrepo = cls._get_project(organization, wrap.name)

@@ -20,7 +20,7 @@ class Wrap:
     name: str
     version: str
     revision: int
-    wrap: str
+    wrapfile_content: str
     zip: bytes
     commit_sha: str
 

@@ -82,7 +82,7 @@ class WrapCreatorTest(unittest.TestCase):
             f.write('hello world')
         repo.index.commit('my commit')
         wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
-        up = upstream.WrapFile.from_string(wrap.wrap)
+        up = upstream.WrapFile.from_string(wrap.wrapfile_content)
         self.assertEqual(up.directory, 'hello')
         self.assertEqual(up.source_url, 'https://example.com/file.tgz')
         self.assertEqual(up.source_filename, 'file.tgz')

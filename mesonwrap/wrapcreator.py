@@ -95,7 +95,7 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
         wrapfile.write('patch_hash = %s\n' % source_hash)
         wrap_contents = wrapfile.getvalue()
     return wrap.Wrap(name=name, version=branch, revision=revision_id,
-                     wrap=wrap_contents, zip=zip_contents,
+                     wrapfile_content=wrap_contents, zip=zip_contents,
                      commit_sha=revision_commit_sha)
 
 
@@ -107,6 +107,6 @@ def main(prog, args):
     args = parser.parse_args(args)
     wrap = make_wrap(args.project_name, args.data_repo_url, args.branch)
     with open(wrap.wrap_name, 'w') as w:
-        w.write(wrap.wrap)
+        w.write(wrap.wrapfile_content)
     with open(wrap.zip_name, 'wb') as z:
         z.write(wrap.zip)

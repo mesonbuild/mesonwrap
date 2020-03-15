@@ -30,7 +30,7 @@ class WrapUpdater:
     def update_db(self, project_name, repo_url, branch):
         wrap = wrapcreator.make_wrap(project_name, repo_url, branch)
         self.db.insert(project_name, branch,
-                       wrap.revision, wrap.wrap, wrap.zip)
+                       wrap.revision, wrap.wrapfile_content, wrap.zip)
 
 
 def main(prog, args):
