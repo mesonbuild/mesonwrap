@@ -261,7 +261,8 @@ class Reviewer:
         print_status('Patch merges with source',
                      self.mergetree(os.path.join(tmpdir, 'head'), srcdir))
 
-    def check_build(self, tmpdir, upwrap):
+    @staticmethod
+    def check_build(tmpdir, upwrap):
         srcdir = os.path.join(tmpdir, 'src', upwrap.directory)
         bindir = os.path.join(tmpdir, 'bin')
         setup_result = subprocess.call(['meson', 'setup', srcdir, bindir])
