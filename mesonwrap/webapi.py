@@ -2,7 +2,7 @@ import abc
 import hashlib
 import hmac
 import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import requests
 
@@ -343,7 +343,7 @@ class ProjectSet:
     def __iter__(self):
         return iter(self._projects.values())
 
-    def query_by_name_prefix(self, prefix: str) -> [Project]:
+    def query_by_name_prefix(self, prefix: str) -> List[Project]:
         js = self._api.query_v1_byname(prefix)
         return [self._get_project(name) for name in js['projects']]
 
