@@ -27,13 +27,13 @@ from mesonwrap import gitutils, upstream
 from mesonwrap.tools import environment
 
 
-readme = '''This repository contains a Meson build definition for project {reponame}.
+README = '''This repository contains a Meson build definition for project {reponame}.
 
 For more information please see http://mesonbuild.com.
 '''
 
 
-mit_license = '''Copyright (c) {year} The Meson development team
+MIT_LICENSE = '''Copyright (c) {year} The Meson development team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ SOFTWARE.
 '''
 
 
-maintainers_team_id = {
+MAINTAINERS_TEAM_ID = {
     'mesonbuild': 2766876,
     'mesonbuild-test': 2767592,
 }
@@ -93,9 +93,9 @@ class RepoBuilder:
         if message is None:
             message = 'Refresh repository %s' % self.name
         with self.open('readme.txt', 'w') as ofile:
-            ofile.write(readme.format(reponame=self.name))
+            ofile.write(README.format(reponame=self.name))
         with self.open('LICENSE.build', 'w') as ofile:
-            ofile.write(mit_license.format(year=datetime.datetime.now().year))
+            ofile.write(MIT_LICENSE.format(year=datetime.datetime.now().year))
         self.repo.index.commit(message)
 
     def init_github(self, path, organization, homepage):
@@ -104,8 +104,8 @@ class RepoBuilder:
         description = 'Meson build definitions for %s' % self.name
         ghrepo = mesonbuild.create_repo(
             self.name, description=description, homepage=homepage,
-            team_id=maintainers_team_id[organization])
-        team = mesonbuild.get_team(maintainers_team_id[organization])
+            team_id=MAINTAINERS_TEAM_ID[organization])
+        team = mesonbuild.get_team(MAINTAINERS_TEAM_ID[organization])
         team.set_repo_permission(ghrepo, 'push')
         self.init(path, ghrepo.ssh_url)
 
