@@ -1,3 +1,4 @@
+# pylint: skip-file
 import requests
 from requests import *  # noqa: F401,F403
 import requests_ftp.ftp

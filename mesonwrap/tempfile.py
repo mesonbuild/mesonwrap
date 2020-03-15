@@ -1,3 +1,4 @@
+# pylint: skip-file
 # Let's try to make it drop-in replacement for tempfile module
 import platform as _platform
 from tempfile import *  # noqa: F403
