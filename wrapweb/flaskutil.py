@@ -37,6 +37,7 @@ class _AppcontextVariable:
         Calls closer(value) on context destruction if the value was created.
         """
         def actual_closer(exception):
+            del exception  # unused
             value = self._value
             if value is not None:
                 closer(value)
