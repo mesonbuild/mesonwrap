@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
 import json
 
 import flask
 
-from wrapweb import api, jsonstatus
+from wrapweb import api
+from wrapweb import jsonstatus
 
 BP = flask.Blueprint('ui', __name__)
 
