@@ -247,8 +247,8 @@ class Reviewer:
                 print('  available files:', files)
                 print('  consider using "lead_directory_missing = true"')
             elif len(files) == 1:
-                f = files[0]
-                if os.is_dir(files[0]):
+                f, = files
+                if os.path.isdir(files[0]):
                     print('  available directory:', f)
                     print('  consider using "directory = {}"'.format(f))
                 else:
