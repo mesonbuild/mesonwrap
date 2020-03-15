@@ -61,6 +61,7 @@ class ReviewerOptions:
     strict_fileset: bool = True
     strict_version_in_url: bool = True
     strict_license_check: bool = True
+    export_sources: Optional[str] = None
 
 
 class Reviewer:
@@ -96,11 +97,12 @@ class Reviewer:
         self._source_branch = source_branch or branch
         self.options = ReviewerOptions()
 
-    def review(self, export_sources=None) -> Tuple[bool, Optional[str]]:
+    def review(self) -> Tuple[bool, Optional[str]]:
         with tempfile.TemporaryDirectory() as tmpdir:
             r = self.review_int(tmpdir)
-            if export_sources:
-                shutil.copytree(os.path.join(tmpdir, 'src'), export_sources)
+            if self.options.export_sources:
+                shutil.copytree(os.path.join(tmpdir, 'src'),
+                                self.options.export_sources)
             return r
 
     def review_int(self, tmpdir) -> Tuple[bool, Optional[str]]:
@@ -321,8 +323,9 @@ def main(prog, args):
     r.options = ReviewerOptions(
         strict_fileset=not args.allow_other_files,
         strict_version_in_url=not args.allow_url_without_version,
-        strict_license_check=not args.allow_no_license)
-    review, sha = r.review(args.export_sources)
+        strict_license_check=not args.allow_no_license,
+        export_sources=args.export_sources)
+    review, sha = r.review()
     if not review:
         sys.exit(1)
     if args.approve:
