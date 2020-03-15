@@ -24,10 +24,12 @@ class UpstreamWrapTest(unittest.TestCase):
             setattr(w, attr, 'test-value')
             self.assertEqual(getattr(w, attr), 'test-value')
             self.assertTrue(getattr(w, 'has_' + attr))
+            self.assertTrue(w.has(attr))
 
     def test_section_not_found(self):
         w = upstream.UpstreamWrap()
         self.assertFalse(w.has_directory)
+        self.assertFalse(w.has('directory'))
         with self.assertRaises(ValueError):
             self.assertIsNone(w.directory)
 
@@ -35,6 +37,7 @@ class UpstreamWrapTest(unittest.TestCase):
         w = upstream.UpstreamWrap()
         w.source_filename = 'hello'
         self.assertFalse(w.has_directory)
+        self.assertFalse(w.has('directory'))
         with self.assertRaises(ValueError):
             _ = w.directory
 

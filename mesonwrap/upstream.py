@@ -82,6 +82,9 @@ class UpstreamWrap:
         self._cfg.write(sio)
         return sio.getvalue()
 
+    def has(self, attr: str, /) -> bool:
+        return getattr(self, 'has_' + attr)
+
     directory = _ConfigDescriptor()
     has_directory = _ConfigHasDescriptor()
 

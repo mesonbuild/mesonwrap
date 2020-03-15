@@ -54,7 +54,7 @@ def make_wrap(name: str, repo_url: str, branch: str) -> wrap.Wrap:
 
 def _check_definition(definition):
     for i in ['directory', 'source_url', 'source_filename', 'source_hash']:
-        if not getattr(definition, 'has_' + i):
+        if not definition.has(i):
             raise RuntimeError('Missing {!r} in upstream.wrap.'.format(i))
 
 
