@@ -111,7 +111,7 @@ class Reviewer:
             try:
                 self.check_basics(head_repo)
                 self.check_files(head_dir)
-                upwrap = upstream.UpstreamWrap.from_file(
+                upwrap = upstream.WrapFile.from_file(
                     os.path.join(head_dir, 'upstream.wrap'))
                 self.check_wrapformat(upwrap)
                 self.check_url(upwrap)

@@ -3,16 +3,16 @@ import unittest
 from mesonwrap import upstream
 
 
-class UpstreamWrapTest(unittest.TestCase):
+class WrapFileTest(unittest.TestCase):
 
     def test_init(self):
-        w = upstream.UpstreamWrap(source_url='hello',
-                                  source_hash='world')
+        w = upstream.WrapFile(source_url='hello',
+                              source_hash='world')
         self.assertEqual(w.source_url, 'hello')
         self.assertEqual(w.source_hash, 'world')
 
     def test_attr(self):
-        w = upstream.UpstreamWrap()
+        w = upstream.WrapFile()
         for attr in ('directory',
                      'lead_directory_missing',
                      'source_url',
@@ -27,14 +27,14 @@ class UpstreamWrapTest(unittest.TestCase):
             self.assertTrue(w.has(attr))
 
     def test_section_not_found(self):
-        w = upstream.UpstreamWrap()
+        w = upstream.WrapFile()
         self.assertFalse(w.has_directory)
         self.assertFalse(w.has('directory'))
         with self.assertRaises(ValueError):
             self.assertIsNone(w.directory)
 
     def test_option_not_found(self):
-        w = upstream.UpstreamWrap()
+        w = upstream.WrapFile()
         w.source_filename = 'hello'
         self.assertFalse(w.has_directory)
         self.assertFalse(w.has('directory'))
@@ -42,7 +42,7 @@ class UpstreamWrapTest(unittest.TestCase):
             _ = w.directory
 
     def test_write(self):
-        w = upstream.UpstreamWrap()
+        w = upstream.WrapFile()
         w.directory = '/hello/world'
         s = w.write_string()
         self.assertIn('/hello/world', s)

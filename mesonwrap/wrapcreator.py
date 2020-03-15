@@ -77,7 +77,7 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
     revision_commit_sha = repo.head.commit.hexsha
     revision_id = gitutils.get_revision(repo, repo.head.commit)
     upstream_file = os.path.join(workdir, 'upstream.wrap')
-    definition = upstream.UpstreamWrap.from_file(upstream_file)
+    definition = upstream.WrapFile.from_file(upstream_file)
     _check_definition(definition)
     with io.BytesIO() as zipf:
         _make_zip(zipf, workdir, definition.directory)

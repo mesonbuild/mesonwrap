@@ -133,7 +133,7 @@ class RepoBuilder:
         assert not self.repo.head.is_detached
         self.repo.head.reset(index=True, working_tree=True)
         with self.open('upstream.wrap', 'w') as ofile:
-            upstream.UpstreamWrap(
+            upstream.WrapFile(
                 directory=directory,
                 source_url=zipurl,
                 source_filename=filename,

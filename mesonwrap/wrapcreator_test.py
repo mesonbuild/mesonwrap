@@ -51,10 +51,10 @@ class WrapCreatorTest(unittest.TestCase):
 
     def test_check_definition_empty(self):
         with self.assertRaises(RuntimeError):
-            wrapcreator._check_definition(upstream.UpstreamWrap())
+            wrapcreator._check_definition(upstream.WrapFile())
 
     def test_check_definition_okay(self):
-        up = upstream.UpstreamWrap()
+        up = upstream.WrapFile()
         up.directory = 'hello'
         up.source_url = 'https://example.com/file.tgz'
         up.source_filename = 'file.tgz'
@@ -73,7 +73,7 @@ class WrapCreatorTest(unittest.TestCase):
             return gitutils.GitFile.open(repo, path, mode)
 
         with gopen('upstream.wrap', 'w') as f:
-            upstream.UpstreamWrap(
+            upstream.WrapFile(
                 directory='hello',
                 source_url='https://example.com/file.tgz',
                 source_filename='file.tgz',
@@ -82,7 +82,7 @@ class WrapCreatorTest(unittest.TestCase):
             f.write('hello world')
         repo.index.commit('my commit')
         wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
-        up = upstream.UpstreamWrap.from_string(wrap.wrap)
+        up = upstream.WrapFile.from_string(wrap.wrap)
         self.assertEqual(up.directory, 'hello')
         self.assertEqual(up.source_url, 'https://example.com/file.tgz')
         self.assertEqual(up.source_filename, 'file.tgz')

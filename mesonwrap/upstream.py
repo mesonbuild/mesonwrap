@@ -42,7 +42,7 @@ class _ConfigHasDescriptor:
         return instance._cfg.has_option(_SECTION, self._sname)
 
 
-class UpstreamWrap:
+class WrapFile:
 
     __slots__ = ('_cfg',)
 

@@ -201,8 +201,8 @@ class Revision:
         return self.__wrap
 
     @property
-    def wrap(self) -> upstream.UpstreamWrap:
-        return upstream.UpstreamWrap.from_string(self.wrap_str)
+    def wrap(self) -> upstream.WrapFile:
+        return upstream.WrapFile.from_string(self.wrap_str)
 
     @property
     def zip(self) -> bytes:
