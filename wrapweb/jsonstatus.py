@@ -20,9 +20,9 @@ class WrapWebError(Exception):
         return dict(output='notok', error=self.message)
 
 
-def handle_wrap_web_error(error: WrapWebError):
-    jsonout = flask.jsonify(error.to_dict())
-    jsonout.status_code = error.status_code
+def handle_wrap_web_error(err: WrapWebError, /):
+    jsonout = flask.jsonify(err.to_dict())
+    jsonout.status_code = err.status_code
     return jsonout
 
 
