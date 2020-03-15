@@ -99,6 +99,17 @@ class WrapCreatorTest(unittest.TestCase):
         self.assertEqual(wrap.zip_name, 'project-1.2.3-1-wrap.zip')
         self.assertEqual(wrap.commit_sha, repo.head.commit.hexsha)
 
+    def test_make_wrap_bad_wrapfile(self):
+        repo = git.Repo.init(self.workdir)
+        repo.index.commit('initial commit')
+        repo.head.reference = repo.create_head('1.2.3')
+        with gitutils.GitFile.open(repo, 'upstream.wrap', 'w') as f:
+            f.write('[wrap-file]\n')
+            f.write('hello = world\n')
+        repo.index.commit('my commit')
+        with self.assertRaisesRegex(RuntimeError, 'Missing .* in upstream.wrap'):
+            wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
+
 
 if __name__ == '__main__':
     unittest.main()
