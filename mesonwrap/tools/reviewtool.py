@@ -270,9 +270,9 @@ class Reviewer:
         test_result = subprocess.call(['ninja', '-C', bindir, 'test'])
         print_status('ninja test', test_result == 0)
 
-    @classmethod
+    @staticmethod
     def merge(
-        cls, organization: str, project: str, pull_id: int, sha: str
+        organization: str, project: str, pull_id: int, sha: str
     ) -> str:
         pull_request = (
             environment.repo(organization, project).get_pull(pull_id)
