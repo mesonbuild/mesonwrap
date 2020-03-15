@@ -36,7 +36,7 @@ class UpstreamWrapTest(unittest.TestCase):
         w.source_filename = 'hello'
         self.assertFalse(w.has_directory)
         with self.assertRaises(ValueError):
-            w.directory
+            _ = w.directory
 
     def test_write(self):
         w = upstream.UpstreamWrap()
