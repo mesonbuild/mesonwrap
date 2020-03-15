@@ -21,7 +21,7 @@ class Publisher:
         organization: str, project: str
     ) -> github.Repository.Repository:
         gh = environment.github()
-        org = gh.get_organization('mesonbuild')
+        org = gh.get_organization(organization)
         return org.get_repo(project)
 
     @classmethod
