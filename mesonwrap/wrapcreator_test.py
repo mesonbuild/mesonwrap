@@ -95,7 +95,7 @@ class WrapCreatorTest(unittest.TestCase):
                 self.assertListEqual(zip.namelist(), ['hello/meson.wrap'])
                 self.assertEqual(zip.read('hello/meson.wrap'), b'hello world')
         self.assertEqual(up.patch_hash, hashlib.sha256(wrap.zip).hexdigest())
-        self.assertEqual(wrap.wrap_name, 'project-1.2.3-1-wrap.wrap')
+        self.assertEqual(wrap.wrapfile_name, 'project-1.2.3-1-wrap.wrap')
         self.assertEqual(wrap.zip_name, 'project-1.2.3-1-wrap.zip')
         self.assertEqual(wrap.commit_sha, repo.head.commit.hexsha)
 

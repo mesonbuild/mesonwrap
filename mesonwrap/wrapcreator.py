@@ -106,7 +106,7 @@ def main(prog, args):
     parser.add_argument('branch')
     args = parser.parse_args(args)
     wrap = make_wrap(args.project_name, args.data_repo_url, args.branch)
-    with open(wrap.wrap_name, 'w') as w:
+    with open(wrap.wrapfile_name, 'w') as w:
         w.write(wrap.wrapfile_content)
     with open(wrap.zip_name, 'wb') as z:
         z.write(wrap.zip)

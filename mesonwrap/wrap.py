@@ -6,7 +6,7 @@ def _base_name(name: str, version: str, revision: int) -> str:
         name=name, version=version, revision=revision)
 
 
-def wrap_name(name: str, version: str, revision: int) -> str:
+def wrapfile_name(name: str, version: str, revision: int) -> str:
     return _base_name(name, version, revision) + '.wrap'
 
 
@@ -25,8 +25,8 @@ class Wrap:
     commit_sha: str
 
     @property
-    def wrap_name(self):
-        return wrap_name(self.name, self.version, self.revision)
+    def wrapfile_name(self):
+        return wrapfile_name(self.name, self.version, self.revision)
 
     @property
     def zip_name(self):
