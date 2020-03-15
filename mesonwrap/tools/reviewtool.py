@@ -14,6 +14,7 @@
 
 import argparse
 import contextlib
+import dataclasses
 import hashlib
 import os
 import re
@@ -55,6 +56,13 @@ def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
         raise CheckError(msg)
 
 
+@dataclasses.dataclass
+class ReviewerOptions:
+    strict_fileset: bool = True
+    strict_version_in_url: bool = True
+    strict_license_check: bool = True
+
+
 class Reviewer:
 
     @staticmethod
@@ -86,9 +94,7 @@ class Reviewer:
         self._clone_url = clone_url
         self._branch = branch
         self._source_branch = source_branch or branch
-        self.strict_fileset = True
-        self.strict_version_in_url = True
-        self.strict_license_check = True
+        self.options = ReviewerOptions()
 
     def review(self, export_sources=None) -> Tuple[bool, Optional[str]]:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -135,7 +141,7 @@ class Reviewer:
     def check_url(self, upwrap):
         print_status('upstream.wrap has source_url with version substring',
                      self._branch in upwrap.source_url,
-                     fatal=self.strict_version_in_url)
+                     fatal=self.options.strict_version_in_url)
 
     def check_files(self, head_dir):
         found = False
@@ -153,7 +159,7 @@ class Reviewer:
                     rel_name = abs_name[len(head_dir) + 1:]
                     print(' ', rel_name)
         print_status('Repo contains only buildsystem files', not found,
-                     fatal=self.strict_fileset)
+                     fatal=self.options.strict_fileset)
 
     @staticmethod
     def isfile(head_dir, filename):
@@ -171,7 +177,7 @@ class Reviewer:
         print_status('Has readme.txt', self.isfile(head_dir, 'readme.txt'))
         print_status('Has LICENSE.build',
                      self.isfile(head_dir, 'LICENSE.build'),
-                     fatal=self.strict_license_check)
+                     fatal=self.options.strict_license_check)
         print_status('Has upstream.wrap',
                      self.isfile(head_dir, 'upstream.wrap'))
 
@@ -312,9 +318,10 @@ def main(prog, args):
                                         args.name, args.branch)
     else:
         sys.exit('Either --pull-request or --branch must be set')
-    r.strict_fileset = not args.allow_other_files
-    r.strict_version_in_url = not args.allow_url_without_version
-    r.strict_license_check = not args.allow_no_license
+    r.options = ReviewerOptions(
+        strict_fileset=not args.allow_other_files,
+        strict_version_in_url=not args.allow_url_without_version,
+        strict_license_check=not args.allow_no_license)
     review, sha = r.review(args.export_sources)
     if not review:
         sys.exit(1)
