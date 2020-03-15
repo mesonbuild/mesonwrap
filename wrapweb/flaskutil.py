@@ -53,7 +53,7 @@ class _AppcontextVariable:
 
 
 def appcontext_var(
-    app: flask.Flask
+    app: AppOrBlueprint
 ) -> Callable[[Initializer], _AppcontextVariable]:
     """Wraps appcontext variable initializer.
 
