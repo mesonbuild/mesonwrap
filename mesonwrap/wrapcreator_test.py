@@ -68,17 +68,13 @@ class WrapCreatorTest(unittest.TestCase):
         repo = git.Repo.init(self.workdir)
         repo.index.commit('initial commit')
         repo.head.reference = repo.create_head('1.2.3')
-
-        def gopen(path, mode='r'):
-            return gitutils.GitFile.open(repo, path, mode)
-
-        with gopen('upstream.wrap', 'w') as f:
+        with gitutils.GitFile.open(repo, 'upstream.wrap', 'w') as f:
             upstream.WrapFile(
                 directory='hello',
                 source_url='https://example.com/file.tgz',
                 source_filename='file.tgz',
                 source_hash='hash-hash-hash').write(f)
-        with gopen('meson.wrap', 'w') as f:
+        with gitutils.GitFile.open(repo, 'meson.wrap', 'w') as f:
             f.write('hello world')
         repo.index.commit('my commit')
         wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
