@@ -31,6 +31,9 @@ from mesonwrap import upstream
 from mesonwrap.tools import environment
 from mesonwrap.tools import publisher
 
+OK_CHR = '\u2611'
+FAIL_CHR = '\u2612'
+
 
 class CheckError(Exception):
     pass
@@ -45,8 +48,6 @@ def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
         quiet: if message should be printed on success
     Raises: CheckError(msg) if not check and fatal
     """
-    OK_CHR = '\u2611'
-    FAIL_CHR = '\u2612'
     status = OK_CHR if check else FAIL_CHR
     if not quiet or not check:
         print('{msg}: {status}'.format(msg=msg, status=status))
