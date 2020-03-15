@@ -65,7 +65,7 @@ class _HTTPClient(AbstractHTTPClient):
 
     def get(self, url: str) -> AbstractResponse:
         with requests.get(self.url + url) as rv:
-            rv.content  # read the content before the connection is closed
+            _ = rv.content  # read the content before the connection is closed
             return rv
 
     def post(
@@ -74,7 +74,7 @@ class _HTTPClient(AbstractHTTPClient):
         headers = headers.copy()
         headers['Content-Type'] = content_type
         with requests.post(self.url + url, data=data, headers=headers) as rv:
-            rv.content  # read the content before the connection is closed
+            _ = rv.content  # read the content before the connection is closed
             return rv
 
 
@@ -113,21 +113,21 @@ class _APIClient:
     def fetch_json(self, url: str) -> JSON:
         return self.interpret(self._http.get(url))
 
-    def interpret(self, rv: AbstractResponse) -> JSON:
+    @staticmethod
+    def interpret(rv: AbstractResponse) -> JSON:
         if not rv and rv.status_code >= 500:
             raise ServerError('Server error', rv.status_code, rv.reason)
         j = rv.json()
         if 'output' not in j:
             raise ValueError('Invalid server response: no output field')
-        elif j['output'] == 'ok':
+        if j['output'] == 'ok':
             return j
-        elif j['output'] == 'notok':
+        if j['output'] == 'notok':
             if 'error' not in j:
                 raise ValueError('Invalid server response: no error field')
             raise APIError(j['error'])
-        else:
-            raise ValueError('Invalid server response: unknown output value',
-                             j['output'])
+        raise ValueError('Invalid server response: unknown output value',
+                         j['output'])
 
     def query_v1_byname(self, project: str) -> JSON:
         return self.fetch_json('/v1/query/byname/' + project)
@@ -290,7 +290,7 @@ class Project:
     @property
     def versions(self):
         if not self.__versions_called:
-            for ver in self._version_ids.keys():
+            for ver in self._version_ids:
                 self._get_version(ver)
             self.__versions_called = True
         return self.__versions
