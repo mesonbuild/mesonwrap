@@ -26,6 +26,37 @@ class GitFile:
         return f
 
 
+class GitProject:
+
+    def __init__(self, repo: git.Repo):
+        self.repo = repo
+
+    def close(self):
+        self.repo.close()
+
+    def open(self, path, mode='r'):
+        return GitFile.open(self.repo, path, mode)
+
+    def commit(self, message: str):
+        return self.repo.index.commit(message)
+
+    def merge_commit(self, message, parent):
+        return self.repo.index.commit(
+            message, parent_commits=(self.repo.head.commit, parent))
+
+    def create_version(self, version: str):
+        self.repo.head.reference = self.repo.create_head(version)
+        return self.repo.head.reference
+
+    @property
+    def git_dir(self):
+        return self.repo.git_dir
+
+    @property
+    def head_hexsha(self) -> str:
+        return self.repo.head.commit.hexsha
+
+
 def get_revision(repo: git.Repo, commit: git.Commit = None):
     """Get revision from repo and commit.
 

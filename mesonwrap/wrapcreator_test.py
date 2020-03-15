@@ -65,18 +65,18 @@ class WrapCreatorTest(unittest.TestCase):
             self.fail('Unexpected RuntimeError {!r}'.format(e))
 
     def test_make_wrap(self):
-        repo = git.Repo.init(self.workdir)
-        repo.index.commit('initial commit')
-        repo.head.reference = repo.create_head('1.2.3')
-        with gitutils.GitFile.open(repo, 'upstream.wrap', 'w') as f:
+        repo = gitutils.GitProject(git.Repo.init(self.workdir))
+        repo.commit('initial commit')
+        repo.create_version('1.2.3')
+        with repo.open('upstream.wrap', 'w') as f:
             upstream.WrapFile(
                 directory='hello',
                 source_url='https://example.com/file.tgz',
                 source_filename='file.tgz',
                 source_hash='hash-hash-hash').write(f)
-        with gitutils.GitFile.open(repo, 'meson.wrap', 'w') as f:
+        with repo.open('meson.wrap', 'w') as f:
             f.write('hello world')
-        repo.index.commit('my commit')
+        repo.commit('my commit')
         wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
         up = upstream.WrapFile.from_string(wrap.wrapfile_content)
         self.assertEqual(up.directory, 'hello')
@@ -93,16 +93,16 @@ class WrapCreatorTest(unittest.TestCase):
         self.assertEqual(up.patch_hash, hashlib.sha256(wrap.zip).hexdigest())
         self.assertEqual(wrap.wrapfile_name, 'project-1.2.3-1-wrap.wrap')
         self.assertEqual(wrap.zip_name, 'project-1.2.3-1-wrap.zip')
-        self.assertEqual(wrap.commit_sha, repo.head.commit.hexsha)
+        self.assertEqual(wrap.commit_sha, repo.head_hexsha)
 
     def test_make_wrap_bad_wrapfile(self):
-        repo = git.Repo.init(self.workdir)
-        repo.index.commit('initial commit')
-        repo.head.reference = repo.create_head('1.2.3')
-        with gitutils.GitFile.open(repo, 'upstream.wrap', 'w') as f:
+        repo = gitutils.GitProject(git.Repo.init(self.workdir))
+        repo.commit('initial commit')
+        repo.create_version('1.2.3')
+        with repo.open('upstream.wrap', 'w') as f:
             f.write('[wrap-file]\n')
             f.write('hello = world\n')
-        repo.index.commit('my commit')
+        repo.commit('my commit')
         with self.assertRaisesRegex(RuntimeError, 'Missing .* in upstream.wrap'):
             wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
 
