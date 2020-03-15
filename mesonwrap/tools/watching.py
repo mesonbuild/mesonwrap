@@ -20,7 +20,7 @@ def preamble(prog, args):
 
 def watch(prog, args):
     organization = preamble(prog, args)
-    gh = environment.Github()
+    gh = environment.github()
     user = gh.get_user()
     for repo in get_repositories(gh, organization):
         user.add_to_watched(repo)
@@ -28,7 +28,7 @@ def watch(prog, args):
 
 def unwatch(prog, args):
     organization = preamble(prog, args)
-    gh = environment.Github()
+    gh = environment.github()
     user = gh.get_user()
     for repo in get_repositories(gh, organization):
         user.remove_from_watched(repo)

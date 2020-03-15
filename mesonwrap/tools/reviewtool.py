@@ -61,7 +61,7 @@ class Reviewer:
     def _get_project(
         organization: str, project: str
     ) -> github.Repository.Repository:
-        gh = environment.Github()
+        gh = environment.github()
         org = gh.get_organization(organization)
         return org.get_repo(project)
 

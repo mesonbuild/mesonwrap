@@ -99,7 +99,7 @@ class RepoBuilder:
         self.repo.index.commit(message)
 
     def init_github(self, path, organization, homepage):
-        gh = environment.Github()
+        gh = environment.github()
         mesonbuild = gh.get_organization(organization)
         description = 'Meson build definitions for %s' % self.name
         ghrepo = mesonbuild.create_repo(

@@ -2,7 +2,7 @@ import configparser
 import os
 import os.path
 
-import github
+import github as _github
 
 
 class Config:
@@ -18,5 +18,5 @@ class Config:
         return self._config.get('mesonwrap', 'github_token', fallback=None)
 
 
-def Github():
-    return github.Github(Config().github_token)
+def github():
+    return _github.Github(Config().github_token)
