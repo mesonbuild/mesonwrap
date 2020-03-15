@@ -207,7 +207,7 @@ class Reviewer:
             raise
 
     @staticmethod
-    def mergetree(src, dst, ignore=None):
+    def mergetree(src, dst):
         for dirpath, dirnames, filenames in os.walk(src):
             prefix = os.path.relpath(dirpath, src)
             dstpath = os.path.join(dst, prefix)
