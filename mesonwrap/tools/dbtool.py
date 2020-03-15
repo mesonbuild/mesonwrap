@@ -20,6 +20,7 @@ from mesonwrap import wrapdb
 
 # This is a simple tool to do queries and inserts from the command line.
 
+# pylint: disable=no-value-for-parameter
 def main(prog, args):
     parser = argparse.ArgumentParser(prog)
     parser.add_argument('--dbdir', required=True)
