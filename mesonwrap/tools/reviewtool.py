@@ -66,24 +66,16 @@ class ReviewerOptions:
 
 class Reviewer:
 
-    @staticmethod
-    def _get_project(
-        organization: str, project: str
-    ) -> github.Repository.Repository:
-        gh = environment.github()
-        org = gh.get_organization(organization)
-        return org.get_repo(project)
-
     @classmethod
     def from_pull_request(cls, organization: str, project: str, pull_id: int):
-        pull = cls._get_project(organization, project).get_pull(pull_id)
+        pull = environment.repo(organization, project).get_pull(pull_id)
         return cls(project=project, clone_url=pull.head.repo.clone_url,
                    branch=pull.base.ref, source_branch=pull.head.ref)
 
     @classmethod
     def from_committed(cls, organization: str, project: str, branch: str):
         return cls(project=project,
-                   clone_url=cls._get_project(organization, project).clone_url,
+                   clone_url=environment.repo(organization, project).clone_url,
                    branch=branch)
 
     @classmethod
@@ -283,7 +275,7 @@ class Reviewer:
         cls, organization: str, project: str, pull_id: int, sha: str
     ) -> str:
         pull_request = (
-            cls._get_project(organization, project).get_pull(pull_id)
+            environment.repo(organization, project).get_pull(pull_id)
         )
         method = 'squash' if pull_request.commits > 1 else 'rebase'
         branch = pull_request.base.ref

@@ -20,3 +20,11 @@ class Config:
 
 def github():
     return _github.Github(Config().github_token)
+
+
+def repo(
+    organization: str, project: str
+) -> _github.Repository.Repository:
+    gh = environment.github()
+    org = gh.get_organization(organization)
+    return org.get_repo(project)

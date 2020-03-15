@@ -16,14 +16,6 @@ def _is_github_error(exception):
 
 class Publisher:
 
-    @staticmethod
-    def _get_project(
-        organization: str, project: str
-    ) -> github.Repository.Repository:
-        gh = environment.github()
-        org = gh.get_organization(organization)
-        return org.get_repo(project)
-
     @classmethod
     @retry(stop_max_attempt_number=3,
            retry_on_exception=_is_github_error)
@@ -34,7 +26,7 @@ class Publisher:
             f.write(wrap.wrapfile_content)
         with open(zippath, 'wb') as f:
             f.write(wrap.zip)
-        ghrepo = cls._get_project(organization, wrap.name)
+        ghrepo = environment.repo(organization, wrap.name)
         tagname = '{}-{}'.format(wrap.version, wrap.revision)
         try:
             rel = ghrepo.get_release(tagname)
@@ -68,7 +60,7 @@ class Publisher:
 
     @classmethod
     def publish(cls, organization: str, project: str, branch: str):
-        ghrepo = cls._get_project(organization, project)
+        ghrepo = environment.repo(organization, project)
         wrap = wrapcreator.make_wrap(project, ghrepo.clone_url, branch)
         with tempfile.TemporaryDirectory() as tmp:
             cls._import_wrap(tmp, organization, wrap)
