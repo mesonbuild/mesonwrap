@@ -29,11 +29,10 @@ def _database():
     if mode == 'cache':
         gh = github.Github(flask.current_app.config['GITHUB_TOKEN'])
         return githubdb.GithubDB(gh)
-    elif mode == 'standalone':
+    if mode == 'standalone':
         dbdir = flask.current_app.config['DB_DIRECTORY']
         return wrapdb.WrapDatabase(dbdir)
-    else:
-        raise ValueError('Unknown mode', mode)
+    raise ValueError('Unknown mode', mode)
 
 
 @_database.teardown
