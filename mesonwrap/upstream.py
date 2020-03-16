@@ -82,7 +82,8 @@ class WrapFile:
         self._cfg.write(sio)
         return sio.getvalue()
 
-    def has(self, attr: str, /) -> bool:
+    def has(self, attr: str) -> bool:
+        # TODO: Python 3.8 make positional only
         return getattr(self, 'has_' + attr)
 
     directory = _ConfigDescriptor()

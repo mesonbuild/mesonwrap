@@ -54,7 +54,7 @@ class _AppcontextVariable:
 
 
 def appcontext_var(
-    app: AppOrBlueprint, /
+    app: AppOrBlueprint  # TODO: Python 3.8 make positional only
 ) -> Callable[[Initializer], _AppcontextVariable]:
     """Wraps appcontext variable initializer.
 
