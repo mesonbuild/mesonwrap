@@ -26,11 +26,11 @@ class FakeDatabase:
         # Dict[Dict[Dict[FakeRelease]]]
         self._projects = defaultdict(lambda: defaultdict(dict))
 
-    def add(self, name: str, version: str, revision: int):
+    def add(self, name: str, version: str, revision: int) -> None:
         self._projects[name][version][revision] = (
             FakeRelease(name, version, revision))
 
-    def close(self):
+    def close(self) -> None:
         pass
 
     def insert(self,
@@ -42,7 +42,7 @@ class FakeDatabase:
         self._projects[project][version][revision] = FakeRelease(
             project, version, revision, wrapfile_content, zip)
 
-    def name_search(self, text):
+    def name_search(self, text: str) -> List[str]:
         return sorted([repo for repo in self._projects
                        if repo.startswith(text)])
 
@@ -56,7 +56,7 @@ class FakeDatabase:
             for release in version.values()
         ]
 
-    def get_latest_version(self, project) -> Optional[Version]:
+    def get_latest_version(self, project: str) -> Optional[Version]:
         # get_latest_release() is not following semantic versioning
         results = self.get_versions(project)
         if not results:
