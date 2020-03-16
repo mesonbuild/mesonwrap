@@ -65,4 +65,4 @@ def async_tickets():
 # present.
 @BP.route('/favicon.ico')
 def favicon():
-    return jsonstatus.error(404, 'Favicon not found')
+    return flask.current_app.send_static_file('ico/favicon.png')
