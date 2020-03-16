@@ -94,3 +94,7 @@ class TestBase(unittest.TestCase):
 
     def tearDown(self):
         self.client.__exit__(None, None, None)
+
+    def assertOk(self, rv):
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.get_json()['output'], 'ok')
