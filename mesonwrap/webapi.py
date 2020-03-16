@@ -21,7 +21,7 @@ class APIError(ServerError):
     pass
 
 
-class AbstractResponse(metaclass=abc.ABCMeta):
+class AbstractHTTPResponse(metaclass=abc.ABCMeta):
 
     @abc.abstractproperty
     def status_code(self) -> bool: ...
@@ -42,19 +42,19 @@ class AbstractResponse(metaclass=abc.ABCMeta):
     def json(self, **kwargs) -> JSON: ...
 
 
-AbstractResponse.register(requests.Response)
+AbstractHTTPResponse.register(requests.Response)
 
 
 class AbstractHTTPClient(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
-    def get(self, url: str) -> AbstractResponse:
+    def get(self, url: str) -> AbstractHTTPResponse:
         pass
 
     @abc.abstractmethod
     def post(
         self, url: str, content_type: str, headers: Dict[str, str], data: bytes
-    ) -> AbstractResponse:
+    ) -> AbstractHTTPResponse:
         pass
 
 
@@ -63,14 +63,14 @@ class _HTTPClient(AbstractHTTPClient):
     def __init__(self, url: str):
         self.url = url
 
-    def get(self, url: str) -> AbstractResponse:
+    def get(self, url: str) -> AbstractHTTPResponse:
         with requests.get(self.url + url) as rv:
             _ = rv.content  # read the content before the connection is closed
             return rv
 
     def post(
         self, url: str, content_type: str, headers: Dict[str, str], data: bytes
-    ) -> AbstractResponse:
+    ) -> AbstractHTTPResponse:
         headers = headers.copy()
         headers['Content-Type'] = content_type
         with requests.post(self.url + url, data=data, headers=headers) as rv:
@@ -114,7 +114,7 @@ class _APIClient:
         return self.interpret(self._http.get(url))
 
     @staticmethod
-    def interpret(rv: AbstractResponse) -> JSON:
+    def interpret(rv: AbstractHTTPResponse) -> JSON:
         if not rv and rv.status_code >= 500:
             raise ServerError('Server error', rv.status_code, rv.reason)
         j = rv.json()
