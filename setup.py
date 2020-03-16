@@ -22,7 +22,11 @@ if __name__ == '__main__':
             'wrapweb',
         ],
         package_data={
-            'wrapweb': ['templates/*.html'],
+            'wrapweb': [
+                'static/ico/favicon.png',
+                'static/css/*.css',
+                'templates/*.html',
+            ],
         },
         install_requires=[
             'Flask',
