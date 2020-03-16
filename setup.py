@@ -12,7 +12,7 @@ def discover_tests():
 if __name__ == '__main__':
     setuptools.setup(
         name='mesonwrap',
-        version='0.1.0',
+        version='0.2.0',
         author='The Meson development team',
         license='Apache 2',
         url='https://github.com/mesonbuild/mesonwrap',
