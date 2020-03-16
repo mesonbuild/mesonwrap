@@ -40,10 +40,6 @@ def _close_connection(db):
     db.close()
 
 
-def get_projectlist():
-    return jsonstatus.ok(projects=_database().name_search(''))
-
-
 @BP.route('/v1/query/byname/<project>', methods=['GET'])
 def name_query(project):
     return jsonstatus.ok(projects=_database().name_search(project))
@@ -57,11 +53,13 @@ def get_latest(project):
     return jsonstatus.ok(branch=latest[0], revision=latest[1])
 
 
-@BP.route('/v1/projects', defaults={'project': None})
+@BP.route('/v1/projects')
+def get_projectlist():
+    return jsonstatus.ok(projects=_database().name_search(''))
+
+
 @BP.route('/v1/projects/<project>')
 def get_project_info(project):
-    if project is None:
-        return get_projectlist()
     matches = _database().get_versions(project)
     if not matches:
         return jsonstatus.error(404, 'No such project')
