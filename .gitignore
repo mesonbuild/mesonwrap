@@ -1,6 +1,5 @@
 .project
 .pydevproject
-*.sqlite
 __pycache__
 *.zip
 *.pyc

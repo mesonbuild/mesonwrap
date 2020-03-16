@@ -172,14 +172,6 @@ class GithubDB:
     def close(self):
         pass
 
-    def insert(self,
-               project: str,
-               branch: str,
-               revision: int,
-               wrap: str,
-               zip: bytes):
-        raise NotImplementedError('Only read only access is supported')
-
     def name_search(self, text):
         return sorted([repo for repo in _repository_list(self._org)
                        if repo.startswith(text)])

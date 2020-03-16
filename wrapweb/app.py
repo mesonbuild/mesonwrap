@@ -17,7 +17,6 @@ import os
 import flask
 
 from wrapweb import api
-from wrapweb import hook
 from wrapweb import jsonstatus
 from wrapweb import ui
 
@@ -31,5 +30,4 @@ if 'WRAPDB_CONFIG' in os.environ:
 
 jsonstatus.init_app(APP)
 APP.register_blueprint(api.BP)
-APP.register_blueprint(hook.BP)
 APP.register_blueprint(ui.BP)

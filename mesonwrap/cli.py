@@ -4,9 +4,7 @@ import sys
 import typing
 
 from mesonwrap import wrapcreator
-from mesonwrap import wrapupdater
 from mesonwrap.tools import check_source
-from mesonwrap.tools import dbtool
 from mesonwrap.tools import publisher
 from mesonwrap.tools import repoinit
 from mesonwrap.tools import reviewtool
@@ -81,14 +79,6 @@ class Command:
     def command_wrapcreate(self):
         """Create wrap from remote repository"""
         wrapcreator.main(*self.args())
-
-    def command_wrapupdate(self):
-        """Create wrap and import it into local database"""
-        wrapupdater.main(*self.args())
-
-    def command_dbtool(self):
-        """This is a simple tool to do queries and inserts"""
-        dbtool.main(*self.args())
 
     def command_watch(self):
         """Watch mesonwrap repositories"""

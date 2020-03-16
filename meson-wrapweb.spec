@@ -53,7 +53,5 @@ install -Dpm 0644 files/wrapdb.ini %{buildroot}%{_sysconfdir}/uwsgi.d/%{name}.in
 %ghost %{_sysconfdir}/%{name}/wrapdb.key
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/%{name}.conf
 %config(noreplace) %attr(-,uwsgi,uwsgi)%{_sysconfdir}/uwsgi.d/%{name}.ini
-%dir %{_sharedstatedir}/%{name}
-%ghost %{_sharedstatedir}/%{name}/wrapdb.sqlite
 
 %changelog

@@ -16,7 +16,6 @@ import flask
 import github
 
 from mesonwrap import githubdb
-from mesonwrap import wrapdb
 from wrapweb import flaskutil
 from wrapweb import jsonstatus
 
@@ -25,14 +24,8 @@ BP = flask.Blueprint('api', __name__)
 
 @flaskutil.appcontext_var(BP)
 def _database():
-    mode = flask.current_app.config['MODE']
-    if mode == 'cache':
-        gh = github.Github(flask.current_app.config['GITHUB_TOKEN'])
-        return githubdb.GithubDB(gh)
-    if mode == 'standalone':
-        dbdir = flask.current_app.config['DB_DIRECTORY']
-        return wrapdb.WrapDatabase(dbdir)
-    raise ValueError('Unknown mode', mode)
+    gh = github.Github(flask.current_app.config['GITHUB_TOKEN'])
+    return githubdb.GithubDB(gh)
 
 
 @_database.teardown

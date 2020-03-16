@@ -51,12 +51,6 @@ class AbstractHTTPClient(metaclass=abc.ABCMeta):
     def get(self, url: str) -> AbstractHTTPResponse:
         pass
 
-    @abc.abstractmethod
-    def post(
-        self, url: str, content_type: str, headers: Dict[str, str], data: bytes
-    ) -> AbstractHTTPResponse:
-        pass
-
 
 class _HTTPClient(AbstractHTTPClient):
 
@@ -65,15 +59,6 @@ class _HTTPClient(AbstractHTTPClient):
 
     def get(self, url: str) -> AbstractHTTPResponse:
         with requests.get(self.url + url) as rv:
-            _ = rv.content  # read the content before the connection is closed
-            return rv
-
-    def post(
-        self, url: str, content_type: str, headers: Dict[str, str], data: bytes
-    ) -> AbstractHTTPResponse:
-        headers = headers.copy()
-        headers['Content-Type'] = content_type
-        with requests.post(self.url + url, data=data, headers=headers) as rv:
             _ = rv.content  # read the content before the connection is closed
             return rv
 
@@ -163,21 +148,6 @@ class _APIClient:
         return self.fetch(url.format(project=project,
                                      version=version,
                                      revision=revision))
-
-    def pull_request_hook(self, js: JSON, secret: bytes) -> JSON:
-        data = json.dumps(js).encode('utf8')
-        signature = hmac.new(secret, data, hashlib.sha1).hexdigest()
-        headers = {
-            'User-Agent': 'GitHub-Hookshot/MesonWrap-Client',
-            'X-Hub-Signature': 'sha1=' + signature,
-            'X-Github-Event': 'pull_request',
-        }
-        rv = self._http.post(
-            '/github-hook',
-            content_type='application/json',
-            headers=headers,
-            data=data)
-        return self.interpret(rv)
 
 
 class Revision:
@@ -390,15 +360,3 @@ class WebAPI:
             return bool(self._api.fetch('/'))
         except OSError:
             return False
-
-    def pull_request_hook(
-        self, organization, project, branch, clone_url
-    ) -> JSON:
-        repo = dict(full_name='{}/{}'.format(organization, project),
-                    name=project,
-                    clone_url=clone_url)
-        base = dict(repo=repo, ref=branch)
-        js = dict(pull_request=dict(base=base, merged=True),
-                  action='closed')
-        # FIXME let user set the key
-        return self._api.pull_request_hook(js, b'changeme please')
