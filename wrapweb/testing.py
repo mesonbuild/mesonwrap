@@ -49,7 +49,7 @@ class FakeDatabase:
 
     def get_versions(self, project: str) -> List[Version]:
         if project not in self._projects:
-            raise KeyError(project)
+            return []
         proj = self._projects[project]
         return [
             (release.version, release.revision)
@@ -98,3 +98,7 @@ class TestBase(unittest.TestCase):
     def assertOk(self, rv):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv.get_json()['output'], 'ok')
+
+    def assertNotOk(self, rv, status_code):
+        self.assertEqual(rv.status_code, status_code)
+        self.assertEqual(rv.get_json()['output'], 'notok')

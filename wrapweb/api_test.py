@@ -41,6 +41,10 @@ class ApiTest(testing.TestBase):
             dict(branch='1.2.4', revision=3),
         ])
 
+    def test_project_not_found(self):
+        rv = self.client.get('/v1/projects/foo')
+        self.assertNotOk(rv, 404)
+
     def test_get_wrap(self):
         self.database.insert('foo', '1.2.3', 1, 'some text', b'')
         rv = self.client.get('/v1/projects/foo/1.2.3/1/get_wrap')
