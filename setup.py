@@ -21,7 +21,9 @@ if __name__ == '__main__':
             'mesonwrap.tools',
             'wrapweb',
         ],
-        include_package_data=True,
+        package_data={
+            'wrapweb': ['templates/*.html'],
+        },
         install_requires=[
             'Flask',
             'GitPython',
