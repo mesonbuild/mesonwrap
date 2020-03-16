@@ -264,18 +264,6 @@ class WrapUpdaterTest(IntegrationTestBase):
         self.assertUploaded(Project(f.name, '1.0.0', 1))
         self.assertUploaded(Project(f.name, '1.0.0', 2))
 
-    def test_wrapupdater_branched_revisions(self):
-        f = self.fake_project('test3')
-        f.create_version('1.0.0')
-        self.wrapupdater(f.name, f.url, '1.0.0')
-        f.create_version('1.0.1', base='1.0.0', message='New [wrap version]')
-        self.wrapupdater(f.name, f.url, '1.0.1')
-        f.commit('another commit')
-        self.wrapupdater(f.name, f.url, '1.0.1')
-        self.assertUploaded(Project(f.name, '1.0.0', 1))
-        self.assertUploaded(Project(f.name, '1.0.1', 1))
-        self.assertUploaded(Project(f.name, '1.0.1', 2))
-
     def test_wrapupdater_merged_revisions(self):
         f = self.fake_project('test')
         f.create_version('1.0.0')
@@ -296,19 +284,6 @@ class WrapUpdaterTest(IntegrationTestBase):
         f.merge_commit('commit 5', parent=p)
         self.wrapupdater(f.name, f.url, '1.0.0')
         self.assertUploaded(Project(f.name, '1.0.0', 6))
-
-    def test_wrapupdater_latest_revision_only(self):
-        f = self.fake_project('test3')
-        f.create_version('1.0.0')
-        f.commit('revision 2')
-        f.create_version('1.0.1', base='1.0.0', message='New [wrap version]')
-        f.commit('revision 2')
-        f.commit('revision 3')
-        f.commit('revision 4')
-        self.wrapupdater(f.name, f.url, '1.0.0')
-        self.wrapupdater(f.name, f.url, '1.0.1')
-        self.assertUploaded(Project(f.name, '1.0.0', 2))
-        self.assertUploaded(Project(f.name, '1.0.1', 4))
 
     def test_bad_upstream_wrap(self):
         f = self.fake_project('test')

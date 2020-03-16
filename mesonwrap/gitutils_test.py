@@ -39,18 +39,6 @@ class GetRevisionTest(unittest.TestCase):
         self.commit('project r2')
         self.assertEqual(gitutils.get_revision(self.repo), 2)
 
-    def test_wrap_version(self):
-        with self.open('hello.txt', 'w') as f:
-            f.write('foo')
-        self.commit('first')
-        self.commit('second')
-        with self.open('upstream.wrap', 'w') as f:
-            f.write('hello')
-        self.commit('project r1')
-        self.commit('project r2')
-        self.commit('Some new [wrap version] message r1')
-        self.assertEqual(gitutils.get_revision(self.repo), 1)
-
     def test_merge(self):
         with self.open('upstream.wrap', 'w') as f:
             f.write('hello')
@@ -60,14 +48,6 @@ class GetRevisionTest(unittest.TestCase):
         r = self.commit('fourth', [r], head=False)
         self.commit('fifth', [self.repo.head.commit, r])
         self.assertEqual(gitutils.get_revision(self.repo), 5)
-
-    def test_no_upstream_wrap_version(self):
-        self.commit('first')
-        self.commit('second [wrap version]')
-        with self.open('upstream.wrap', 'w') as f:
-            f.write('foo')
-        self.commit('third')
-        self.assertEqual(gitutils.get_revision(self.repo), 1)
 
 
 if __name__ == '__main__':

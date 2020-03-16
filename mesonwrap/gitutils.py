@@ -73,13 +73,9 @@ def get_revision(repo: git.Repo, commit: git.Commit = None):
         cur = todo.pop()
         if 'upstream.wrap' not in cur.tree:
             # Must be first test, just cut off BFS.
-            pass
-        elif '[wrap version]' in cur.message:
-            # Count commit but cut off BFS.
-            commits.add(cur.hexsha)
-        else:
+            continue
+        if cur.hexsha not in commits:
             # Do not repeat work, we already visited this subtree.
-            if cur.hexsha not in commits:
-                commits.add(cur.hexsha)
-                todo.extend(cur.parents)
+            commits.add(cur.hexsha)
+            todo.extend(cur.parents)
     return len(commits)
