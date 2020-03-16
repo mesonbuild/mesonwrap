@@ -4,7 +4,8 @@ from typing import List, Optional, Tuple
 import unittest
 from unittest import mock
 
-from wrapweb import APP
+import flask
+
 from wrapweb import api
 
 Version = Tuple[str, int]
@@ -73,6 +74,8 @@ class FakeDatabase:
 
 class TestBase(unittest.TestCase):
 
+    BLUEPRINT = None
+
     def _patch_object(self, module, name, *args, **kwargs):
         patcher = mock.patch.object(module, name, *args, **kwargs)
         obj = patcher.start()
@@ -81,10 +84,12 @@ class TestBase(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        APP.testing = True  # propagate exceptions
+        self.app = flask.Flask(__name__)
+        self.app.register_blueprint(self.BLUEPRINT)
+        self.app.testing = True  # propagate exceptions
         self.database = FakeDatabase()
         self._patch_object(api, '_database', return_value=self.database)
-        self.client = APP.test_client()
+        self.client = self.app.test_client()
         self.client.__enter__()
 
     def tearDown(self):

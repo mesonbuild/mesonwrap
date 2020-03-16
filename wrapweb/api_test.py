@@ -2,10 +2,13 @@ import unittest
 
 import flask
 
+from wrapweb import api
 from wrapweb import testing
 
 
 class ApiTest(testing.TestBase):
+
+    BLUEPRINT = api.BP
 
     def test_name_query(self):
         self.database.insert('foo', '1.2.3', 3, '', b'')
