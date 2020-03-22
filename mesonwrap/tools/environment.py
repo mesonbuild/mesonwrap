@@ -25,6 +25,6 @@ def github():
 def repo(
     organization: str, project: str
 ) -> _github.Repository.Repository:
-    gh = environment.github()
+    gh = github()
     org = gh.get_organization(organization)
     return org.get_repo(project)
