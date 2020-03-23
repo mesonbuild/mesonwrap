@@ -66,6 +66,7 @@ class RepoBuilder:
     def __init__(self, name, path=None, organization=None, homepage=None):
         """Pushes to github only if organization is set."""
         self.name = name
+        self.url = None
         try:
             self.repo = git.Repo(path)
             try:
@@ -105,6 +106,7 @@ class RepoBuilder:
         ghrepo = mesonbuild.create_repo(
             self.name, description=description, homepage=homepage,
             team_id=MAINTAINERS_TEAM_ID[organization])
+        self.url = ghrepo.html_url
         team = mesonbuild.get_team(MAINTAINERS_TEAM_ID[organization])
         team.set_repo_permission(ghrepo, 'push')
         self.init(path, ghrepo.ssh_url)
@@ -156,6 +158,8 @@ def new_repo(prog, args):
                           homepage=args.homepage)
     if args.version:
         builder.init_version(args.version)
+    if builder.url:
+        print('Repository created:', builder.url)
 
 
 def refresh(prog, args):
