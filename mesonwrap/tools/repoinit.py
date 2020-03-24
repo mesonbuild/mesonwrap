@@ -21,6 +21,7 @@ import datetime
 import hashlib
 
 import git
+import github
 import requests
 
 from mesonwrap import gitutils, upstream
@@ -102,10 +103,23 @@ class RepoBuilder:
     def init_github(self, path, organization, homepage):
         gh = environment.github()
         mesonbuild = gh.get_organization(organization)
-        description = 'Meson build definitions for %s' % self.name
-        ghrepo = mesonbuild.create_repo(
-            self.name, description=description, homepage=homepage,
-            team_id=MAINTAINERS_TEAM_ID[organization])
+        params = dict(
+            description='Meson build definitions for %s' % self.name,
+            homepage=homepage)
+        try:
+            ghrepo = mesonbuild.create_repo(self.name, **params)
+        except github.GithubException as e:  # probably it exists
+            # handle partially created repositories
+            try:
+                ghrepo = mesonbuild.get_repo(self.name)
+            except github.GithubException:
+                # unknown error, re-raise the outer exception
+                ghrepo = None
+            if ghrepo is None:
+                raise  # something strange happened, abort
+            if ghrepo.get_stats_contributors() is not None:
+                raise  # not an empty repository
+            ghrepo.edit(**params)
         self.url = ghrepo.html_url
         team = mesonbuild.get_team(MAINTAINERS_TEAM_ID[organization])
         team.set_repo_permission(ghrepo, 'push')
