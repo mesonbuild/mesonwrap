@@ -17,7 +17,6 @@ import json
 import flask
 
 from wrapweb import api
-from wrapweb import jsonstatus
 
 BP = flask.Blueprint('ui', __name__)
 

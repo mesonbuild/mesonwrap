@@ -1,7 +1,4 @@
 import unittest
-from unittest import mock
-
-import flask
 
 from wrapweb import api
 from wrapweb import testing
@@ -52,7 +49,7 @@ class ApiTest(testing.TestBase):
         self.assertEqual(rv.get_data(as_text=True),
                          'some text')
 
-    def test_get_wrap(self):
+    def test_get_zip(self):
         self.database.add('foo', '1.2.3', 1, '', b'some data')
         rv = self.client.get('/v1/projects/foo/1.2.3/1/get_zip')
         self.assertEqual(rv.status_code, 200)

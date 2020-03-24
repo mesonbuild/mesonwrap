@@ -14,8 +14,8 @@ from mesonwrap import version
 UPSTREAM_WRAP_LABEL = 'upstream.wrap'
 PATCH_ZIP_LABEL = 'patch.zip'
 CACHE_SIZE = 1000
-CACHE_TTL = 30 * 60  # 30 minutes
-TICKETS_TTL = 5 * 60 # 5 minutes
+CACHE_TTL = 30 * 60   # 30 minutes
+TICKETS_TTL = 5 * 60  # 5 minutes
 
 
 Version = Tuple[str, int]

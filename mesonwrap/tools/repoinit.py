@@ -108,7 +108,7 @@ class RepoBuilder:
             homepage=homepage)
         try:
             ghrepo = mesonbuild.create_repo(self.name, **params)
-        except github.GithubException as e:  # probably it exists
+        except github.GithubException:  # probably it exists
             # handle partially created repositories
             try:
                 ghrepo = mesonbuild.get_repo(self.name)

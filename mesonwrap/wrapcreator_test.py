@@ -103,8 +103,9 @@ class WrapCreatorTest(unittest.TestCase):
             f.write('[wrap-file]\n')
             f.write('hello = world\n')
         repo.commit('my commit')
-        with self.assertRaisesRegex(RuntimeError, 'Missing .* in upstream.wrap'):
-            wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
+        with self.assertRaisesRegex(
+                RuntimeError, 'Missing .* in upstream.wrap'):
+            _ = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
 
     def test_merged_revisions(self):
         repo = gitutils.GitProject(git.Repo.init(self.workdir))

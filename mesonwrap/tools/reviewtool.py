@@ -24,7 +24,6 @@ import sys
 from typing import Optional, Tuple
 
 import git
-import github
 
 from mesonwrap import requests
 from mesonwrap import tempfile
