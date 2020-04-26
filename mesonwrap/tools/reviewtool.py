@@ -57,6 +57,7 @@ def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
 
 @dataclasses.dataclass
 class ReviewerOptions:
+    meson_bin: str = 'meson'
     strict_fileset: bool = True
     strict_version_in_url: bool = True
     strict_license_check: bool = True
@@ -260,11 +261,12 @@ class Reviewer:
         print_status('Patch merges with source',
                      self.mergetree(os.path.join(tmpdir, 'head'), srcdir))
 
-    @staticmethod
-    def check_build(tmpdir, upwrap):
+    def check_build(self, tmpdir, upwrap):
         srcdir = os.path.join(tmpdir, 'src', upwrap.directory)
         bindir = os.path.join(tmpdir, 'bin')
-        setup_result = subprocess.call(['meson', 'setup', srcdir, bindir])
+        setup_result = subprocess.call([
+            self.options.meson_bin, 'setup', srcdir, bindir
+        ])
         print_status('meson setup', setup_result == 0)
         test_result = subprocess.call(['ninja', '-C', bindir, 'test'])
         print_status('ninja test', test_result == 0)
@@ -291,6 +293,7 @@ def main(prog, args):
     parser.add_argument('--allow-other-files', action='store_true')
     parser.add_argument('--allow-url-without-version', action='store_true')
     parser.add_argument('--allow-no-license', action='store_true')
+    parser.add_argument('--meson', default='meson')
     parser.add_argument('--export-sources')
     parser.add_argument('--approve', action='store_true',
                         help='Approve and admit revision into WrapDB')
@@ -312,6 +315,7 @@ def main(prog, args):
     else:
         sys.exit('Either --pull-request or --branch must be set')
     r.options = ReviewerOptions(
+        meson_bin=args.meson,
         strict_fileset=not args.allow_other_files,
         strict_version_in_url=not args.allow_url_without_version,
         strict_license_check=not args.allow_no_license,
