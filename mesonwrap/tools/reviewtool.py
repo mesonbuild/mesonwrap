@@ -160,8 +160,8 @@ class Reviewer:
         return os.path.isfile(os.path.join(head_dir, filename))
 
     def check_basics(self, head_repo):
-        print('Inspecting project %s, branch %s.' %
-              (self._project, self._branch))
+        print('Inspecting project {}, branch {}.'.format(
+            self._project, self._branch))
         head_dir = head_repo.working_dir
         print_status('Repo name valid',
                      re.fullmatch('[a-z][a-z0-9._-]*', self._project))

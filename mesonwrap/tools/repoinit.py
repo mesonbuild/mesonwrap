@@ -86,14 +86,14 @@ class RepoBuilder:
     def init(self, path, origin=None):
         """Push if origin is not None."""
         self.repo = git.Repo.init(path)
-        self.refresh('Create repository for project %s' % self.name)
+        self.refresh('Create repository for project {}'.format(self.name))
         if origin is not None:
             self.origin = self.repo.create_remote('origin', origin)
             self.origin.push(self.repo.head.ref.name)
 
     def refresh(self, message=None):
         if message is None:
-            message = 'Refresh repository %s' % self.name
+            message = 'Refresh repository {}'.format(self.name)
         with self.open('readme.txt', 'w') as ofile:
             ofile.write(README.format(reponame=self.name))
         with self.open('LICENSE.build', 'w') as ofile:
@@ -104,7 +104,7 @@ class RepoBuilder:
         gh = environment.github()
         mesonbuild = gh.get_organization(organization)
         params = dict(
-            description='Meson build definitions for %s' % self.name,
+            description='Meson build definitions for {}'.format(self.name),
             homepage=homepage)
         try:
             ghrepo = mesonbuild.create_repo(self.name, **params)
