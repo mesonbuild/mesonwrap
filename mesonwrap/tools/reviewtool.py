@@ -61,6 +61,7 @@ class ReviewerOptions:
     strict_fileset: bool = True
     strict_version_in_url: bool = True
     strict_license_check: bool = True
+    overwrite_merge: str = False
     export_sources: Optional[str] = None
 
 
@@ -206,8 +207,7 @@ class Reviewer:
             print('      got:', calculated_hash)
             raise
 
-    @staticmethod
-    def mergetree(src, dst):
+    def mergetree(self, src, dst):
         for dirpath, dirnames, filenames in os.walk(src):
             prefix = os.path.relpath(dirpath, src)
             dstpath = os.path.join(dst, prefix)
@@ -224,7 +224,8 @@ class Reviewer:
                 print_status('{!r} already exists'.format(
                                  os.path.join(prefix, f)),
                              not os.path.exists(dest),
-                             quiet=True)
+                             quiet=True,
+                             fatal=not self.options.overwrite_merge)
                 shutil.copy2(os.path.join(dirpath, f), dest)
         return True
 
@@ -293,6 +294,7 @@ def main(prog, args):
     parser.add_argument('--allow-other-files', action='store_true')
     parser.add_argument('--allow-url-without-version', action='store_true')
     parser.add_argument('--allow-no-license', action='store_true')
+    parser.add_argument('--allow-overwrite', action='store_true')
     parser.add_argument('--meson', default='meson')
     parser.add_argument('--export-sources')
     parser.add_argument('--approve', action='store_true',
@@ -319,6 +321,7 @@ def main(prog, args):
         strict_fileset=not args.allow_other_files,
         strict_version_in_url=not args.allow_url_without_version,
         strict_license_check=not args.allow_no_license,
+        overwrite_merge=args.allow_overwrite,
         export_sources=args.export_sources)
     review, sha = r.review()
     if not review:
