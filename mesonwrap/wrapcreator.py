@@ -31,7 +31,7 @@ from mesonwrap import wrap
 
 # Replace this with proper parameterized callback if this need to be extended.
 _OUT_URL_BASE_DEFAULT = (
-    'https://wrapdb.mesonbuild.com/v1/projects/{}/{}/{}/get_zip')
+    'https://wrapdb.mesonbuild.com/v1/projects/%s/%s/%d/get_zip')
 
 # relative fully qualified paths
 _IGNORED_FILES = [
