@@ -99,9 +99,8 @@ def _get_asset(org: Organization,
             with requests.get(asset.browser_download_url) as rv:
                 rv.raise_for_status()
                 return rv.content
-    _log.error(
-        'Asset not found project={} branch={} revision={} label={}'.format(
-            project, branch, revision, label))
+    _log.error('Asset not found project=%s branch=%s revision=%d label=%s',
+               project, branch, revision, label)
     raise KeyError('Asset not found', project, branch, revision, label)
 
 
@@ -111,8 +110,7 @@ def _get_wrap(org: Organization,
         data = _get_asset(org, project, branch, revision, UPSTREAM_WRAP_LABEL)
         return data.decode('utf-8')
     except Exception as e:
-        _log.error('get_wrap({}, {}, {}): {}'.format(
-            project, branch, revision, e))
+        _log.error('get_wrap(%s, %s, %d): %s', project, branch, revision, e)
         return None
 
 
@@ -121,8 +119,7 @@ def _get_zip(org: Organization,
     try:
         return _get_asset(org, project, branch, revision, PATCH_ZIP_LABEL)
     except Exception as e:
-        _log.error('get_zip({}, {}, {}): {}'.format(
-            project, branch, revision, e))
+        _log.error('get_zip(%s, %s, %d): %s', project, branch, revision, e)
         return None
 
 
