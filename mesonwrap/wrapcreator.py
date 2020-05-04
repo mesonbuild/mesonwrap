@@ -31,7 +31,7 @@ from mesonwrap import wrap
 
 # Replace this with proper parameterized callback if this need to be extended.
 _OUT_URL_BASE_DEFAULT = (
-    'https://wrapdb.mesonbuild.com/v1/projects/%s/%s/%d/get_zip')
+    'https://wrapdb.mesonbuild.com/v1/projects/{}/{}/{}/get_zip')
 
 # relative fully qualified paths
 _IGNORED_FILES = [
@@ -84,15 +84,15 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
         zip_contents = zipf.getvalue()
     source_hash = hashlib.sha256(zip_contents).hexdigest()
     with io.StringIO() as wf:
-        url = _OUT_URL_BASE_DEFAULT % (name, branch, revision_id)
+        url = _OUT_URL_BASE_DEFAULT.format(name, branch, revision_id)
         with open(upstream_file) as basewrap:
             # preserve whatever formatting user has provided
             wf.write(basewrap.read())
         wf.write('\n')
-        wf.write('patch_url = %s\n' % url)
+        wf.write('patch_url = {}\n'.format(url))
         zip_name = wrap.zip_name(name, branch, revision_id)
-        wf.write('patch_filename = %s\n' % zip_name)
-        wf.write('patch_hash = %s\n' % source_hash)
+        wf.write('patch_filename = {}\n'.format(zip_name))
+        wf.write('patch_hash = {}\n'.format(source_hash))
         wrapfile_content = wf.getvalue()
     return wrap.Wrap(name=name, version=branch, revision=revision_id,
                      wrapfile_content=wrapfile_content, zip=zip_contents,
