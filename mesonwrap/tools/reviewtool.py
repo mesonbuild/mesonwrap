@@ -15,6 +15,7 @@
 import argparse
 import contextlib
 import dataclasses
+import enum
 import hashlib
 import os
 import re
@@ -55,12 +56,29 @@ def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
         raise CheckError(msg)
 
 
+@enum.unique
+class BuildStage(enum.IntEnum):
+
+    NONE = enum.auto()
+    CONFIGURE = enum.auto()
+    BUILD = enum.auto()
+    TEST = enum.auto()
+
+    @classmethod
+    def argparse(cls, value):
+        return cls[value.upper()]
+
+    def __str__(self):
+        return self.name.lower()
+
+
 @dataclasses.dataclass
 class ReviewerOptions:
     meson_bin: str = 'meson'
     strict_fileset: bool = True
     strict_version_in_url: bool = True
     strict_license_check: bool = True
+    build_stage: BuildStage = BuildStage.TEST
     overwrite_merge: str = False
     export_sources: Optional[str] = None
 
@@ -265,12 +283,17 @@ class Reviewer:
     def check_build(self, tmpdir, upwrap):
         srcdir = os.path.join(tmpdir, 'src', upwrap.directory)
         bindir = os.path.join(tmpdir, 'bin')
-        setup_result = subprocess.call([
-            self.options.meson_bin, 'setup', srcdir, bindir
-        ])
-        print_status('meson setup', setup_result == 0)
-        test_result = subprocess.call(['ninja', '-C', bindir, 'test'])
-        print_status('ninja test', test_result == 0)
+        if self.options.build_stage >= BuildStage.CONFIGURE:
+            setup_result = subprocess.call([
+                self.options.meson_bin, 'setup', srcdir, bindir
+            ])
+            print_status('meson setup', setup_result == 0)
+        if self.options.build_stage >= BuildStage.BUILD:
+            test_result = subprocess.call(['ninja', '-C', bindir])
+            print_status('ninja build', test_result == 0)
+        if self.options.build_stage >= BuildStage.TEST:
+            test_result = subprocess.call(['ninja', '-C', bindir, 'test'])
+            print_status('ninja test', test_result == 0)
 
     @staticmethod
     def merge(
@@ -295,6 +318,8 @@ def main(prog, args):
     parser.add_argument('--allow-url-without-version', action='store_true')
     parser.add_argument('--allow-no-license', action='store_true')
     parser.add_argument('--allow-overwrite', action='store_true')
+    parser.add_argument('--build-stage', type=BuildStage.argparse,
+                        choices=list(BuildStage), default=BuildStage.TEST)
     parser.add_argument('--meson', default='meson')
     parser.add_argument('--export-sources')
     parser.add_argument('--approve', action='store_true',
@@ -321,6 +346,7 @@ def main(prog, args):
         strict_fileset=not args.allow_other_files,
         strict_version_in_url=not args.allow_url_without_version,
         strict_license_check=not args.allow_no_license,
+        build_stage=args.build_stage,
         overwrite_merge=args.allow_overwrite,
         export_sources=args.export_sources)
     review, sha = r.review()
