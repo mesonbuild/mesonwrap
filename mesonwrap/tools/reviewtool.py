@@ -22,7 +22,7 @@ import re
 import shutil
 import subprocess
 import sys
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import git
 
@@ -75,6 +75,7 @@ class BuildStage(enum.IntEnum):
 @dataclasses.dataclass
 class ReviewerOptions:
     meson_bin: str = 'meson'
+    meson_args: List[str] = dataclasses.field(default_factory=list)
     strict_fileset: bool = True
     strict_version_in_url: bool = True
     strict_license_check: bool = True
@@ -286,7 +287,7 @@ class Reviewer:
         if self.options.build_stage >= BuildStage.CONFIGURE:
             setup_result = subprocess.call([
                 self.options.meson_bin, 'setup', srcdir, bindir
-            ])
+            ] + self.options.meson_args)
             print_status('meson setup', setup_result == 0)
         if self.options.build_stage >= BuildStage.BUILD:
             test_result = subprocess.call(['ninja', '-C', bindir])
@@ -321,6 +322,7 @@ def main(prog, args):
     parser.add_argument('--build-stage', type=BuildStage.argparse,
                         choices=list(BuildStage), default=BuildStage.TEST)
     parser.add_argument('--meson', default='meson')
+    parser.add_argument('--cross-file', action='append')
     parser.add_argument('--export-sources')
     parser.add_argument('--approve', action='store_true',
                         help='Approve and admit revision into WrapDB')
@@ -349,6 +351,9 @@ def main(prog, args):
         build_stage=args.build_stage,
         overwrite_merge=args.allow_overwrite,
         export_sources=args.export_sources)
+    r.options.meson_args.extend(
+        '--cross-file=' + os.path.abspath(cf) for cf in args.cross_file
+    )
     review, sha = r.review()
     if not review:
         sys.exit(1)
