@@ -322,7 +322,7 @@ def main(prog, args):
     parser.add_argument('--build-stage', type=BuildStage.argparse,
                         choices=list(BuildStage), default=BuildStage.TEST)
     parser.add_argument('--meson', default='meson')
-    parser.add_argument('--cross-file', action='append')
+    parser.add_argument('--cross-file', action='append', default=[])
     parser.add_argument('--export-sources')
     parser.add_argument('--approve', action='store_true',
                         help='Approve and admit revision into WrapDB')
