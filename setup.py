@@ -28,6 +28,7 @@ if __name__ == '__main__':
                 'templates/*.html',
             ],
         },
+        python_requires='>=3.7',
         install_requires=[
             'Flask',
             'GitPython',
