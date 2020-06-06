@@ -2,8 +2,7 @@ import dataclasses
 
 
 def _base_name(name: str, version: str, revision: int) -> str:
-    return '{name}-{version}-{revision}-wrap'.format(
-        name=name, version=version, revision=revision)
+    return f'{name}-{version}-{revision}-wrap'
 
 
 def wrapfile_name(name: str, version: str, revision: int) -> str:

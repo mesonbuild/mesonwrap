@@ -93,7 +93,7 @@ def _release_list(org: Organization, project: str) -> List[Version]:
 def _get_asset(org: Organization,
                project: str, branch: str, revision: int, label: str) -> bytes:
     repo = org().get_repo(project)
-    release = repo.get_release('{}-{}'.format(branch, revision))
+    release = repo.get_release(f'{branch}-{revision}')
     for asset in release.get_assets():
         if asset.label == label:
             with requests.get(asset.browser_download_url) as rv:
@@ -151,7 +151,7 @@ def _tickets(org: Organization) -> List[ticket.Ticket]:
         'is:public',
     ]
     query.extend(
-        '-repo:{}'.format(project)
+        f'-repo:{project}'
         for project in inv.restricted_projects
         if project != inv.issue_tracker
     )

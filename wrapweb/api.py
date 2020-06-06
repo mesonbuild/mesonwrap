@@ -78,6 +78,5 @@ def get_zip(project, branch, revision):
     resp = flask.make_response(result)
     resp.mimetype = 'application/zip'
     resp.headers['Content-Disposition'] = (
-        'attachment; filename={}-{}-{}-wrap.zip'.format(
-            project, branch, revision))
+        f'attachment; filename={project}-{branch}-{revision}-wrap.zip')
     return resp

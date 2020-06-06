@@ -27,17 +27,17 @@ class Publisher:
         with open(zippath, 'wb') as f:
             f.write(wrap.zip)
         ghrepo = environment.repo(organization, wrap.name)
-        tagname = '{}-{}'.format(wrap.version, wrap.revision)
+        tagname = f'{wrap.version}-{wrap.revision}'
         try:
             rel = ghrepo.get_release(tagname)
-            print('Release {!r} already exists'.format(tagname))
+            print(f'Release {tagname!r} already exists')
         except github.GithubException:
             tag = ghrepo.create_git_tag(tag=tagname, message=tagname,
                                         type='commit', object=wrap.commit_sha)
-            ghrepo.create_git_ref('refs/tags/{}'.format(tag.tag), tag.sha)
+            ghrepo.create_git_ref(f'refs/tags/{tag.tag}', tag.sha)
             rel = ghrepo.create_git_release(tag=tagname, name=tagname,
                                             message=tagname)
-            print('Release {!r} created'.format(tagname))
+            print(f'Release {tagname!r} created')
         patch_label = 'patch.zip'
         wrap_label = 'upstream.wrap'
         patch_found = False
@@ -48,8 +48,7 @@ class Publisher:
             elif a.label == wrap_label:
                 wrap_found = True
             else:
-                print('Removing unknown asset {!r} / {!r}'.format(
-                        a.label, a.name))
+                print(f'Removing unknown asset {a.label!r} / {a.name!r}')
                 a.delete_asset()
         if not wrap_found:
             rel.upload_asset(wrappath, label=wrap_label,

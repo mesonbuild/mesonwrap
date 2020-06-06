@@ -12,13 +12,13 @@ class _ConfigDescriptor:
 
     def __get__(self, instance, owner=None):
         if instance is None:
-            raise AttributeError('{}.{} is not supported'.format(
-                owner.__name__, self._name))
+            raise AttributeError(
+                f'{owner.__name__}.{self._name} is not supported')
         try:
             return instance._cfg.get(_SECTION, self._name)
         except (configparser.NoOptionError,
                 configparser.NoSectionError) as e:
-            raise ValueError('{!r} is not defined'.format(self._name)) from e
+            raise ValueError(f'{self._name!r} is not defined') from e
 
     def __set__(self, instance, value):
         if not instance._cfg.has_section(_SECTION):
@@ -37,8 +37,8 @@ class _ConfigHasDescriptor:
 
     def __get__(self, instance, owner=None):
         if instance is None:
-            raise AttributeError('{}.{} is not supported'.format(
-                owner.__name__, self._name))
+            raise AttributeError(
+                f'{owner.__name__}.{self._name} is not supported')
         return instance._cfg.has_option(_SECTION, self._sname)
 
 

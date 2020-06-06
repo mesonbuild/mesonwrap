@@ -55,7 +55,7 @@ def make_wrap(name: str, repo_url: str, branch: str) -> wrap.Wrap:
 def _check_wrapfile(wrapfile):
     for i in ['directory', 'source_url', 'source_filename', 'source_hash']:
         if not wrapfile.has(i):
-            raise RuntimeError('Missing {!r} in upstream.wrap.'.format(i))
+            raise RuntimeError(f'Missing {i!r} in upstream.wrap.')
 
 
 def _make_zip(file, workdir, dirprefix):
@@ -89,10 +89,10 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
             # preserve whatever formatting user has provided
             wf.write(basewrap.read())
         wf.write('\n')
-        wf.write('patch_url = {}\n'.format(url))
+        wf.write(f'patch_url = {url}\n')
         zip_name = wrap.zip_name(name, branch, revision_id)
-        wf.write('patch_filename = {}\n'.format(zip_name))
-        wf.write('patch_hash = {}\n'.format(source_hash))
+        wf.write(f'patch_filename = {zip_name}\n')
+        wf.write(f'patch_hash = {source_hash}\n')
         wrapfile_content = wf.getvalue()
     return wrap.Wrap(name=name, version=branch, revision=revision_id,
                      wrapfile_content=wrapfile_content, zip=zip_contents,

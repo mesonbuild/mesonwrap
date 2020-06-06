@@ -62,7 +62,7 @@ class WrapCreatorTest(unittest.TestCase):
         try:
             wrapcreator._check_wrapfile(up)
         except RuntimeError as e:
-            self.fail('Unexpected RuntimeError {!r}'.format(e))
+            self.fail(f'Unexpected RuntimeError {e!r}')
 
     def test_make_wrap(self):
         repo = gitutils.GitProject(git.Repo.init(self.workdir))

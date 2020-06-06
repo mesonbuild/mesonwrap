@@ -28,7 +28,7 @@ class Command:
         getattr(self, self.CMD_PREFIX + command)()
 
     def usage(self):
-        return '{} command\n'.format(sys.argv[0]) + self.format_commands()
+        return f'{sys.argv[0]} command\n' + self.format_commands()
 
     def format_commands(self):
         maxlen = max(len(cmd) for cmd in self.extract_commands().keys())
@@ -49,8 +49,7 @@ class Command:
         """Returns (program name, list of arguments)."""
         func = inspect.stack()[1][3]
         command = func[len(self.CMD_PREFIX):]
-        return ('{} {}'.format(sys.argv[0], command),
-                sys.argv[2:])
+        return (f'{sys.argv[0]} {command}', sys.argv[2:])
 
     def command_serve(self):
         """Run server"""

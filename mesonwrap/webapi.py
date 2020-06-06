@@ -68,7 +68,7 @@ class _APIClient:
     @staticmethod
     def _check_part(part, name):
         if '/' in part:
-            raise ValueError("Invalid {}, '/' is not allowed".format(name))
+            raise ValueError(f"Invalid {name}, '/' is not allowed")
 
     @classmethod
     def _check_project(cls, project):
@@ -81,8 +81,8 @@ class _APIClient:
     @staticmethod
     def _check_revision(revision):
         if not isinstance(revision, int):
-            raise ValueError('Invalid revision, '
-                             'expected int, got {}'.format(type(revision)))
+            raise ValueError(
+                f'Invalid revision, expected int, got {type(revision)}')
 
     def fetch(self, url: str) -> bytes:
         rv = self._http.get(url)
@@ -130,10 +130,8 @@ class _APIClient:
         self._check_project(project)
         self._check_version(version)
         self._check_revision(revision)
-        url = '/v1/projects/{project}/{version}/{revision}/get_wrap'
-        return self.fetch(url.format(project=project,
-                                     version=version,
-                                     revision=revision))
+        url = f'/v1/projects/{project}/{version}/{revision}/get_wrap'
+        return self.fetch(url)
 
     def fetch_v1_project_zip(
         self, project: str, version: str, revision: int
@@ -141,10 +139,8 @@ class _APIClient:
         self._check_project(project)
         self._check_version(version)
         self._check_revision(revision)
-        url = '/v1/projects/{project}/{version}/{revision}/get_zip'
-        return self.fetch(url.format(project=project,
-                                     version=version,
-                                     revision=revision))
+        url = f'/v1/projects/{project}/{version}/{revision}/get_zip'
+        return self.fetch(url)
 
 
 class Revision:

@@ -51,7 +51,7 @@ def print_status(msg, check: bool, fatal: bool = True, quiet: bool = False):
     """
     status = OK_CHR if check else FAIL_CHR
     if not quiet or not check:
-        print('{msg}: {status}'.format(msg=msg, status=status))
+        print(f'{msg}: {status}')
     if not check and fatal:
         raise CheckError(msg)
 
@@ -180,8 +180,7 @@ class Reviewer:
         return os.path.isfile(os.path.join(head_dir, filename))
 
     def check_basics(self, head_repo):
-        print('Inspecting project {}, branch {}.'.format(
-            self._project, self._branch))
+        print(f'Inspecting project {self._project}, branch {self._branch}.')
         head_dir = head_repo.working_dir
         print_status('Repo name valid',
                      re.fullmatch('[a-z][a-z0-9._-]*', self._project))
@@ -240,8 +239,7 @@ class Reviewer:
                 if f in ('readme.txt', 'upstream.wrap'):
                     continue
                 dest = os.path.join(dstpath, f)
-                print_status('{!r} already exists'.format(
-                                 os.path.join(prefix, f)),
+                print_status(f'{os.path.join(prefix, f)!r} already exists',
                              not os.path.exists(dest),
                              quiet=True,
                              fatal=not self.options.overwrite_merge)
@@ -260,8 +258,7 @@ class Reviewer:
             shutil.unpack_archive(srcarchive, srcdir_base)
         srcdir = os.path.join(srcdir_base, upwrap.directory)
         try:
-            print_status('upstream.wrap directory {!r} exists'.format(
-                             upwrap.directory),
+            print_status(f'upstream.wrap directory {upwrap.directory!r} exists',
                          os.path.exists(srcdir))
         except CheckError:
             files = os.listdir(srcdir_base)
@@ -271,10 +268,10 @@ class Reviewer:
             elif len(files) == 1:
                 f, = files
                 if os.path.isdir(files[0]):
-                    print('  available directory:', f)
-                    print('  consider using "directory = {}"'.format(f))
+                    print(f'  available directory: {f}')
+                    print(f'  consider using "directory = {f}"')
                 else:
-                    print('  available file:', f)
+                    print(f'  available file: {f}')
             else:
                 print('  the archive is empty')
             raise
