@@ -38,6 +38,7 @@ _IGNORED_FILES = [
     '.gitignore',
     'readme.txt',
     'upstream.wrap',
+    'wrapdb.ini',
 ]
 
 _IGNORED_DIRS = [
