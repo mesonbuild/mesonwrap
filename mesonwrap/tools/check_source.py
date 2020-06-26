@@ -25,7 +25,7 @@ def check_source(
         headers['User-Agent'] = useragent
     try:
         h = hashlib.sha256()
-        with requests.get(wrapfile.source_url, timeout=timeout) as rv:
+        with requests.get(wrapfile.source_url, headers=headers, timeout=timeout) as rv:
             h.update(rv.content)
         calculated_hash = h.hexdigest()
         if calculated_hash != wrapfile.source_hash:
