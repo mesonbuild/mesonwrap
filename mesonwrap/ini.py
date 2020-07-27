@@ -124,3 +124,8 @@ class WrapFile(IniFile):
     patch_url = IniField(_SECTION)
     patch_filename = IniField(_SECTION)
     patch_hash = IniField(_SECTION)
+
+
+class WrapMeta(IniFile):
+
+    description = IniField('metadata')

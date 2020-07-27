@@ -82,5 +82,23 @@ class WrapFileTest(unittest.TestCase):
         self.assertIn('[wrap-file]', s)
 
 
+class WrapMetaTest(unittest.TestCase):
+
+    def test_attr(self):
+        m = ini.WrapMeta()
+        for attr in ('description',):
+            setattr(m, attr, 'hello world')
+            self.assertEqual(getattr(m, attr), 'hello world')
+            self.assertTrue(getattr(m, 'has_' + attr))
+            self.assertTrue(m.has(attr))
+
+    def test_write(self):
+        m = ini.WrapMeta()
+        m.description = 'hello world'
+        s = m.write_string()
+        self.assertIn('hello world', s)
+        self.assertIn('[metadata]', s)
+
+
 if __name__ == '__main__':
     unittest.main()
