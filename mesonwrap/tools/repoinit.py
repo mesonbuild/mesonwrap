@@ -24,7 +24,8 @@ import git
 import github
 import requests
 
-from mesonwrap import gitutils, upstream
+from mesonwrap import gitutils
+from mesonwrap import ini
 from mesonwrap.tools import environment
 
 
@@ -149,7 +150,7 @@ class RepoBuilder:
         assert not self.repo.head.is_detached
         self.repo.head.reset(index=True, working_tree=True)
         with self.open('upstream.wrap', 'w') as ofile:
-            upstream.WrapFile(
+            ini.WrapFile(
                 directory=directory,
                 source_url=zipurl,
                 source_filename=filename,

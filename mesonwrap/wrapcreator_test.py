@@ -8,8 +8,8 @@ import zipfile
 import git
 
 from mesonwrap import gitutils
+from mesonwrap import ini
 from mesonwrap import tempfile
-from mesonwrap import upstream
 from mesonwrap import wrapcreator
 
 
@@ -51,10 +51,10 @@ class WrapCreatorTest(unittest.TestCase):
 
     def test_check_wrapfile_empty(self):
         with self.assertRaises(RuntimeError):
-            wrapcreator._check_wrapfile(upstream.WrapFile())
+            wrapcreator._check_wrapfile(ini.WrapFile())
 
     def test_check_wrapfile_okay(self):
-        up = upstream.WrapFile()
+        up = ini.WrapFile()
         up.directory = 'hello'
         up.source_url = 'https://example.com/file.tgz'
         up.source_filename = 'file.tgz'
@@ -69,7 +69,7 @@ class WrapCreatorTest(unittest.TestCase):
         repo.commit('initial commit')
         repo.create_version('1.2.3')
         with repo.open('upstream.wrap', 'w') as f:
-            upstream.WrapFile(
+            ini.WrapFile(
                 directory='hello',
                 source_url='https://example.com/file.tgz',
                 source_filename='file.tgz',
@@ -78,7 +78,7 @@ class WrapCreatorTest(unittest.TestCase):
             f.write('hello world')
         repo.commit('my commit')
         wrap = wrapcreator.make_wrap('project', repo.git_dir, '1.2.3')
-        up = upstream.WrapFile.from_string(wrap.wrapfile_content)
+        up = ini.WrapFile.from_string(wrap.wrapfile_content)
         self.assertEqual(up.directory, 'hello')
         self.assertEqual(up.source_url, 'https://example.com/file.tgz')
         self.assertEqual(up.source_filename, 'file.tgz')
@@ -112,7 +112,7 @@ class WrapCreatorTest(unittest.TestCase):
         repo.commit('initial commit')
         repo.create_version('1.0.0')
         with repo.open('upstream.wrap', 'w') as f:
-            upstream.WrapFile(
+            ini.WrapFile(
                 directory='hello',
                 source_url='https://example.com/file.tgz',
                 source_filename='file.tgz',

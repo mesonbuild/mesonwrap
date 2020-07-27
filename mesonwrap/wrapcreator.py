@@ -25,8 +25,8 @@ from pathlib import PurePath
 import git
 
 from mesonwrap import gitutils
+from mesonwrap import ini
 from mesonwrap import tempfile
-from mesonwrap import upstream
 from mesonwrap import wrap
 
 # Replace this with proper parameterized callback if this need to be extended.
@@ -78,7 +78,7 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
     revision_commit_sha = repo.head.commit.hexsha
     revision_id = gitutils.get_revision(repo, repo.head.commit)
     upstream_file = os.path.join(workdir, 'upstream.wrap')
-    wrapfile = upstream.WrapFile.from_file(upstream_file)
+    wrapfile = ini.WrapFile.from_file(upstream_file)
     _check_wrapfile(wrapfile)
     with io.BytesIO() as zipf:
         _make_zip(zipf, workdir, wrapfile.directory)

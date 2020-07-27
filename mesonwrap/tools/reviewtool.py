@@ -26,9 +26,9 @@ from typing import List, Optional, Tuple
 
 import git
 
+from mesonwrap import ini
 from mesonwrap import requests
 from mesonwrap import tempfile
-from mesonwrap import upstream
 from mesonwrap.tools import environment
 from mesonwrap.tools import publisher
 
@@ -125,7 +125,7 @@ class Reviewer:
             try:
                 self.check_basics(head_repo)
                 self.check_files(head_dir)
-                upwrap = upstream.WrapFile.from_file(
+                upwrap = ini.WrapFile.from_file(
                     os.path.join(head_dir, 'upstream.wrap'))
                 self.check_wrapformat(upwrap)
                 self.check_url(upwrap)

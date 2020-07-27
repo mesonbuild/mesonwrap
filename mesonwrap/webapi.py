@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from mesonwrap import ini
 from mesonwrap import wrap
-from mesonwrap import upstream
 
 
 JSON = Dict[Any, Any]
@@ -164,8 +164,8 @@ class Revision:
         return self.__wrapfile_content
 
     @property
-    def wrapfile(self) -> upstream.WrapFile:
-        return upstream.WrapFile.from_string(self.wrapfile_content)
+    def wrapfile(self) -> ini.WrapFile:
+        return ini.WrapFile.from_string(self.wrapfile_content)
 
     @property
     def zip(self) -> bytes:

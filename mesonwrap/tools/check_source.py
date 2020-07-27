@@ -6,8 +6,8 @@ import io
 from typing import Tuple
 import urllib.request
 
+from mesonwrap import ini
 from mesonwrap import requests
-from mesonwrap import upstream
 from mesonwrap import webapi
 
 PYTHON_USERAGENT = urllib.request.URLopener.version
@@ -16,7 +16,7 @@ HTTPStatus = Tuple[http.HTTPStatus, str]
 
 
 def check_source(
-    wrapfile: upstream.WrapFile,
+    wrapfile: ini.WrapFile,
     useragent=None,
     timeout=None
 ) -> HTTPStatus:
