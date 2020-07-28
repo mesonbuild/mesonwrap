@@ -86,7 +86,8 @@ class WrapMetaTest(unittest.TestCase):
 
     def test_attr(self):
         m = ini.WrapMeta()
-        for attr in ('description',):
+        for attr in ('description',
+                     'homepage'):
             setattr(m, attr, 'hello world')
             self.assertEqual(getattr(m, attr), 'hello world')
             self.assertTrue(getattr(m, 'has_' + attr))

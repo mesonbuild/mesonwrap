@@ -129,3 +129,4 @@ class WrapFile(IniFile):
 class WrapMeta(IniFile):
 
     description = IniField('metadata')
+    homepage = IniField('metadata')
