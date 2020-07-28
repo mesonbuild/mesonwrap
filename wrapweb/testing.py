@@ -6,6 +6,7 @@ from unittest import mock
 
 import flask
 
+from mesonwrap import ini
 from wrapweb import api
 
 Version = Tuple[str, int]
@@ -26,12 +27,26 @@ class FakeDatabase:
     def __init__(self):
         # Dict[Dict[Dict[FakeRelease]]]
         self._projects = defaultdict(lambda: defaultdict(dict))
+        # Dict[project -> metadata]
+        self._metadata = dict()
 
     def add(self, name: str, version: str, revision: int,
             wrapfile_content: str, zip: bytes) -> None:
         self._projects[name][version][revision] = (
             FakeRelease(name, version, revision,
                         wrapfile_content, zip))
+
+    def set_metadata(self, name: str, **kwargs):
+        self._metadata[name] = kwargs
+
+    def get_metadata(self, name: str) -> Optional[ini.WrapMeta]:
+        meta = self._metadata.get(name)
+        if not meta:
+            return None
+        wm = ini.WrapMeta()
+        for key, value in meta.items():
+            setattr(wm, key, value)
+        return wm
 
     def close(self) -> None:
         pass

@@ -53,14 +53,20 @@ def get_projectlist():
 
 @BP.route('/v1/projects/<project>')
 def get_project_info(project):
+    metadata = _database().get_metadata(project)
     matches = _database().get_versions(project)
     if not matches:
         projects = _database().name_search(project)
         if project not in projects:
             return jsonstatus.error(404, 'No such project')
         return jsonstatus.ok(versions=[])
+    md = dict()
+    if metadata is not None:
+        for field in ['homepage', 'description']:
+            if metadata.has(field):
+                md[field] = getattr(metadata, field)
     versions = [{'branch': i[0], 'revision': i[1]} for i in matches]
-    return jsonstatus.ok(name=project, versions=versions)
+    return jsonstatus.ok(name=project, metadata=md, versions=versions)
 
 
 @BP.route('/v1/projects/<project>/<branch>/<int:revision>/get_wrap')

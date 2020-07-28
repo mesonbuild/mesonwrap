@@ -6,6 +6,7 @@ import cachetools
 import github
 import requests
 
+from mesonwrap import ini
 from mesonwrap import inventory
 from mesonwrap import ticket
 from mesonwrap import version
@@ -15,6 +16,7 @@ UPSTREAM_WRAP_LABEL = 'upstream.wrap'
 PATCH_ZIP_LABEL = 'patch.zip'
 CACHE_SIZE = 1000
 CACHE_TTL = 30 * 60   # 30 minutes
+METADATA_TTL = 24 * 60 * 60  # 1 day
 TICKETS_TTL = 5 * 60  # 5 minutes
 
 
@@ -56,6 +58,7 @@ class LockedCache:
 _repo = LockedCache(cachetools.TTLCache(maxsize=1, ttl=CACHE_TTL))
 _release = LockedCache(cachetools.TTLCache(maxsize=CACHE_SIZE, ttl=CACHE_TTL))
 _asset = LockedCache(cachetools.LRUCache(maxsize=CACHE_SIZE))
+_metadata = LockedCache(cachetools.TTLCache(maxsize=CACHE_SIZE, ttl=METADATA_TTL))
 _ticket = LockedCache(cachetools.TTLCache(maxsize=1, ttl=TICKETS_TTL))
 _log = logging.getLogger(__name__)
 
@@ -120,6 +123,17 @@ def _get_zip(org: Organization,
         return _get_asset(org, project, branch, revision, PATCH_ZIP_LABEL)
     except Exception as e:
         _log.error('get_zip(%s, %s, %d): %s', project, branch, revision, e)
+        return None
+
+
+@_metadata(key=_cache_key)
+def _get_metadata(org: Organization, project: str) -> Optional[ini.WrapMeta]:
+    try:
+        repo = org().get_repo(project)
+        meta = repo.get_contents('metadata.wrap')
+        return WrapMeta.from_string(meta.content)
+    except Exception as e:
+        _log.error('get_metadata(%s): %s', project, e)
         return None
 
 
@@ -193,6 +207,9 @@ class GithubDB:
     # TODO consider redirect
     def get_zip(self, project, branch, revision) -> Optional[bytes]:
         return _get_zip(self._org, project, branch, revision)
+
+    def get_metadata(self, project) -> Optional[ini.WrapMeta]:
+        return _get_metadata(self._org, project)
 
     def get_tickets(self) -> List[ticket.Ticket]:
         return _tickets(self._org)

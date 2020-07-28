@@ -20,6 +20,10 @@ To make an API call, make a request to URL corresponding to given call (URLs are
 {
   "name": "zlib",
   "output": "ok",
+  "metadata": {
+    "homepage": "http://zlib.net",
+    "description": "Wrap definitions for the zlib library"
+  },
   "versions": [
     {
       "branch": "1.2.8",
