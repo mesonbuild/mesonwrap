@@ -55,7 +55,10 @@ def get_projectlist():
 def get_project_info(project):
     matches = _database().get_versions(project)
     if not matches:
-        return jsonstatus.error(404, 'No such project')
+        projects = _database().name_search(project)
+        if project not in projects:
+            return jsonstatus.error(404, 'No such project')
+        return jsonstatus.ok(versions=[])
     versions = [{'branch': i[0], 'revision': i[1]} for i in matches]
     return jsonstatus.ok(versions=versions)
 
