@@ -83,21 +83,12 @@ def _make_wrap(workdir, name: str, repo: git.Repo, branch: str) -> wrap.Wrap:
     with io.BytesIO() as zipf:
         _make_zip(zipf, workdir, wrapfile.directory)
         zip_contents = zipf.getvalue()
-    source_hash = hashlib.sha256(zip_contents).hexdigest()
-    with io.StringIO() as wf:
-        url = _OUT_URL_BASE_DEFAULT.format(name, branch, revision_id)
-        with open(upstream_file) as basewrap:
-            # preserve whatever formatting user has provided
-            wf.write(basewrap.read())
-        wf.write('\n')
-        wf.write(f'patch_url = {url}\n')
-        zip_name = wrap.zip_name(name, branch, revision_id)
-        wf.write(f'patch_filename = {zip_name}\n')
-        wf.write(f'patch_hash = {source_hash}\n')
-        wrapfile_content = wf.getvalue()
+    wrapfile.patch_url = _OUT_URL_BASE_DEFAULT.format(name, branch, revision_id)
+    wrapfile.patch_filename = wrap.zip_name(name, branch, revision_id)
+    wrapfile.patch_hash = hashlib.sha256(zip_contents).hexdigest()
     return wrap.Wrap(name=name, version=branch, revision=revision_id,
-                     wrapfile_content=wrapfile_content, zip=zip_contents,
-                     commit_sha=revision_commit_sha)
+                     wrapfile_content=wrapfile.write_string(),
+                     zip=zip_contents, commit_sha=revision_commit_sha)
 
 
 def main(prog, args):
