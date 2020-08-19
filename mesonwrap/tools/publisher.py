@@ -17,6 +17,12 @@ def _is_github_error(exception):
     return isinstance(exception, github.GithubException)
 
 
+def update_wrapfile(wrapfile_content: str, patch: bytes) -> str:
+    wrapfile = ini.WrapFile.from_string(wrapfile_content)
+    wrapfile.patch_hash = hashlib.sha256(patch).hexdigest()
+    return wrapfile.write_string()
+
+
 class Publisher:
 
     @classmethod
@@ -66,16 +72,15 @@ class Publisher:
             rel.upload_asset(zippath, label=patch_label,
                              content_type='application/zip')
         elif not wrap_found:
-            # TODO: handle this in wrapcreator
             assert patch_found
-            wrapfile = ini.WrapFile.from_string(wrap.wrapfile_content)
             for a in rel.get_assets():
                 if a.label == patch_label:
                     with requests.get(a.browser_download_url) as rv:
                         rv.raise_for_status()
-                        sha256 = hashlib.sha256(rv.content).hexdigest()
-                        wrapfile.patch_hash = sha256
-            wrapfile.write_file(wrappath)
+                        wrap.wrapfile_content = update_wrapfile(
+                                wrap.wrapfile_content, rv.content)
+            with open(wrappath, 'w') as f:
+                f.write(wrap.wrapfile_content)
             print(f'Uploading {wrap_label!r}')
             rel.upload_asset(wrappath, label=wrap_label,
                              content_type='text/plain')
