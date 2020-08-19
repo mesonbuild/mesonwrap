@@ -2,8 +2,11 @@ import argparse
 import os.path
 
 import github
+import hashlib
+import requests
 from retrying import retry
 
+from mesonwrap import ini
 from mesonwrap import tempfile
 from mesonwrap import wrap
 from mesonwrap import wrapcreator
@@ -50,12 +53,32 @@ class Publisher:
             else:
                 print(f'Removing unknown asset {a.label!r} / {a.name!r}')
                 a.delete_asset()
-        if not wrap_found:
+        if not patch_found:
+            # Reupload all assets since wrapfile remembers the hash of zipfile.
+            for a in rel.get_assets():
+                if a.label == wrap_label:
+                    print(f'Deleting {a.label!r}')
+                    a.delete_asset()
+            print(f'Uploading {wrap_label!r}')
             rel.upload_asset(wrappath, label=wrap_label,
                              content_type='text/plain')
-        if not patch_found:
+            print(f'Uploading {patch_label!r}')
             rel.upload_asset(zippath, label=patch_label,
                              content_type='application/zip')
+        elif not wrap_found:
+            # TODO: handle this in wrapcreator
+            assert patch_found
+            wrapfile = ini.WrapFile.from_string(wrap.wrapfile_content)
+            for a in rel.get_assets():
+                if a.label == patch_label:
+                    with requests.get(a.browser_download_url) as rv:
+                        rv.raise_for_status()
+                        sha256 = hashlib.sha256(rv.content).hexdigest()
+                        wrapfile.patch_hash = sha256
+            wrapfile.write_file(wrappath)
+            print(f'Uploading {wrap_label!r}')
+            rel.upload_asset(wrappath, label=wrap_label,
+                             content_type='text/plain')
 
     @classmethod
     def publish(cls, organization: str, project: str, branch: str):
