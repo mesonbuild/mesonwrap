@@ -108,6 +108,8 @@ class Reviewer:
         self._branch = branch
         self._source_branch = source_branch or branch
         self.options = ReviewerOptions()
+        self.permitted_files = ['upstream.wrap', 'meson.build', 'readme.txt',
+                                'meson_options.txt', '.gitignore', 'LICENSE.build']
 
     def review(self) -> Tuple[bool, Optional[str]]:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -157,15 +159,21 @@ class Reviewer:
                      self._branch in upwrap.source_url,
                      fatal=self.options.strict_version_in_url)
 
+    def is_permitted_file(self, filename):
+        if filename in self.permitted_files:
+            return True
+        if filename.endswith('.h.meson'):
+            return True
+        return False
+
     def check_files(self, head_dir):
         found = False
-        permitted_files = ['upstream.wrap', 'meson.build', 'readme.txt',
-                           'meson_options.txt', '.gitignore', 'LICENSE.build']
+
         for root, dirs, files in os.walk(head_dir):
             if '.git' in dirs:
                 dirs.remove('.git')
             for fname in files:
-                if fname not in permitted_files:
+                if not self.is_permitted_file(fname):
                     if not found:
                         print('Non-buildsystem files found:')
                     found = True
