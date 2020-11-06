@@ -1,6 +1,5 @@
+import pathlib
 import configparser
-import os
-import os.path
 
 import github as _github
 
@@ -8,8 +7,7 @@ import github as _github
 class Config:
 
     def __init__(self):
-        configpath = os.path.join(
-            os.getenv('HOME'), '.config', 'mesonwrap.ini')
+        configpath = pathlib.Path.home() / '.config' / 'mesonwrap.ini'
         self._config = configparser.ConfigParser()
         self._config.read(configpath)
 
