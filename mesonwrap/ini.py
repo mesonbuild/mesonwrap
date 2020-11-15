@@ -111,6 +111,9 @@ class IniFile(metaclass=_IniMeta):
         # TODO: Python 3.8 make positional only
         return getattr(self, 'has_' + attr)
 
+    def has_section(self, name: str) -> bool:
+        return self._cfg.has_section(name)
+
 
 class WrapFile(IniFile):
 
