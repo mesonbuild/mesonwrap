@@ -8,7 +8,7 @@ class Config:
 
     def __init__(self):
         configpath = pathlib.Path.home() / '.config' / 'mesonwrap.ini'
-        self._config = configparser.ConfigParser()
+        self._config = configparser.ConfigParser(interpolation=None)
         self._config.read(configpath)
 
     @property

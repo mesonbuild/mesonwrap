@@ -72,7 +72,7 @@ class IniFile(metaclass=_IniMeta):
     __slots__ = ('_cfg',)
 
     def __init__(self, **kwargs):
-        self._cfg = configparser.ConfigParser()
+        self._cfg = configparser.ConfigParser(interpolation=None)
         for k, v in kwargs.items():
             setattr(self, k, v)
 
