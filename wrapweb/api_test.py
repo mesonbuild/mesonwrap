@@ -32,6 +32,7 @@ class ApiTest(testing.TestBase):
         self.database.add('foo', '1.2.4', 3, '', b'')
         rv = self.client.get('/v1/projects/foo')
         self.assertOk(rv)
+        self.assertEqual(rv.get_json()['name'], 'foo')
         self.assertCountEqual(rv.get_json()['versions'], [
             dict(branch='1.2.3', revision=1),
             dict(branch='1.2.3', revision=3),

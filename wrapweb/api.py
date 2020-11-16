@@ -60,7 +60,7 @@ def get_project_info(project):
             return jsonstatus.error(404, 'No such project')
         return jsonstatus.ok(versions=[])
     versions = [{'branch': i[0], 'revision': i[1]} for i in matches]
-    return jsonstatus.ok(versions=versions)
+    return jsonstatus.ok(name=project, versions=versions)
 
 
 @BP.route('/v1/projects/<project>/<branch>/<int:revision>/get_wrap')
