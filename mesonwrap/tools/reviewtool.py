@@ -142,8 +142,8 @@ class Reviewer:
                      '/' not in value and '\\' not in value)
 
     def check_wrapformat(self, upwrap):
-        print_status('upstream.wrap has [wrap-file] section',
-                     upwrap.has_section('wrap-file'))
+        print_status(f'upstream.wrap has [{upwrap.SECTION}] section',
+                     upwrap.has_section(upwrap.SECTION))
         print_status('upstream.wrap does not have [wrap-git] section',
                      not upwrap.has_section('wrap-git'))
         print_status('upstream.wrap has directory', upwrap.has_directory)
