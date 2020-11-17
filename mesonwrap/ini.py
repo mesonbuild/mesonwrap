@@ -111,19 +111,22 @@ class IniFile(metaclass=_IniMeta):
         # TODO: Python 3.8 make positional only
         return getattr(self, 'has_' + attr)
 
+    def has_section(self, name: str) -> bool:
+        return self._cfg.has_section(name)
+
 
 class WrapFile(IniFile):
 
-    _SECTION = 'wrap-file'
+    SECTION = 'wrap-file'
 
-    directory = IniField(_SECTION)
-    lead_directory_missing = IniField(_SECTION)
-    source_url = IniField(_SECTION)
-    source_filename = IniField(_SECTION)
-    source_hash = IniField(_SECTION)
-    patch_url = IniField(_SECTION)
-    patch_filename = IniField(_SECTION)
-    patch_hash = IniField(_SECTION)
+    directory = IniField(SECTION)
+    lead_directory_missing = IniField(SECTION)
+    source_url = IniField(SECTION)
+    source_filename = IniField(SECTION)
+    source_hash = IniField(SECTION)
+    patch_url = IniField(SECTION)
+    patch_filename = IniField(SECTION)
+    patch_hash = IniField(SECTION)
 
 
 class WrapMeta(IniFile):

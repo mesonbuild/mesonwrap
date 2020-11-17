@@ -35,6 +35,12 @@ class WrapFileTest(unittest.TestCase):
             self.assertTrue(getattr(f, 'has_' + attr))
             self.assertTrue(f.has(attr))
 
+    def test_has_section(self):
+        f = TestIni()
+        self.assertFalse(f.has_section('section1'))
+        f.field1 = 'value'
+        self.assertTrue(f.has_section('section1'))
+
     def test_section_not_found(self):
         f = TestIni()
         self.assertFalse(f.has_field1)
