@@ -161,8 +161,14 @@ class Reviewer:
         print_status('upstream.wrap has source_hash', upwrap.has_source_hash)
 
     def check_url(self, upwrap):
+        if self._project == 'sqlite3':
+            segs = self._branch.split('.')
+            assert(len(segs) == 3)
+            version_str = segs[0] + segs[1] + '0' + segs[2]
+        else:
+            version_str = self._branch
         print_status('upstream.wrap has source_url with version substring',
-                     self._branch in upwrap.source_url,
+                     version_str in upwrap.source_url,
                      fatal=self.options.strict_version_in_url)
 
     def is_permitted_file(self, filename):
