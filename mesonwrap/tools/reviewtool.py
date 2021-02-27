@@ -18,6 +18,7 @@ import dataclasses
 import enum
 import hashlib
 import os
+import pathlib
 import re
 import shutil
 import subprocess
@@ -127,6 +128,7 @@ class Reviewer:
             try:
                 self.check_basics(head_repo)
                 self.check_files(head_dir)
+                self.check_tabs(head_dir)
                 upwrap = ini.WrapFile.from_file(
                     os.path.join(head_dir, 'upstream.wrap'))
                 self.check_wrapformat(upwrap)
@@ -177,6 +179,16 @@ class Reviewer:
         if filename.endswith('.h.meson'):
             return True
         return False
+
+    def check_tabs(self, head_dir):
+        tabs_found = False;
+        for f in pathlib.Path(head_dir).glob('**/meson.build'):
+            contents = f.read_text()
+            if '\t' in contents:
+                tabs_found = True
+                break
+        print_status('Build files are free of tabs', not tabs_found,
+                     fatal=self.options.strict_fileset)
 
     def check_files(self, head_dir):
         found = False
