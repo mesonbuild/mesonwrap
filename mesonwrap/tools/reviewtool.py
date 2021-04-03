@@ -169,8 +169,9 @@ class Reviewer:
             version_str = segs[0] + segs[1] + '0' + segs[2]
         else:
             version_str = self._branch
-        print_status('upstream.wrap has source_url with version substring',
-                     version_str in upwrap.source_url,
+        had_version = version_str in upwrap.source_url or (version_str.replace('.', '_')) in upwrap.source_url
+        print_status(f'upstream.wrap has source_url with version substring({version_str})',
+                     had_version,
                      fatal=self.options.strict_version_in_url)
 
     def is_permitted_file(self, filename):
